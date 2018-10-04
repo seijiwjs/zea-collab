@@ -1,17 +1,17 @@
 {
   "name": "@visualive/collab",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/VisualiveIO/collab.git"
+    "url": "git+ssh://git@github.com/VisualiveIO/visualive-collab.git"
   },
   "author": "Visualive",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/VisualiveIO/collab/issues"
+    "url": "https://github.com/VisualiveIO/visualive-collab/issues"
   },
-  "homepage": "https://github.com/VisualiveIO/collab#readme",
+  "homepage": "https://github.com/VisualiveIO/visualive-collab#readme",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
