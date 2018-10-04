@@ -1,0 +1,26 @@
+{
+  "name": "@visualive/collab",
+  "version": "0.0.2",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/VisualiveIO/collab.git"
+  },
+  "author": "Visualive",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/VisualiveIO/collab/issues"
+  },
+  "homepage": "https://github.com/VisualiveIO/collab#readme",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "description": "",
+  "devDependencies": {
+    "eslint": "^5.5.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "prettier": "^1.14.2"
+  }
+}
