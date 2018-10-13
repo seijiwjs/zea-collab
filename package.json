@@ -18,7 +18,8 @@
     "url": "https://github.com/VisualiveIO/visualive-collab/issues"
   },
   "dependencies": {
-    "socket.io-client": "^2.1.1"
+    "socket.io-client": "^2.1.1",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "eslint": "^5.5.0",

@@ -2,14 +2,67 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title></title>
+
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://unpkg.com/tachyons@4.10.0/css/tachyons.min.css"/>
+
+    <title>Visualive Collab Examples</title>
   </head>
   <body>
-    <h1>Visualive Collab Examples</h1>
-    <ul>
-      <li>
-        <a href="./visualive-collab-example.html">Visualive Collab Examples</a>
-      </li>
-    </ul>
+    <div class="vh-100 pa3">
+      <h1 class="mt0">Visualive Collab Examples</h1>
+
+      <div class="ba b--light-gray shadow-4 ma2 pa2 h-75">
+        <div class="ba b--light-blue br2 pa2 h5 overflow-y-auto mb2" id="receivedMessages"></div>
+
+        <form autocomplete="off" name="formSendMessage">
+          <div class="mb5 flex">
+            <input class="flex-grow-1 mr1" name="messageToSend" required type="text">
+            <button class="pure-button">
+              <i class="material-icons f4">send</i>
+            </button>
+          </div>
+        </form>
+
+        <form class="pure-form pure-form-aligned" name="formCreateRoom">
+          <legend>Create Room</legend>
+          <fieldset>
+            <div class="pure-control-group">
+              <label for="newRoomId">Room ID</label>
+              <input name="newRoomId" disabled type="text">
+              <button class="pure-button" type="button">
+                <i class="material-icons f4">file_copy</i>
+              </button>
+            </div>
+          </fieldset>
+          <div class="flex justify-center">
+            <button class="pure-button pure-button-primary">
+              Create Room
+            </button>
+          </div>
+        </form>
+
+        <form class="pure-form pure-form-aligned" name="formJoinRoom">
+          <legend>Join Room</legend>
+          <fieldset>
+            <div class="pure-control-group">
+              <label for="joinRoomId">Room ID</label>
+              <input name="joinRoomId" type="text">
+            </div>
+          </fieldset>
+          <div class="flex justify-center">
+            <button class="pure-button pure-button-primary">
+              Join Room
+            </button>
+          </div>
+        </form>
+
+        <div class="hidden" id="mediaWrapper"></div>
+      </div>
+    </div>
+
+    <script src="https://stephenlb.github.io/webrtc-sdk/js/webrtc-v2.js"></script>
+    <script src="./index.js"></script>
   </body>
 </html>

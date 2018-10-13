@@ -1,0 +1,23 @@
+{
+  "session_name": "Visualive Collab",
+  "start_directory": "~/your_start_directory/",
+  "windows": [
+    {
+      "window_name": "services",
+      "start_directory": "examples/",
+      "panes": ["yarn start"]
+    },
+    {
+      "window_name": "editor",
+      "panes": ["v -S Session.vim"]
+    },
+    {
+      "window_name": "vcs",
+      "panes": [
+        {
+          "shell_command": ["g fetch", "g s"]
+        }
+      ]
+    }
+  ]
+}
