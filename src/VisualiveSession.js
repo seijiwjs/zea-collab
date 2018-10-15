@@ -48,11 +48,11 @@ class VisualiveSession {
     return roomId
   }
 
-  emit(message) {
+  pub(message) {
     this.phone.send(Object.assign(message, { userId: this.userId }))
   }
 
-  on(messageType, callback) {
+  sub(messageType, callback) {
     const callbacks = this.callbacks[messageType]
     this.callbacks[messageType] = callbacks
       ? callbacks.concat(callback)
@@ -60,7 +60,7 @@ class VisualiveSession {
   }
 
   sendUserJoined(userId) {
-    this.emit({
+    this.pub({
       type: VisualiveSession.actions.USER_JOINED,
       payload: {
         userId,
@@ -69,7 +69,7 @@ class VisualiveSession {
   }
 
   sendTextMessage(text) {
-    this.emit({
+    this.pub({
       type: VisualiveSession.actions.TEXT_MESSAGE,
       payload: {
         text,
@@ -78,7 +78,7 @@ class VisualiveSession {
   }
 
   sendCommand(command) {
-    this.emit({
+    this.pub({
       type: VisualiveSession.actions.COMMAND,
       payload: {
         command,
