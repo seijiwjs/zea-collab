@@ -11,16 +11,25 @@ const $mediaWrapper = document.getElementById('mediaWrapper')
 
 const visualiveSession = new VisualiveSession(tokenFromUrl)
 
-visualiveSession.join({
+visualiveSession.joinRoom({
   projectId: projectIdFromUrl,
   fileId: fileIdFromUrl,
   roomId: roomIdFromUrl,
 })
 
-document.formSendMessage.addEventListener('submit', e => {
+document.formCreateRoom.addEventListener('submit', e => {
+  const $form = e.target
+  const roomId = visualiveSession.createRoom()
+  $form.roomId.value = roomId
+
   e.preventDefault()
+})
+
+document.formSendMessage.addEventListener('submit', e => {
   const $form = e.target
   visualiveSession.sendTextMessage($form.messageToSend.value)
+
+  e.preventDefault()
   $form.reset()
 })
 

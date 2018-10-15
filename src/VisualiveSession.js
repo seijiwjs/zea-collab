@@ -7,8 +7,11 @@ class VisualiveSession {
     this.callbacks = {}
   }
 
-  join(sessionInfo) {
+  joinRoom(sessionInfo) {
     const { projectId, fileId, roomId } = sessionInfo
+
+    this.projectId = projectId
+    this.fileId = fileId
 
     this.fullRoomId = `${projectId}${fileId}${roomId || ''}`
 
@@ -31,6 +34,18 @@ class VisualiveSession {
         callbacks.forEach(callback => callback(message))
       }
     })
+  }
+
+  createRoom() {
+    const uuid = uuidv4()
+    const roomId = uuid.substring(0, uuid.indexOf('-'))
+    this.joinRoom(this.projectId, this.fileId, roomId)
+    window.history.pushState(
+      null,
+      null,
+      `?project-id=${this.projectId}&file-id=${this.fileId}&room-id=${roomId}`
+    )
+    return roomId
   }
 
   emit(message) {
