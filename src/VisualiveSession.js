@@ -2,14 +2,14 @@ import io from 'socket.io-client'
 import uuidv4 from 'uuid/v4'
 
 class VisualiveSession {
-  constructor() {
+  constructor(userId) {
+    this.userId = userId
     this.callbacks = {}
   }
 
   join(sessionInfo) {
     const { projectId, fileId, roomId } = sessionInfo
 
-    this.userId = sessionInfo.userId
     this.fullRoomId = `${projectId}${fileId}${roomId || ''}`
 
     this.phone = PHONE({

@@ -9,13 +9,12 @@ const tokenFromUrl = urlParams.get('token')
 const $receivedMessages = document.getElementById('receivedMessages')
 const $mediaWrapper = document.getElementById('mediaWrapper')
 
-const visualiveSession = new VisualiveSession()
+const visualiveSession = new VisualiveSession(tokenFromUrl)
 
 visualiveSession.join({
   projectId: projectIdFromUrl,
   fileId: fileIdFromUrl,
   roomId: roomIdFromUrl,
-  userId: tokenFromUrl,
 })
 
 document.formSendMessage.addEventListener('submit', e => {
