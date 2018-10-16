@@ -12,7 +12,6 @@ class VisualiveSession {
       'https://apistage.visualive.io',
       { 'sync disconnect on unload': true }
     )
-    this.socket = socket
     this.callbacks = {}
     this.roommatesIds = []
   }
