@@ -76,7 +76,7 @@ class VisualiveSession {
     this.socket.on(VisualiveSession.actions.USER_PING, message => {
       console.info('Ping from:', message.payload)
 
-      const roomMatePhoneNumber = this.fullRoomId + message.payload.user.id
+      const roomMatePhoneNumber = this.fullRoomId + message.payload.userData.id
       this.phone.ready(() => {
         this.phone.dial(roomMatePhoneNumber)
       })
@@ -112,9 +112,9 @@ class VisualiveSession {
 
 VisualiveSession.actions = {
   JOIN_ROOM: 'join-room',
+  USER_JOINED: 'user-joined',
   PING_ROOM: 'ping-room',
   USER_PING: 'user-ping',
-  USER_JOINED: 'user-joined',
   USER_LEFT: 'user-left',
   TEXT_MESSAGE: 'text-message',
   POSE_CHANGED: 'pose-message',
