@@ -1,13 +1,18 @@
 import io from 'socket.io-client'
 import shortid from 'shortid'
 
+// import { getCurrentUser } from './PlatformAPI.js';
+
 class VisualiveSession {
-  constructor(userId) {
+  constructor(token, userData) {
+    this.token = token
+    this.userData = userData
+
     this.socket = io.connect(
       'https://apistage.visualive.io',
       { 'sync disconnect on unload': true }
     )
-    this.userId = userId
+    this.socket = socket
     this.callbacks = {}
     this.roommatesIds = []
   }
@@ -22,7 +27,7 @@ class VisualiveSession {
     /*
      * Phone actions.
      */
-    const myPhoneNumber = this.fullRoomId + this.userId
+    const myPhoneNumber = this.fullRoomId + this.userData.id
     console.info('myPhoneNumber:', myPhoneNumber)
     this.phone = PHONE({
       media: { audio: false, video: false },
@@ -40,10 +45,12 @@ class VisualiveSession {
     })
 
     this.phone.message((session, message) => {
-      const { type: messageType } = message
-      const callbacks = this.callbacks[messageType]
-      if (callbacks) {
-        callbacks.forEach(callback => callback(message))
+      const { type: messageType, userId } = message;
+      if(userId != this.userData.id) {
+        const callbacks = this.callbacks[messageType]
+        if (callbacks) {
+          callbacks.forEach(callback => callback(message.payload, message.userId))
+        }
       }
     })
 
@@ -53,9 +60,17 @@ class VisualiveSession {
     this.socket.emit(VisualiveSession.actions.JOIN_ROOM, {
       payload: {
         roomId: this.fullRoomId,
-        userId: this.userId,
+        userId: this.userData.id,
       },
     })
+
+      // getCurrentUser()
+      //   .then(currentUser => {
+      //     this.pub(VisualiveSession.actions.USER_JOINED, currentUser)
+      //   })
+      //   .catch(() => {
+      //     console.error('Error getting current user.');
+      //   });
 
     this.socket.on(VisualiveSession.actions.USER_JOINED, message => {
       const { userId: newUserId } = message.payload
@@ -63,7 +78,7 @@ class VisualiveSession {
       this.socket.emit(VisualiveSession.actions.PING_ROOM, {
         payload: {
           roomId: this.fullRoomId,
-          userId: this.userId,
+          userId: this.userData.id,
         },
       })
     })
@@ -88,14 +103,14 @@ class VisualiveSession {
       null,
       `?project-id=${this.projectId}&file-id=${this.fileId}&room-id=${
         this.roomId
-      }&token=${this.userId}`
+      }&token=${this.token}`
     )
 
     return this.roomId
   }
 
-  pub(message) {
-    this.phone.send(Object.assign(message, { userId: this.userId }))
+  pub(messageType, payload) {
+    this.phone.send({ userId: this.userData.id, type:messageType, payload })
   }
 
   sub(messageType, callback) {
@@ -103,33 +118,6 @@ class VisualiveSession {
     this.callbacks[messageType] = callbacks
       ? callbacks.concat(callback)
       : [callback]
-  }
-
-  sendUserJoined(userId) {
-    this.pub({
-      type: VisualiveSession.actions.USER_JOINED,
-      payload: {
-        userId,
-      },
-    })
-  }
-
-  sendTextMessage(text) {
-    this.pub({
-      type: VisualiveSession.actions.TEXT_MESSAGE,
-      payload: {
-        text,
-      },
-    })
-  }
-
-  sendCommand(command) {
-    this.pub({
-      type: VisualiveSession.actions.COMMAND,
-      payload: {
-        command,
-      },
-    })
   }
 }
 
@@ -140,7 +128,9 @@ VisualiveSession.actions = {
   USER_JOINED: 'user-joined',
   USER_LEFT: 'user-left',
   TEXT_MESSAGE: 'text-message',
-  COMMAND: 'command',
+  POSE_CHANGED: 'pose-message',
+  COMMAND_ADDED: 'command-added',
+  COMMAND_UPDATED: 'command-updated',
 }
 
 export default VisualiveSession
