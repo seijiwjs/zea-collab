@@ -59,8 +59,8 @@ class VisualiveSession {
     this.socket.emit(VisualiveSession.actions.JOIN_ROOM, {
       payload: {
         roomId: this.fullRoomId,
-        userData: this.userData,
-      },
+        userData: this.userData
+      }
     })
 
     this.socket.on(VisualiveSession.actions.USER_JOINED, message => {
@@ -68,8 +68,8 @@ class VisualiveSession {
       this.socket.emit(VisualiveSession.actions.PING_ROOM, {
         payload: {
           roomId: this.fullRoomId,
-          userId: this.userData.id,
-        },
+          userData: this.userData
+        }
       })
     })
 
