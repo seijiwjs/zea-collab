@@ -6,16 +6,9 @@ const fileIdFromUrl = urlParams.get('file-id')
 const roomIdFromUrl = urlParams.get('room-id')
 const tokenFromUrl = urlParams.get('token')
 
-const $receivedMessages = document.getElementById('receivedMessages')
-const $mediaWrapper = document.getElementById('mediaWrapper')
-
 const visualiveSession = new VisualiveSession(tokenFromUrl)
 
-visualiveSession.joinRoom({
-  projectId: projectIdFromUrl,
-  fileId: fileIdFromUrl,
-  roomId: roomIdFromUrl,
-})
+visualiveSession.joinRoom(projectIdFromUrl, fileIdFromUrl, roomIdFromUrl)
 
 document.formCreateRoom.addEventListener('submit', e => {
   const $form = e.target
@@ -25,6 +18,18 @@ document.formCreateRoom.addEventListener('submit', e => {
   e.preventDefault()
 })
 
+const $copyRoomId = document.getElementById('copyRoomId')
+$copyRoomId.addEventListener('click', () => {
+  navigator.clipboard.writeText(visualiveSession.roomId).then(
+    () => {
+      console.info('Room Id copied to clipboard.')
+    },
+    err => {
+      console.error('Error copying room Id:', err)
+    }
+  )
+})
+
 document.formSendMessage.addEventListener('submit', e => {
   const $form = e.target
   visualiveSession.sendTextMessage($form.messageToSend.value)
@@ -32,6 +37,8 @@ document.formSendMessage.addEventListener('submit', e => {
   e.preventDefault()
   $form.reset()
 })
+
+const $receivedMessages = document.getElementById('receivedMessages')
 
 visualiveSession.sub(VisualiveSession.actions.TEXT_MESSAGE, message => {
   const p = document.createElement('p')
