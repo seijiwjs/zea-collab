@@ -41,16 +41,20 @@ class VisualiveSession {
       })
     })
 
-    this.phone.message((session, message) => {
-      const { type: messageType, userId } = message
+    const publishMessage = (messageType, payload, userId)=>{
       if (userId != this.userData.id) {
         const callbacks = this.callbacks[messageType]
         if (callbacks) {
           callbacks.forEach(callback =>
-            callback(message.payload, message.userId)
+            callback(payload, userId)
           )
         }
       }
+    }
+
+    this.phone.message((session, message) => {
+      const { type: messageType, userId } = message
+      publishMessage(messageType, message.payload, message.userId);
     })
 
     /*
@@ -71,6 +75,8 @@ class VisualiveSession {
           userData: this.userData
         }
       })
+
+      publishMessage(VisualiveSession.actions.USER_JOINED, message.payload.userData )
     })
 
     this.socket.on(VisualiveSession.actions.USER_PING, message => {
@@ -80,6 +86,8 @@ class VisualiveSession {
       this.phone.ready(() => {
         this.phone.dial(roomMatePhoneNumber)
       })
+
+      publishMessage(VisualiveSession.actions.USER_JOINED, message.payload.userData )
     })
   }
 
