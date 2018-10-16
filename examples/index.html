@@ -15,6 +15,7 @@
 
       <div class="ba b--light-gray shadow-4 ma2 pa2">
         <div class="ba b--light-blue br2 pa2 h5 overflow-y-auto mb2" id="receivedMessages"></div>
+        <div class="hidden" id="mediaWrapper"></div>
 
         <form autocomplete="off" name="formSendMessage">
           <div class="mb5 flex">
@@ -31,7 +32,7 @@
             <div class="pure-control-group">
               <label for="roomId">Room ID</label>
               <input name="roomId" disabled type="text">
-              <button class="pure-button" type="button">
+              <button class="pure-button" id="copyRoomId" type="button">
                 <i class="material-icons f4">file_copy</i>
               </button>
             </div>
@@ -57,8 +58,6 @@
             </button>
           </div>
         </form>
-
-        <div class="hidden" id="mediaWrapper"></div>
       </div>
     </div>
 
