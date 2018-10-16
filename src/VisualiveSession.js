@@ -61,7 +61,7 @@ class VisualiveSession {
     this.socket.emit(VisualiveSession.actions.JOIN_ROOM, {
       payload: {
         roomId: this.fullRoomId,
-        userId: this.userData.id,
+        userData: this.userData,
       },
     })
 
@@ -74,8 +74,7 @@ class VisualiveSession {
     //   });
 
     this.socket.on(VisualiveSession.actions.USER_JOINED, message => {
-      const { userId: newUserId } = message.payload
-      console.info('User joined:', newUserId)
+      console.info('User joined:', message.payload)
       this.socket.emit(VisualiveSession.actions.PING_ROOM, {
         payload: {
           roomId: this.fullRoomId,
@@ -87,7 +86,7 @@ class VisualiveSession {
     this.socket.on(VisualiveSession.actions.USER_PING, message => {
       console.info('Ping from:', message.payload)
 
-      const roomMatePhoneNumber = this.fullRoomId + newUserId
+      const roomMatePhoneNumber = this.fullRoomId + message.payload.user.id
       this.phone.ready(() => {
         this.phone.dial(roomMatePhoneNumber)
       })
