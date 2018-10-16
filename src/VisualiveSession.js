@@ -87,18 +87,14 @@ class VisualiveSession {
       const userData = message.payload.userData;
       if(!(userData.id in this.users)){
         this.users[userData.id] = userData;
+
+        const roomMatePhoneNumber = this.fullRoomId + userData.id
+        this.phone.ready(() => {
+          this.phone.dial(roomMatePhoneNumber)
+        })
+
         publishMessage(VisualiveSession.actions.USER_JOINED, userData )
       }
-
-      const roomMatePhoneNumber = this.fullRoomId + userData.id
-      this.phone.ready(() => {
-        this.phone.dial(roomMatePhoneNumber)
-      })
-
-      publishMessage(
-        VisualiveSession.actions.USER_JOINED,
-        message.payload.userData
-      )
     })
 
     this.socket.on(VisualiveSession.actions.USER_LEFT, message => {
