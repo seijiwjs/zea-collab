@@ -44,11 +44,13 @@ class VisualiveSession {
     })
 
     this.phone.message((session, message) => {
-      const { type: messageType, userId } = message;
-      if(userId != this.userData.id) {
+      const { type: messageType, userId } = message
+      if (userId != this.userData.id) {
         const callbacks = this.callbacks[messageType]
         if (callbacks) {
-          callbacks.forEach(callback => callback(message.payload, message.userId))
+          callbacks.forEach(callback =>
+            callback(message.payload, message.userId)
+          )
         }
       }
     })
@@ -63,13 +65,13 @@ class VisualiveSession {
       },
     })
 
-      // getCurrentUser()
-      //   .then(currentUser => {
-      //     this.pub(VisualiveSession.actions.USER_JOINED, currentUser)
-      //   })
-      //   .catch(() => {
-      //     console.error('Error getting current user.');
-      //   });
+    // getCurrentUser()
+    //   .then(currentUser => {
+    //     this.pub(VisualiveSession.actions.USER_JOINED, currentUser)
+    //   })
+    //   .catch(() => {
+    //     console.error('Error getting current user.');
+    //   });
 
     this.socket.on(VisualiveSession.actions.USER_JOINED, message => {
       const { userId: newUserId } = message.payload
@@ -83,8 +85,7 @@ class VisualiveSession {
     })
 
     this.socket.on(VisualiveSession.actions.USER_PING, message => {
-      const { userId: newUserId } = message.payload
-      console.info('Ping from:', newUserId)
+      console.info('Ping from:', message.payload)
 
       const roomMatePhoneNumber = this.fullRoomId + newUserId
       this.phone.ready(() => {
@@ -109,7 +110,7 @@ class VisualiveSession {
   }
 
   pub(messageType, payload) {
-    this.phone.send({ userId: this.userData.id, type:messageType, payload })
+    this.phone.send({ userId: this.userData.id, type: messageType, payload })
   }
 
   sub(messageType, callback) {
