@@ -1,8 +1,6 @@
 import io from 'socket.io-client'
 import shortid from 'shortid'
 
-// import { getCurrentUser } from './PlatformAPI.js';
-
 class VisualiveSession {
   constructor(token, userData) {
     this.token = token
@@ -64,14 +62,6 @@ class VisualiveSession {
         userData: this.userData,
       },
     })
-
-    // getCurrentUser()
-    //   .then(currentUser => {
-    //     this.pub(VisualiveSession.actions.USER_JOINED, currentUser)
-    //   })
-    //   .catch(() => {
-    //     console.error('Error getting current user.');
-    //   });
 
     this.socket.on(VisualiveSession.actions.USER_JOINED, message => {
       console.info('User joined:', message.payload)
