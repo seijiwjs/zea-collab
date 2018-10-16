@@ -24,14 +24,14 @@ class VisualiveSession {
 
     this.phone.ready(() => {
       this.phone.dial(this.fullRoomId)
-      this.sendUserJoined(this.userId)
+      this.pub(VisualiveSession.actions.USER_JOINED, { userId: this.userId })
     })
 
     this.phone.message((session, message) => {
-      const { type: messageType } = message
+      const { type: messageType } = message;
       const callbacks = this.callbacks[messageType]
       if (callbacks) {
-        callbacks.forEach(callback => callback(message))
+        callbacks.forEach(callback => callback(message.payload, message.userId))
       }
     })
   }
@@ -48,8 +48,8 @@ class VisualiveSession {
     return roomId
   }
 
-  pub(message) {
-    this.phone.send(Object.assign(message, { userId: this.userId }))
+  pub(messageType, payload) {
+    this.phone.send({ userId: this.userId, type:messageType, payload })
   }
 
   sub(messageType, callback) {
@@ -58,40 +58,15 @@ class VisualiveSession {
       ? callbacks.concat(callback)
       : [callback]
   }
-
-  sendUserJoined(userId) {
-    this.pub({
-      type: VisualiveSession.actions.USER_JOINED,
-      payload: {
-        userId,
-      },
-    })
-  }
-
-  sendTextMessage(text) {
-    this.pub({
-      type: VisualiveSession.actions.TEXT_MESSAGE,
-      payload: {
-        text,
-      },
-    })
-  }
-
-  sendCommand(command) {
-    this.pub({
-      type: VisualiveSession.actions.COMMAND,
-      payload: {
-        command,
-      },
-    })
-  }
 }
 
 VisualiveSession.actions = {
   USER_JOINED: 'user-joined',
   USER_LEFT: 'user-left',
   TEXT_MESSAGE: 'text-message',
-  COMMAND: 'command',
+  POSE_CHANGED: 'pose-message',
+  COMMAND_ADD: 'command-add',
+  COMMAND_UPDATE: 'command-update',
 }
 
 export default VisualiveSession
