@@ -10,6 +10,7 @@ class VisualiveSession {
       'https://apistage.visualive.io',
       { 'sync disconnect on unload': true }
     )
+    this.users = {}
     this.callbacks = {}
     this.roommatesIds = []
   }
@@ -82,13 +83,28 @@ class VisualiveSession {
     this.socket.on(VisualiveSession.actions.USER_PING, message => {
       console.info('Ping from:', message.payload)
 
-      const roomMatePhoneNumber = this.fullRoomId + message.payload.userData.id
+      const userData = message.payload.userData;
+      if(!(userData.id in this.users)){
+        this.users[userData.id] = userData;
+        publishMessage(VisualiveSession.actions.USER_JOINED, userData )
+      }
+
+      const roomMatePhoneNumber = this.fullRoomId + userData.id
       this.phone.ready(() => {
         this.phone.dial(roomMatePhoneNumber)
       })
 
-      publishMessage(VisualiveSession.actions.USER_JOINED, message.payload.userData )
     })
+
+    this.socket.on(VisualiveSession.actions.USER_LEFT, message => {
+      console.info('User left:', message.payload)
+      const userData = message.payload.userData;
+      if(userData.id in this.users){
+        delete this.users[userData.id];
+        publishMessage(VisualiveSession.actions.USER_LEFT, userData )
+      }
+    })
+
   }
 
   createRoom() {
@@ -104,6 +120,10 @@ class VisualiveSession {
     )
 
     return this.roomId
+  }
+
+  getUsers(){
+    return this.users;
   }
 
   pub(messageType, payload) {
