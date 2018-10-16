@@ -6,10 +6,6 @@ class VisualiveSession {
     this.token = token
     this.userData = userData
 
-    this.socket = io.connect(
-      'https://apistage.visualive.io',
-      { 'sync disconnect on unload': true }
-    )
     this.users = {}
     this.callbacks = {}
     this.roommatesIds = []
@@ -59,57 +55,66 @@ class VisualiveSession {
     /*
      * Socket actions.
      */
-    this.socket.emit(VisualiveSession.actions.JOIN_ROOM, {
-      payload: {
-        roomId: this.fullRoomId,
-        userData: this.userData,
-      },
-    })
+    this.socket = io.connect(
+      'https://apistage.visualive.io',
+      {
+        'sync disconnect on unload': true,
+        query: `userId=${this.userData.id}&roomId=${this.fullRoomId}`,
+      }
+    )
 
-    this.socket.on(VisualiveSession.actions.USER_JOINED, message => {
-      console.info('User joined:', message.payload)
-      this.socket.emit(VisualiveSession.actions.PING_ROOM, {
+    this.socket.on('connect', () => {
+      this.socket.emit(VisualiveSession.actions.JOIN_ROOM, {
         payload: {
           roomId: this.fullRoomId,
           userData: this.userData,
         },
       })
 
-      publishMessage(
-        VisualiveSession.actions.USER_JOINED,
-        message.payload.userData
-      )
-    })
+      this.socket.on(VisualiveSession.actions.USER_JOINED, message => {
+        console.info('User joined:', message.payload)
+        this.socket.emit(VisualiveSession.actions.PING_ROOM, {
+          payload: {
+            roomId: this.fullRoomId,
+            userData: this.userData,
+          },
+        })
 
-    this.socket.on(VisualiveSession.actions.USER_PING, message => {
-      console.info('Ping from:', message.payload)
-
-      const userData = message.payload.userData;
-      if(!(userData.id in this.users)){
-        this.users[userData.id] = userData;
-        publishMessage(VisualiveSession.actions.USER_JOINED, userData )
-      }
-
-      const roomMatePhoneNumber = this.fullRoomId + userData.id
-      this.phone.ready(() => {
-        this.phone.dial(roomMatePhoneNumber)
+        publishMessage(
+          VisualiveSession.actions.USER_JOINED,
+          message.payload.userData
+        )
       })
 
-      publishMessage(
-        VisualiveSession.actions.USER_JOINED,
-        message.payload.userData
-      )
-    })
+      this.socket.on(VisualiveSession.actions.USER_PING, message => {
+        console.info('Ping from:', message.payload)
 
-    this.socket.on(VisualiveSession.actions.USER_LEFT, message => {
-      console.info('User left:', message.payload)
-      const userData = message.payload.userData;
-      if(userData.id in this.users){
-        delete this.users[userData.id];
-        publishMessage(VisualiveSession.actions.USER_LEFT, userData )
-      }
-    })
+        const userData = message.payload.userData
+        if (!(userData.id in this.users)) {
+          this.users[userData.id] = userData
+          publishMessage(VisualiveSession.actions.USER_JOINED, userData)
+        }
 
+        const roomMatePhoneNumber = this.fullRoomId + userData.id
+        this.phone.ready(() => {
+          this.phone.dial(roomMatePhoneNumber)
+        })
+
+        publishMessage(
+          VisualiveSession.actions.USER_JOINED,
+          message.payload.userData
+        )
+      })
+
+      this.socket.on(VisualiveSession.actions.USER_LEFT, message => {
+        console.info('User left:', message.payload)
+        const userData = message.payload.userData
+        if (userData.id in this.users) {
+          delete this.users[userData.id]
+          publishMessage(VisualiveSession.actions.USER_LEFT, userData)
+        }
+      })
+    })
   }
 
   createRoom() {
@@ -127,8 +132,8 @@ class VisualiveSession {
     return this.roomId
   }
 
-  getUsers(){
-    return this.users;
+  getUsers() {
+    return this.users
   }
 
   pub(messageType, payload) {
