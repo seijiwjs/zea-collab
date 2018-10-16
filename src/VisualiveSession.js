@@ -1,6 +1,8 @@
 import io from 'socket.io-client'
 import uuidv4 from 'uuid/v4'
 
+// import { getCurrentUser } from './PlatformAPI.js';
+
 class VisualiveSession {
   constructor(userId) {
     this.userId = userId
@@ -25,13 +27,24 @@ class VisualiveSession {
     this.phone.ready(() => {
       this.phone.dial(this.fullRoomId)
       this.pub(VisualiveSession.actions.USER_JOINED, { userId: this.userId })
+
+      // getCurrentUser()
+      //   .then(currentUser => {
+      //     this.pub(VisualiveSession.actions.USER_JOINED, currentUser)
+      //   })
+      //   .catch(() => {
+      //     console.error('Error getting current user.');
+      //   });
+
     })
 
     this.phone.message((session, message) => {
-      const { type: messageType } = message;
-      const callbacks = this.callbacks[messageType]
-      if (callbacks) {
-        callbacks.forEach(callback => callback(message.payload, message.userId))
+      const { type: messageType, userId } = message;
+      if(userId != this.userId) {
+        const callbacks = this.callbacks[messageType]
+        if (callbacks) {
+          callbacks.forEach(callback => callback(message.payload, message.userId))
+        }
       }
     })
   }
@@ -65,8 +78,8 @@ VisualiveSession.actions = {
   USER_LEFT: 'user-left',
   TEXT_MESSAGE: 'text-message',
   POSE_CHANGED: 'pose-message',
-  COMMAND_ADD: 'command-add',
-  COMMAND_UPDATE: 'command-update',
+  COMMAND_ADDED: 'command-added',
+  COMMAND_UPDATED: 'command-updated',
 }
 
 export default VisualiveSession
