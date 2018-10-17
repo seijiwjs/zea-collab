@@ -8,7 +8,6 @@ class VisualiveSession {
 
     this.users = {}
     this.callbacks = {}
-    this.roommatesIds = []
   }
 
   joinRoom(projectId, fileId, roomId) {
@@ -30,8 +29,8 @@ class VisualiveSession {
       subscribe_key: 'sub-c-78f93af8-cc85-11e8-bbf2-f202706b73e5',
     })
 
-    this.phone.receive(function(session) {
-      session.connected(function(session) {
+    this.phone.receive(session => {
+      session.connected(session => {
         console.info('Received call from:', session.number)
         const $mediaWrapper = document.getElementById('mediaWrapper')
         $mediaWrapper.appendChild(session.video)
@@ -87,8 +86,7 @@ class VisualiveSession {
       })
 
       this.socket.on(VisualiveSession.actions.USER_PING, message => {
-        console.info('Ping from:', message.payload)
-
+        console.info('User ping:', message.payload)
         const userData = message.payload.userData
         if (!(userData.id in this.users)) {
           this.users[userData.id] = userData
@@ -98,16 +96,19 @@ class VisualiveSession {
             this.phone.dial(roomMatePhoneNumber)
           })
 
-          publishMessage(VisualiveSession.actions.USER_JOINED, userData, userData.id);
+          publishMessage(
+            VisualiveSession.actions.USER_JOINED,
+            userData,
+            userData.id
+          )
         }
-
       })
 
       this.socket.on(VisualiveSession.actions.USER_LEFT, message => {
         console.info('User left:', message.payload)
-        const userId = message.payload.userData.id;
+        const userId = message.payload.userData.id
         if (userId in this.users) {
-          const userData = this.users[userId];
+          const userData = this.users[userId]
           delete this.users[userId]
           publishMessage(VisualiveSession.actions.USER_LEFT, userData, userId)
         }
