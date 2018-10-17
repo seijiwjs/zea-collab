@@ -97,18 +97,19 @@ class VisualiveSession {
           this.phone.ready(() => {
             this.phone.dial(roomMatePhoneNumber)
           })
-          
-          publishMessage(VisualiveSession.actions.USER_JOINED, userData);
+
+          publishMessage(VisualiveSession.actions.USER_JOINED, userData, userData.id);
         }
 
       })
 
       this.socket.on(VisualiveSession.actions.USER_LEFT, message => {
         console.info('User left:', message.payload)
-        const userData = message.payload.userData
-        if (userData.id in this.users) {
-          delete this.users[userData.id]
-          publishMessage(VisualiveSession.actions.USER_LEFT, userData)
+        const userId = message.payload.userData.id;
+        if (userId in this.users) {
+          const userData = this.users[userId];
+          delete this.users[userId]
+          publishMessage(VisualiveSession.actions.USER_LEFT, userData, userId)
         }
       })
     })
