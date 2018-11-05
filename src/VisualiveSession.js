@@ -2,6 +2,12 @@ import io from 'socket.io-client'
 import wildcardMiddleware from 'socketio-wildcard'
 import shortid from 'shortid'
 
+const private_actions = {
+  JOIN_ROOM: 'join-room',
+  PING_ROOM: 'ping-room',
+  LEAVE_ROOM: 'leave-room',
+}
+
 class VisualiveSession {
   constructor(token, userData) {
     this.token = token
@@ -84,7 +90,7 @@ class VisualiveSession {
     })
 
     this.socket.on(private_actions.JOIN_ROOM, message => {
-      console.info('join-room:', message)
+      console.info(`${private_actions.JOIN_ROOM}:`, message)
       this.socket.emit(private_actions.PING_ROOM, {
         payload: {
           userData: this.userData,
@@ -95,7 +101,7 @@ class VisualiveSession {
     })
 
     this.socket.on(private_actions.LEAVE_ROOM, message => {
-      console.info('leave-room:', message)
+      console.info(`${private_actions.LEAVE_ROOM}:`, message)
       const { userData } = message.payload
       const userId = userData.id
       if (userId in this.users) {
@@ -107,7 +113,7 @@ class VisualiveSession {
     })
 
     this.socket.on(private_actions.PING_ROOM, message => {
-      console.info('ping-room:', message)
+      console.info(`${private_actions.PING_ROOM}:`, message)
       const { userData } = message.payload
       this._addUserIfNew(userData)
     })
@@ -181,12 +187,6 @@ class VisualiveSession {
       ? callbacks.concat(callback)
       : [callback]
   }
-}
-
-const private_actions = {
-  JOIN_ROOM: 'join-room',
-  PING_ROOM: 'ping-room',
-  LEAVE_ROOM: 'leave-room',
 }
 
 VisualiveSession.actions = {
