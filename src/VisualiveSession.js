@@ -36,14 +36,6 @@ class VisualiveSession {
       subscribe_key: 'sub-c-78f93af8-cc85-11e8-bbf2-f202706b73e5',
     })
 
-    this.phone.receive(session => {
-      session.connected(session => {
-        console.info('Received call from:', session.number)
-        const $mediaWrapper = document.getElementById('mediaWrapper')
-        $mediaWrapper.appendChild(session.video)
-      })
-    })
-
     /*
      * Socket actions.
      */
@@ -75,18 +67,23 @@ class VisualiveSession {
         },
       })
       this.socket.close()
+      this.phone.hangup()
     })
 
-    this.socket.once('connect', () => {
+    this.phone.ready(() => {
       this.socket.emit(private_actions.JOIN_ROOM, {
         payload: {
           userData: this.userData,
         },
       })
-    })
 
-    this.socket.on('disconnect', reason => {
-      // console.warn('Socket disconnected. Reason:', reason)
+      this.phone.receive(session => {
+        session.connected(session => {
+          console.info('Received call from:', session.number)
+          const $mediaWrapper = document.getElementById('mediaWrapper')
+          $mediaWrapper.appendChild(session.video)
+        })
+      })
     })
 
     this.socket.on(private_actions.JOIN_ROOM, message => {
@@ -97,6 +94,12 @@ class VisualiveSession {
         },
       })
       const { userData } = message.payload
+
+      const roommatePhoneNumber = this.fullRoomId + userData.id
+      const phoneSession = this.phone.dial(roommatePhoneNumber)
+
+      userData.phoneSession = phoneSession
+
       this._addUserIfNew(userData)
     })
 
@@ -105,6 +108,10 @@ class VisualiveSession {
       const { userData } = message.payload
       const userId = userData.id
       if (userId in this.users) {
+        const phoneSession = this.users[userId].phoneSession
+        if (phoneSession && !phoneSession.closed) {
+          phoneSession.hangup()
+        }
         delete this.users[userId]
         this._emit(VisualiveSession.actions.USER_LEFT, userData)
         return
@@ -122,6 +129,7 @@ class VisualiveSession {
   leaveRoom() {
     if (this.socket) {
       this.socket.close()
+      this.phone.hangup()
     }
     // Instruct all client code to cleanup session user data.
     this._emit(VisualiveSession.actions.LEFT_ROOM)
@@ -131,11 +139,6 @@ class VisualiveSession {
   _addUserIfNew(userData) {
     if (!(userData.id in this.users)) {
       this.users[userData.id] = userData
-
-      const roommatePhoneNumber = this.fullRoomId + userData.id
-      this.phone.ready(() => {
-        this.phone.dial(roommatePhoneNumber)
-      })
 
       this._emit(VisualiveSession.actions.USER_JOINED, userData)
     }
