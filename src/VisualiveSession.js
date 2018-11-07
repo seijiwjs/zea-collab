@@ -9,8 +9,7 @@ const private_actions = {
 }
 
 class VisualiveSession {
-  constructor(token, userData) {
-    this.token = token
+  constructor(userData) {
     this.userData = userData
 
     this.users = {}
@@ -153,7 +152,7 @@ class VisualiveSession {
       null,
       `?project-id=${this.projectId}&file-id=${this.fileId}&room-id=${
         this.roomId
-      }&token=${this.token}`
+      }`
     )
 
     return this.roomId
