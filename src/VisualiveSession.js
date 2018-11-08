@@ -71,37 +71,37 @@ class VisualiveSession {
       this.phone.hangup()
     })
 
-    // this.phone.ready(() => {
-    this.socket.emit(private_actions.JOIN_ROOM, {
-      payload: {
-        userData: this.userData,
-      },
-    })
+    this.phone.ready(() => {
+      this.socket.emit(private_actions.JOIN_ROOM, {
+        payload: {
+          userData: this.userData,
+        },
+      })
 
-    this.phone.receive(session => {
-      session.connected(session => {
-        const parts = session.number.split('+');
-        const userId = parts[1];
-        console.info('Received call from:', this.users[userId].name)
-        const $mediaWrapper = document.getElementById('mediaWrapper')
-        $mediaWrapper.appendChild(session.video)
+      this.phone.receive(session => {
+        session.connected(session => {
+          const parts = session.number.split('+');
+          const userId = parts[1];
+          console.info('Received call from:', this.users[userId].name)
+          const $mediaWrapper = document.getElementById('mediaWrapper')
+          $mediaWrapper.appendChild(session.video)
 
-        // const timerCallback = () => {
-        //     if (video.paused || video.ended) {
-        //         return;
-        //     }
-        //     console.log(video.currentTime);
-        //     setTimeout(timerCallback, 20);
-        // };
-        // timerCallback();
+          // const timerCallback = () => {
+          //     if (video.paused || video.ended) {
+          //         return;
+          //     }
+          //     console.log(video.currentTime);
+          //     setTimeout(timerCallback, 20);
+          // };
+          // timerCallback();
 
-        this._emit(VisualiveSession.actions.USER_RTC_CONNECTED, {
-          video: session.video,
-          audio: session.audio
-        }, userId)
+          this._emit(VisualiveSession.actions.USER_RTC_CONNECTED, {
+            video: session.video,
+            audio: session.audio
+          }, userId)
+        })
       })
     })
-    // })
 
     this.socket.on(private_actions.JOIN_ROOM, message => {
       console.info(`${private_actions.JOIN_ROOM}:`, message)
