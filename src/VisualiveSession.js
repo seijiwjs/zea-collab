@@ -114,7 +114,7 @@ class VisualiveSession {
         userData
       } = message.payload
 
-      const roommatePhoneNumber = this.fullRoomId + userData.id
+      const roommatePhoneNumber = `${this.fullRoomId}+${userData.id}`
       const phoneSession = this.phone.dial(roommatePhoneNumber)
 
       userData.phoneSession = phoneSession
