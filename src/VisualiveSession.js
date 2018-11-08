@@ -25,12 +25,12 @@ class VisualiveSession {
     /*
      * Phone actions.
      */
-    const myPhoneNumber = this.fullRoomId + this.userData.id
+    const myPhoneNumber = `${this.fullRoomId}+${this.userData.id}`
     console.info('myPhoneNumber:', myPhoneNumber)
     this.phone = PHONE({
       media: {
         audio: false,
-        video: false
+        video: true
       },
       number: myPhoneNumber,
       publish_key: 'pub-c-c632ffe7-eecd-4ad0-8cc2-6ecc47c17625',
@@ -80,12 +80,25 @@ class VisualiveSession {
 
     this.phone.receive(session => {
       session.connected(session => {
-        console.info('Received call from:', session.number)
+        const parts = session.number.split('+');
+        const userId = parts[1];
+        console.info('Received call from:', this.users[userId].name)
         const $mediaWrapper = document.getElementById('mediaWrapper')
         $mediaWrapper.appendChild(session.video)
+
+        // const timerCallback = () => {
+        //     if (video.paused || video.ended) {
+        //         return;
+        //     }
+        //     console.log(video.currentTime);
+        //     setTimeout(timerCallback, 20);
+        // };
+        // timerCallback();
+
         this._emit(VisualiveSession.actions.USER_RTC_CONNECTED, {
-          video: session.video
-        })
+          video: session.video,
+          audio: session.audio
+        }, userId)
       })
     })
     // })
