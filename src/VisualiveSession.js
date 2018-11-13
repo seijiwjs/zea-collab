@@ -15,6 +15,13 @@ class VisualiveSession {
     this.callbacks = {}
   }
 
+  startCamera() {
+    this.phone.startcamera()
+  }
+  stopCamera() {
+    this.phone.camera.stop()
+  }
+
   joinRoom(projectId, fileId, roomId) {
     this.projectId = projectId
     this.fileId = fileId
@@ -28,6 +35,7 @@ class VisualiveSession {
     const myPhoneNumber = `${this.fullRoomId}+${this.userData.id}`
     console.info('myPhoneNumber:', myPhoneNumber)
     this.phone = PHONE({
+      autocam: false,
       media: {
         audio: false,
         video: true
@@ -35,6 +43,30 @@ class VisualiveSession {
       number: myPhoneNumber,
       publish_key: 'pub-c-c632ffe7-eecd-4ad0-8cc2-6ecc47c17625',
       subscribe_key: 'sub-c-78f93af8-cc85-11e8-bbf2-f202706b73e5',
+    })
+
+    let callStarted = false;
+    this.phone.ready(() => {
+      callStarted = true;
+      for(let userId in this.users) {
+        const roommatePhoneNumber = `${this.fullRoomId}+${userId}`
+        const phoneSession = this.phone.dial(roommatePhoneNumber)
+        userData.phoneSession = phoneSession
+      }
+      this.phone.receive(session => {
+        session.connected(session => {
+          const parts = session.number.split('+');
+          const userId = parts[1];
+          console.info('Received call from:', this.users[userId].name)
+          const $mediaWrapper = document.getElementById('mediaWrapper')
+          $mediaWrapper.appendChild(session.video)
+
+          this._emit(VisualiveSession.actions.USER_RTC_CONNECTED, {
+            video: session.video,
+            audio: session.audio
+          }, userId)
+        })
+      })
     })
 
     /*
@@ -71,36 +103,10 @@ class VisualiveSession {
       this.phone.hangup()
     })
 
-    this.phone.ready(() => {
-      this.socket.emit(private_actions.JOIN_ROOM, {
-        payload: {
-          userData: this.userData,
-        },
-      })
-
-      this.phone.receive(session => {
-        session.connected(session => {
-          const parts = session.number.split('+');
-          const userId = parts[1];
-          console.info('Received call from:', this.users[userId].name)
-          const $mediaWrapper = document.getElementById('mediaWrapper')
-          $mediaWrapper.appendChild(session.video)
-
-          // const timerCallback = () => {
-          //     if (video.paused || video.ended) {
-          //         return;
-          //     }
-          //     console.log(video.currentTime);
-          //     setTimeout(timerCallback, 20);
-          // };
-          // timerCallback();
-
-          this._emit(VisualiveSession.actions.USER_RTC_CONNECTED, {
-            video: session.video,
-            audio: session.audio
-          }, userId)
-        })
-      })
+    this.socket.emit(private_actions.JOIN_ROOM, {
+      payload: {
+        userData: this.userData,
+      },
     })
 
     this.socket.on(private_actions.JOIN_ROOM, message => {
@@ -114,10 +120,11 @@ class VisualiveSession {
         userData
       } = message.payload
 
-      const roommatePhoneNumber = `${this.fullRoomId}+${userData.id}`
-      const phoneSession = this.phone.dial(roommatePhoneNumber)
-
-      userData.phoneSession = phoneSession
+      if(callStarted) {
+        const roommatePhoneNumber = `${this.fullRoomId}+${userData.id}`
+        const phoneSession = this.phone.dial(roommatePhoneNumber)
+        userData.phoneSession = phoneSession
+      }
 
       this._addUserIfNew(userData)
     })
