@@ -200,10 +200,7 @@ class VisualiveSession {
   pub(messageType, payload) {
     this.socket.emit(messageType, {
       userId: this.userData.id,
-      payload: {
-        userData: this.userData,
-        ...payload,
-      },
+      payload,
     })
   }
 
