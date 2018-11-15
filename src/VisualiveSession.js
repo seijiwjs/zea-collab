@@ -10,16 +10,25 @@ const private_actions = {
 
 class VisualiveSession {
   constructor(userData) {
-    this.userData = userData;
+    this.userData = userData
     this.users = {}
     this.callbacks = {}
   }
 
-  startCamera() {
-    this.phone.startcamera()
-  }
   stopCamera() {
-    this.phone.camera.stop()
+    this.myStream.getVideoTracks()[0].enabled = false
+  }
+
+  startCamera() {
+    this.myStream.getVideoTracks()[0].enabled = true
+  }
+
+  muteAudio() {
+    this.myStream.getAudioTracks()[0].enabled = false
+  }
+
+  unmuteAudio() {
+    this.myStream.getAudioTracks()[0].enabled = true
   }
 
   joinRoom(projectId, fileId, roomId) {
@@ -32,41 +41,29 @@ class VisualiveSession {
     /*
      * Phone actions.
      */
-    const myPhoneNumber = `${this.fullRoomId}+${this.userData.id}`
+    const myPhoneNumber = `${this.fullRoomId}${this.userData.id}`
     console.info('myPhoneNumber:', myPhoneNumber)
-    this.phone = PHONE({
-      autocam: false,
-      media: {
-        audio: false,
-        video: true
-      },
-      number: myPhoneNumber,
-      publish_key: 'pub-c-c632ffe7-eecd-4ad0-8cc2-6ecc47c17625',
-      subscribe_key: 'sub-c-78f93af8-cc85-11e8-bbf2-f202706b73e5',
+
+    this.peer = new Peer(myPhoneNumber, {
+      debug: 2,
     })
 
-    let callStarted = false;
-    this.phone.ready(() => {
-      callStarted = true;
-      for(let userId in this.users) {
-        const roommatePhoneNumber = `${this.fullRoomId}+${userId}`
-        const phoneSession = this.phone.dial(roommatePhoneNumber)
-        userData.phoneSession = phoneSession
-      }
-      this.phone.receive(session => {
-        session.connected(session => {
-          const parts = session.number.split('+');
-          const userId = parts[1];
-          console.info('Received call from:', this.users[userId].name)
-          const $mediaWrapper = document.getElementById('mediaWrapper')
-          $mediaWrapper.appendChild(session.video)
-
-          this._emit(VisualiveSession.actions.USER_RTC_CONNECTED, {
-            video: session.video,
-            audio: session.audio
-          }, userId)
+    this.peer.on('call', call => {
+      navigator.mediaDevices
+        .getUserMedia({ video: true, audio: true })
+        .then(stream => {
+          call.answer(stream)
+          call.on('stream', remoteStream => {
+            var video = document.querySelector('#theirVideo')
+            video.srcObject = remoteStream
+            video.onloadedmetadata = e => {
+              video.play()
+            }
+          })
         })
-      })
+        .catch(err => {
+          console.log('Failed to get local stream', err)
+        })
     })
 
     /*
@@ -100,7 +97,6 @@ class VisualiveSession {
         },
       })
       this.socket.close()
-      this.phone.hangup()
     })
 
     this.socket.emit(private_actions.JOIN_ROOM, {
@@ -116,30 +112,35 @@ class VisualiveSession {
           userData: this.userData,
         },
       })
-      const {
-        userData
-      } = message.payload
+      const { userData } = message.payload
+      const roommatePhoneNumber = `${this.fullRoomId}${userData.id}`
 
-      if(callStarted) {
-        const roommatePhoneNumber = `${this.fullRoomId}+${userData.id}`
-        const phoneSession = this.phone.dial(roommatePhoneNumber)
-        userData.phoneSession = phoneSession
-      }
+      navigator.mediaDevices
+        .getUserMedia({ video: true, audio: true })
+        .then(myStream => {
+          this.myStream = myStream
+
+          var call = this.peer.call(roommatePhoneNumber, myStream)
+          call.on('stream', remoteStream => {
+            var video = document.querySelector('#theirVideo')
+            video.srcObject = remoteStream
+            video.onloadedmetadata = e => {
+              video.play()
+            }
+          })
+        })
+        .catch(err => {
+          console.log('Failed to get local stream', err)
+        })
 
       this._addUserIfNew(userData)
     })
 
     this.socket.on(private_actions.LEAVE_ROOM, message => {
       console.info(`${private_actions.LEAVE_ROOM}:`, message)
-      const {
-        userData
-      } = message.payload
+      const { userData } = message.payload
       const userId = userData.id
       if (userId in this.users) {
-        const phoneSession = this.users[userId].phoneSession
-        if (phoneSession && !phoneSession.closed) {
-          phoneSession.hangup()
-        }
         delete this.users[userId]
         this._emit(VisualiveSession.actions.USER_LEFT, userData)
         return
@@ -149,9 +150,7 @@ class VisualiveSession {
 
     this.socket.on(private_actions.PING_ROOM, message => {
       console.info(`${private_actions.PING_ROOM}:`, message)
-      const {
-        userData
-      } = message.payload
+      const { userData } = message.payload
       this._addUserIfNew(userData)
     })
   }
@@ -159,7 +158,6 @@ class VisualiveSession {
   leaveRoom() {
     if (this.socket) {
       this.socket.close()
-      this.phone.hangup()
     }
     // Instruct all client code to cleanup session user data.
     this._emit(VisualiveSession.actions.LEFT_ROOM)
@@ -213,9 +211,9 @@ class VisualiveSession {
 
   sub(messageType, callback) {
     const callbacks = this.callbacks[messageType]
-    this.callbacks[messageType] = callbacks ?
-      callbacks.concat(callback) :
-      [callback]
+    this.callbacks[messageType] = callbacks
+      ? callbacks.concat(callback)
+      : [callback]
   }
 }
 
