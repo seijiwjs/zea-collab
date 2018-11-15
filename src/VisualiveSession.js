@@ -16,19 +16,19 @@ class VisualiveSession {
   }
 
   stopCamera() {
-    this.myStream.getVideoTracks()[0].enabled = false
+    this.stream.getVideoTracks()[0].enabled = false
   }
 
   startCamera() {
-    this.myStream.getVideoTracks()[0].enabled = true
+    this.stream.getVideoTracks()[0].enabled = true
   }
 
   muteAudio() {
-    this.myStream.getAudioTracks()[0].enabled = false
+    this.stream.getAudioTracks()[0].enabled = false
   }
 
   unmuteAudio() {
-    this.myStream.getAudioTracks()[0].enabled = true
+    this.stream.getAudioTracks()[0].enabled = true
   }
 
   joinRoom(projectId, fileId, roomId) {
@@ -48,23 +48,27 @@ class VisualiveSession {
       debug: 2,
     })
 
+    // Receive calls.
     this.peer.on('call', call => {
-      navigator.mediaDevices
-        .getUserMedia({ video: true, audio: true })
-        .then(stream => {
-          call.answer(stream)
+      this._prepareMediaStream()
+        .then(() => {
+          call.answer(this.stream)
           call.on('stream', remoteStream => {
             var video = document.querySelector('#theirVideo')
             video.srcObject = remoteStream
             const remoteUserId = call.peer.substring(call.peer.length - 16)
-            console.log("remoteUserId:", remoteUserId)
+            console.log('remoteUserId:', remoteUserId)
             video.onloadedmetadata = e => {
-              video.play();
+              video.play()
 
               // Send the stream ot the remote users avatar to attach.
-              this._emit(VisualiveSession.actions.USER_RTC_CONNECTED, {
-                video
-              }, remoteUserId);
+              this._emit(
+                VisualiveSession.actions.USER_RTC_CONNECTED,
+                {
+                  video,
+                },
+                remoteUserId
+              )
             }
           })
         })
@@ -122,11 +126,10 @@ class VisualiveSession {
       const { userData } = message.payload
       const roommatePhoneNumber = `${this.fullRoomId}${userData.id}`
 
-      navigator.mediaDevices
-        .getUserMedia({ video: true, audio: true })
-        .then(myStream => {
-          this.myStream = myStream
-          var call = this.peer.call(roommatePhoneNumber, myStream)
+      // Make call to the user who just joined the room.
+      this._prepareMediaStream()
+        .then(() => {
+          var call = this.peer.call(roommatePhoneNumber, this.stream)
           call.on('stream', remoteStream => {
             var video = document.querySelector('#theirVideo')
             video.srcObject = remoteStream
@@ -158,6 +161,25 @@ class VisualiveSession {
       console.info(`${private_actions.PING_ROOM}:`, message)
       const { userData } = message.payload
       this._addUserIfNew(userData)
+    })
+  }
+
+  _prepareMediaStream() {
+    return new window.Promise((resolve, reject) => {
+      navigator.mediaDevices
+        .getUserMedia({
+          audio: true,
+          video: { width: 400, height: 300 },
+        })
+        .then(stream => {
+          this.stream = stream
+          this.stopCamera()
+          this.muteAudio()
+          resolve()
+        })
+        .catch(err => {
+          reject(err)
+        })
     })
   }
 
