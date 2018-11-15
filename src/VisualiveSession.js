@@ -56,8 +56,15 @@ class VisualiveSession {
           call.on('stream', remoteStream => {
             var video = document.querySelector('#theirVideo')
             video.srcObject = remoteStream
+            const remoteUserId = call.peer.substring(call.peer.length - 16)
+            console.log("remoteUserId:", remoteUserId)
             video.onloadedmetadata = e => {
-              video.play()
+              video.play();
+
+              // Send the stream ot the remote users avatar to attach.
+              this._emit(VisualiveSession.actions.USER_RTC_CONNECTED, {
+                video
+              }, remoteUserId);
             }
           })
         })
@@ -119,7 +126,6 @@ class VisualiveSession {
         .getUserMedia({ video: true, audio: true })
         .then(myStream => {
           this.myStream = myStream
-
           var call = this.peer.call(roommatePhoneNumber, myStream)
           call.on('stream', remoteStream => {
             var video = document.querySelector('#theirVideo')
