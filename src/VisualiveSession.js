@@ -15,7 +15,7 @@ class VisualiveSession {
     this.userStreams = {}
     this.callbacks = {};
 
-    this._prepareMediaStream()
+    // this._prepareMediaStream()
   }
 
   stopCamera(publish=true) {
@@ -47,6 +47,8 @@ class VisualiveSession {
   }
 
   setVideoStream(remoteStream, userId) {
+    if(this.userStreams[userId])
+      console.warn("User stream already exists:" + userId)
     const video = document.createElement('video');
     video.srcObject = remoteStream
     this.userStreams[userId] = video;
@@ -54,6 +56,8 @@ class VisualiveSession {
     video.onloadedmetadata = e => {
       video.play()
     }
+
+    document.body.appendChild(video)
   } 
 
   joinRoom(projectId, fileId, roomId) {
@@ -135,7 +139,8 @@ class VisualiveSession {
           userData: this.userData,
         },
       })
-      const { userData } = message.payload
+      const { userData } = message.payload;
+
       const roommatePhoneNumber = `${this.fullRoomId}${userData.id}`
 
       // Make call to the user who just joined the room.
@@ -206,7 +211,7 @@ class VisualiveSession {
 
   _addUserIfNew(userData) {
     if (!(userData.id in this.users)) {
-      this.users[userData.id] = userData
+      this.users[userData.id] = userData;
 
       this._emit(VisualiveSession.actions.USER_JOINED, userData)
     }
