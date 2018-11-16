@@ -49,7 +49,7 @@ class VisualiveSession {
   setVideoStream(remoteStream, userId) {
     const video = document.createElement('video');
     video.srcObject = remoteStream
-    this.userStreams[userData.id] = video;
+    this.userStreams[userId] = video;
     
     video.onloadedmetadata = e => {
       video.play()
