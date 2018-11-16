@@ -172,7 +172,9 @@ class VisualiveSession {
   }
 
   _prepareMediaStream() {
-    return new window.Promise((resolve, reject) => {
+    if(this.__streamPromise)
+      return this.__streamPromise;
+    this.__streamPromise = new window.Promise((resolve, reject) => {
       navigator.mediaDevices
         .getUserMedia({
           audio: true,
@@ -188,6 +190,8 @@ class VisualiveSession {
           reject(err)
         })
     })
+
+    return this.__streamPromise;
   }
 
   leaveRoom() {
