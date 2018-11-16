@@ -13,7 +13,9 @@ class VisualiveSession {
     this.userData = userData
     this.users = {}
     this.userStreams = {}
-    this.callbacks = {}
+    this.callbacks = {};
+
+    this._prepareMediaStream()
   }
 
   stopCamera(publish=true) {
@@ -44,6 +46,16 @@ class VisualiveSession {
     return this.userStreams[userId]
   }
 
+  setVideoStream(remoteStream, userId) {
+    const video = document.createElement('video');
+    video.srcObject = remoteStream
+    this.userStreams[userData.id] = video;
+    
+    video.onloadedmetadata = e => {
+      video.play()
+    }
+  } 
+
   joinRoom(projectId, fileId, roomId) {
     this.projectId = projectId
     this.fileId = fileId
@@ -69,12 +81,7 @@ class VisualiveSession {
           call.on('stream', remoteStream => {
             const remoteUserId = call.peer.substring(call.peer.length - 16)
             
-            const video = document.createElement('video');
-            video.srcObject = remoteStream
-            this.userStreams[remoteUserId] = video;
-            video.onloadedmetadata = e => {
-              video.play()
-            }
+            this.setVideoStream(remoteStream, remoteUserId);
           })
         })
         .catch(err => {
@@ -136,13 +143,7 @@ class VisualiveSession {
         .then(() => {
           const call = this.peer.call(roommatePhoneNumber, this.stream)
           call.on('stream', remoteStream => {
-            const video = document.createElement('video');
-            video.srcObject = remoteStream
-            this.userStreams[userData.id] = video;
-            
-            video.onloadedmetadata = e => {
-              video.play()
-            }
+            this.setVideoStream(remoteStream, userData.id);
           })
         })
         .catch(err => {
