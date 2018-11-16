@@ -12,23 +12,36 @@ class VisualiveSession {
   constructor(userData) {
     this.userData = userData
     this.users = {}
+    this.userStreams = {}
     this.callbacks = {}
   }
 
-  stopCamera() {
+  stopCamera(publish=true) {
     this.stream.getVideoTracks()[0].enabled = false
+    if(publish)
+      this.pub(VisualiveSession.actions.USER_VIDEO_STOPPED, { } )
   }
 
-  startCamera() {
+  startCamera(publish=true) {
     this.stream.getVideoTracks()[0].enabled = true
+    if(publish)
+      this.pub(VisualiveSession.actions.USER_VIDEO_STARTED, { } )
   }
 
-  muteAudio() {
+  muteAudio(publish=true) {
     this.stream.getAudioTracks()[0].enabled = false
+    if(publish)
+      this.pub(VisualiveSession.actions.USER_VIDEO_STOPPED, { } )
   }
 
-  unmuteAudio() {
+  unmuteAudio(publish=true) {
     this.stream.getAudioTracks()[0].enabled = true
+    if(publish)
+      this.pub(VisualiveSession.actions.USER_AUDIO_STARTED, { } )
+  }
+
+  getVideoStream(userId) {
+    return this.userStreams[userId]
   }
 
   joinRoom(projectId, fileId, roomId) {
@@ -54,21 +67,13 @@ class VisualiveSession {
         .then(() => {
           call.answer(this.stream)
           call.on('stream', remoteStream => {
-            var video = document.querySelector('#theirVideo')
-            video.srcObject = remoteStream
             const remoteUserId = call.peer.substring(call.peer.length - 16)
-            console.log('remoteUserId:', remoteUserId)
+            
+            const video = document.createElement('video');
+            video.srcObject = remoteStream
+            this.userStreams[remoteUserId] = video;
             video.onloadedmetadata = e => {
               video.play()
-
-              // Send the stream ot the remote users avatar to attach.
-              this._emit(
-                VisualiveSession.actions.USER_RTC_CONNECTED,
-                {
-                  video,
-                },
-                remoteUserId
-              )
             }
           })
         })
@@ -129,10 +134,12 @@ class VisualiveSession {
       // Make call to the user who just joined the room.
       this._prepareMediaStream()
         .then(() => {
-          var call = this.peer.call(roommatePhoneNumber, this.stream)
+          const call = this.peer.call(roommatePhoneNumber, this.stream)
           call.on('stream', remoteStream => {
-            var video = document.querySelector('#theirVideo')
+            const video = document.createElement('video');
             video.srcObject = remoteStream
+            this.userStreams[userData.id] = video;
+            
             video.onloadedmetadata = e => {
               video.play()
             }
@@ -173,8 +180,8 @@ class VisualiveSession {
         })
         .then(stream => {
           this.stream = stream
-          this.stopCamera()
-          this.muteAudio()
+          this.stopCamera(false)
+          this.muteAudio(false)
           resolve()
         })
         .catch(err => {
@@ -247,7 +254,10 @@ class VisualiveSession {
 
 VisualiveSession.actions = {
   USER_JOINED: 'user-joined',
-  USER_RTC_CONNECTED: 'user-rtc-connected',
+  USER_VIDEO_STARTED: 'user-video-started',
+  USER_VIDEO_STOPPED: 'user-video-stopped',
+  USER_AUDIO_STARTED: 'user-audio-started',
+  USER_AUDIO_STOPPED: 'user-audio-stopped',
   USER_LEFT: 'user-left',
   LEFT_ROOM: 'left-room',
   TEXT_MESSAGE: 'text-message',
