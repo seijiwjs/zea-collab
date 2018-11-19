@@ -13,33 +13,27 @@ class VisualiveSession {
     this.userData = userData
     this.users = {}
     this.userStreams = {}
-    this.callbacks = {};
-
-    // this._prepareMediaStream()
+    this.callbacks = {}
   }
 
-  stopCamera(publish=true) {
+  stopCamera(publish = true) {
     this.stream.getVideoTracks()[0].enabled = false
-    if(publish)
-      this.pub(VisualiveSession.actions.USER_VIDEO_STOPPED, { } )
+    if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STOPPED, {})
   }
 
-  startCamera(publish=true) {
+  startCamera(publish = true) {
     this.stream.getVideoTracks()[0].enabled = true
-    if(publish)
-      this.pub(VisualiveSession.actions.USER_VIDEO_STARTED, { } )
+    if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STARTED, {})
   }
 
-  muteAudio(publish=true) {
+  muteAudio(publish = true) {
     this.stream.getAudioTracks()[0].enabled = false
-    if(publish)
-      this.pub(VisualiveSession.actions.USER_VIDEO_STOPPED, { } )
+    if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STOPPED, {})
   }
 
-  unmuteAudio(publish=true) {
+  unmuteAudio(publish = true) {
     this.stream.getAudioTracks()[0].enabled = true
-    if(publish)
-      this.pub(VisualiveSession.actions.USER_AUDIO_STARTED, { } )
+    if (publish) this.pub(VisualiveSession.actions.USER_AUDIO_STARTED, {})
   }
 
   getVideoStream(userId) {
@@ -47,18 +41,20 @@ class VisualiveSession {
   }
 
   setVideoStream(remoteStream, userId) {
-    if(this.userStreams[userId])
-      console.warn("User stream already exists:" + userId)
-    const video = document.createElement('video');
+    if (this.userStreams[userId]) {
+      return
+    }
+
+    const video = document.createElement('video')
     video.srcObject = remoteStream
-    this.userStreams[userId] = video;
-    
-    video.onloadedmetadata = e => {
+    this.userStreams[userId] = video
+
+    video.onloadedmetadata = () => {
       video.play()
     }
 
     document.body.appendChild(video)
-  } 
+  }
 
   joinRoom(projectId, fileId, roomId) {
     this.projectId = projectId
@@ -68,7 +64,7 @@ class VisualiveSession {
     this.fullRoomId = projectId + fileId + (roomId || '')
 
     /*
-     * Phone actions.
+     * Peer actions.
      */
     const myPhoneNumber = `${this.fullRoomId}${this.userData.id}`
     console.info('myPhoneNumber:', myPhoneNumber)
@@ -78,19 +74,24 @@ class VisualiveSession {
     })
 
     // Receive calls.
-    this.peer.on('call', call => {
+    this.peer.on('call', mediaConnection => {
       this._prepareMediaStream()
         .then(() => {
-          call.answer(this.stream)
-          call.on('stream', remoteStream => {
-            const remoteUserId = call.peer.substring(call.peer.length - 16)
-            
-            this.setVideoStream(remoteStream, remoteUserId);
+          mediaConnection.answer(this.stream)
+          mediaConnection.on('stream', remoteStream => {
+            const remoteUserId = mediaConnection.peer.substring(
+              mediaConnection.peer.length - 16
+            )
+            this.setVideoStream(remoteStream, remoteUserId)
           })
         })
         .catch(err => {
-          console.log('Failed to get local stream', err)
+          console.error('Failed to get local stream', err)
         })
+    })
+
+    this.peer.on('error', err => {
+      console.error('Peer error:', err)
     })
 
     /*
@@ -124,6 +125,7 @@ class VisualiveSession {
         },
       })
       this.socket.close()
+      this.peer.destroy()
     })
 
     this.socket.emit(private_actions.JOIN_ROOM, {
@@ -134,28 +136,37 @@ class VisualiveSession {
 
     this.socket.on(private_actions.JOIN_ROOM, message => {
       console.info(`${private_actions.JOIN_ROOM}:`, message)
-      this.socket.emit(private_actions.PING_ROOM, {
-        payload: {
-          userData: this.userData,
-        },
-      })
-      const { userData } = message.payload;
+      const { userData: newUserData } = message.payload
 
-      const roommatePhoneNumber = `${this.fullRoomId}${userData.id}`
-
-      // Make call to the user who just joined the room.
       this._prepareMediaStream()
         .then(() => {
-          const call = this.peer.call(roommatePhoneNumber, this.stream)
-          call.on('stream', remoteStream => {
-            this.setVideoStream(remoteStream, userData.id);
+          this.socket.emit(private_actions.PING_ROOM, {
+            payload: {
+              userData: this.userData,
+            },
+          })
+
+          // Make call to the user who just joined the room.
+          const roommatePhoneNumber = `${this.fullRoomId}${newUserData.id}`
+
+          if (this.peer.disconnected) {
+            console.log('Peer disconnected. Reconnecting.')
+            this.peer.reconnect()
+          }
+
+          const mediaConnection = this.peer.call(
+            roommatePhoneNumber,
+            this.stream
+          )
+          mediaConnection.on('stream', remoteStream => {
+            this.setVideoStream(remoteStream, newUserData.id)
           })
         })
         .catch(err => {
-          console.log('Failed to get local stream', err)
+          console.error('Failed to get local stream', err)
         })
 
-      this._addUserIfNew(userData)
+      this._addUserIfNew(newUserData)
     })
 
     this.socket.on(private_actions.LEAVE_ROOM, message => {
@@ -178,9 +189,13 @@ class VisualiveSession {
   }
 
   _prepareMediaStream() {
-    if(this.__streamPromise)
-      return this.__streamPromise;
+    if (this.__streamPromise) return this.__streamPromise
     this.__streamPromise = new window.Promise((resolve, reject) => {
+      if (this.stream) {
+        resolve()
+        return
+      }
+
       navigator.mediaDevices
         .getUserMedia({
           audio: true,
@@ -197,7 +212,7 @@ class VisualiveSession {
         })
     })
 
-    return this.__streamPromise;
+    return this.__streamPromise
   }
 
   leaveRoom() {
@@ -211,7 +226,7 @@ class VisualiveSession {
 
   _addUserIfNew(userData) {
     if (!(userData.id in this.users)) {
-      this.users[userData.id] = userData;
+      this.users[userData.id] = userData
 
       this._emit(VisualiveSession.actions.USER_JOINED, userData)
     }
