@@ -18,6 +18,17 @@ function saveAs(data, filename, type) {
     }
 }
 
+function genID() {
+  // Math.random should be unique because of its seeding algorithm.
+  // Convert it to base 36 (numbers + letters), and grab the first 9 characters
+  // after the decimal.
+  return '_' + Math.random().toString(36).substr(2, 9);
+};
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * Math.floor(max));
+}
+
 export default class SessionRecorder {
 
   constructor(visualiveSession, actionRegistry) {
@@ -25,14 +36,25 @@ export default class SessionRecorder {
     this.actionRegistry = actionRegistry;
 
     this.__presenter = {
-      id: 12345,
+      id: 'poiuytrewq',
       name: 'Presenter',
       picture:'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
     }
 
+    const pictures = [
+      'https://www.w3schools.com/w3images/avatar2.png',
+      'https://www.riinvest.net/wp-content/uploads/2018/02/FemaleAvatar-1.png',
+      'http://mokee-ent.com/images/avatar.png'
+    ]
 
     let pub;
     const start = () => {
+
+      this.__presenter.id = genID();
+      const picIndex = getRandomInt(pictures.length)
+      this.__presenter.picture = pictures[picIndex];
+      this.__presenter.name = 'Presenter'+picIndex;
+
       this.__messages = [];
       let msg = {
         messageType: 'user-joined',
@@ -60,7 +82,7 @@ export default class SessionRecorder {
         messageType: 'user-left',
         payload: this.__presenter
       });
-      this.__replay();
+      this.__replay(this.__messages[i]);
 
     }
 
@@ -114,13 +136,15 @@ export default class SessionRecorder {
   }
 
   save() {
-    saveAs(JSON.stringify(this.__messages, null, 2), 'MyRec.rec', 'application/json');
+    const data = {}
+    data[this.__presenter.id] = this.__messages;
+    saveAs(JSON.stringify(data), 'MyRec.rec', 'application/json');
   }
 
-  __replay() {
+  __replay(stream) {
       let i = 0;
       const next = () => {
-        const message = this.__messages[i];
+        const message = stream[i];
         this.visualiveSession._emit(message.messageType, message.payload, this.__presenter.id);
         i++;
         if (i < this.__messages.length) {
@@ -141,16 +165,9 @@ export default class SessionRecorder {
         return response.json();
       })
       .then(function(recording) {
-        let i = 0;
-        const next = () => {
-          const message = recording[i];
-          this.visualiveSession._emit(message.messageType, message.payload, this.__presenter.id);
-          if (i < this.__messages.length) {
-            setTimeout(next, message.ms);
-            i++;
-          }
+        for(let key of recording) {
+          this.__replay(recording[key])
         }
-        next();
       });
   }
 }
