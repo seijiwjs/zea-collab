@@ -35,37 +35,36 @@ export default class SessionRecorder {
     this.visualiveSession = visualiveSession;
     this.actionRegistry = actionRegistry;
 
-    this.__presenter = {
-      id: 'poiuytrewq',
-      name: 'Presenter',
-      picture:'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
-    }
-
     const pictures = [
-      'https://www.w3schools.com/w3images/avatar2.png',
-      'https://www.riinvest.net/wp-content/uploads/2018/02/FemaleAvatar-1.png',
-      'http://mokee-ent.com/images/avatar.png'
+      'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
     ]
 
+    const data = {}
+    let presenter;
     let pub;
+    let messages;
     const start = () => {
 
-      this.__presenter.id = genID();
       const picIndex = getRandomInt(pictures.length)
-      this.__presenter.picture = pictures[picIndex];
-      this.__presenter.name = 'Presenter'+picIndex;
+      presenter = {
+        id: genID(),
+        picture: pictures[picIndex],
+        name: 'Presenter'+Object.keys(data).length
+      }
 
-      this.__messages = [];
+      messages = [];
       let msg = {
         messageType: 'user-joined',
-        payload: this.__presenter
+        payload: presenter
       }
       let prev_t = performance.now();
-      pub = this.visualiveSession.pub;//.bind(this.visualiveSession);
+      pub = this.visualiveSession.pub;
       this.visualiveSession.pub = (messageType, payload) => {
+        // Record the time since the previous 
+        // message and save it to the previous message.
         const t = performance.now();
         msg.ms = (t - prev_t);
-        this.__messages.push(msg);
+        messages.push(msg);
         msg = {
           messageType,
           payload
@@ -76,14 +75,17 @@ export default class SessionRecorder {
     }
 
     const stop = () => {
+
+      messages.push({
+        messageType: 'user-left',
+        payload: presenter
+      });
+
+      data[presenter.id] = messages;
+
       this.visualiveSession.pub = pub;
 
-      this.__messages.push({
-        messageType: 'user-left',
-        payload: this.__presenter
-      });
-      this.__replay(this.__messages[i]);
-
+      this.__replayAll(data);
     }
 
     actionRegistry.registerAction({
@@ -92,6 +94,7 @@ export default class SessionRecorder {
       callback: () => {
         start();
       },
+      availableInVR: true
     });
 
     actionRegistry.registerAction({
@@ -100,18 +103,15 @@ export default class SessionRecorder {
       callback: () => {
         stop();
       },
+      availableInVR: true
     });
     actionRegistry.registerAction({
       path: ['Sessions'],
       name: 'Save',
       callback: () => {
-        saveAs(JSON.stringify(this.__messages, null, 2), 'MyRec.rec', 'application/json');
+        this.save(data);
       },
     });
-  }
-
-  setPresenterDetails(presenter) {
-    this.__presenter = presenter;
   }
 
   setResources(resources) {
@@ -135,27 +135,43 @@ export default class SessionRecorder {
     }
   }
 
-  save() {
-    const data = {}
-    data[this.__presenter.id] = this.__messages;
+  save(data) {
     saveAs(JSON.stringify(data), 'MyRec.rec', 'application/json');
   }
 
-  __replay(stream) {
+  __stopPlayback(){
+    for(let key in this.__timeoutIds)
+      clearTimeout(this.__timeoutIds[key])
+    this.__timeoutIds = {};
+  }
+
+  __replay(id, stream, done) {
       let i = 0;
       const next = () => {
         const message = stream[i];
-        this.visualiveSession._emit(message.messageType, message.payload, this.__presenter.id);
+        this.visualiveSession._emit(message.messageType, message.payload, id);
         i++;
-        if (i < this.__messages.length) {
-          setTimeout(next, message.ms);
+        if (i < stream.length) {
+          this.__timeoutIds[id] = setTimeout(next, message.ms);
         }
         else {
-          i = 0;
-          setTimeout(next, 1000);
+          done();
         }
       }
-      setTimeout(next, 1000);
+      this.__timeoutIds[id] = setTimeout(next, 1000);
+  }
+  __replayAll(recording) {
+    this.__stopPlayback();
+    let count = 0;
+    this.__timeoutIds = {};
+    for(let key in recording) {
+      count++;
+      this.__replay(key, recording[key], ()=> {
+        count--;
+        if(count==0)
+          this.__replayAll(recording);
+      } )
+    }
   }
 
   play(name) {
@@ -165,9 +181,7 @@ export default class SessionRecorder {
         return response.json();
       })
       .then(function(recording) {
-        for(let key of recording) {
-          this.__replay(recording[key])
-        }
+        this.__replayAll();
       });
   }
 }
