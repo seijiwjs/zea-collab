@@ -27,7 +27,7 @@ export default class SessionRecorder {
     this.__presenter = {
       id: 12345,
       name: 'Presenter',
-      picture:'https://images.vexels.com/media/users/3/129616/isolated/preview/fb517f8913bd99cd48ef00facb4a67c0-businessman-avatar-silhouette-by-vexels.png'
+      picture:'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
     }
 
 
