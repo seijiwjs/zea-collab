@@ -1,3 +1,4 @@
-import VisualiveSession from './src/VisualiveSession'
+import VisualiveSession from './src/VisualiveSession.js'
+import SessionRecorder from './src/SessionRecorder.js'
 
-export { VisualiveSession }
+export { VisualiveSession, SessionRecorder }
