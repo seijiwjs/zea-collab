@@ -31,143 +31,163 @@ function getRandomInt(max) {
 
 export default class SessionRecorder {
 
-  constructor(visualiveSession, actionRegistry) {
-    this.visualiveSession = visualiveSession;
+  constructor(actionRegistry) {
     this.actionRegistry = actionRegistry;
+    this.__recordings = {};
 
-    this.__presenter = {
-      id: 'poiuytrewq',
-      name: 'Presenter',
-      picture:'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
-    }
 
-    const pictures = [
-      'https://www.w3schools.com/w3images/avatar2.png',
-      'https://www.riinvest.net/wp-content/uploads/2018/02/FemaleAvatar-1.png',
-      'http://mokee-ent.com/images/avatar.png'
-    ]
+    // TODO: Check for credentials on the user.
+    if(self.origin.startsWith("https://localhost")) {
 
-    let pub;
-    const start = () => {
+      const pictures = [
+        'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
+      ]
 
-      this.__presenter.id = genID();
-      const picIndex = getRandomInt(pictures.length)
-      this.__presenter.picture = pictures[picIndex];
-      this.__presenter.name = 'Presenter'+picIndex;
+      const data = {}
+      let presenter;
+      let pub;
+      let messages;
+      const start = () => {
 
-      this.__messages = [];
-      let msg = {
-        messageType: 'user-joined',
-        payload: this.__presenter
-      }
-      let prev_t = performance.now();
-      pub = this.visualiveSession.pub;//.bind(this.visualiveSession);
-      this.visualiveSession.pub = (messageType, payload) => {
-        const t = performance.now();
-        msg.ms = (t - prev_t);
-        this.__messages.push(msg);
-        msg = {
-          messageType,
-          payload
+        const picIndex = getRandomInt(pictures.length)
+        presenter = {
+          id: genID(),
+          picture: pictures[picIndex],
+          name: 'Presenter'+Object.keys(data).length
         }
-        prev_t = t;
-        pub.call(this.visualiveSession, messageType, payload);
+
+        messages = [];
+        let msg = {
+          messageType: 'user-joined',
+          payload: presenter
+        }
+        let prev_t = performance.now();
+        pub = this.visualiveSession.pub;
+        this.visualiveSession.pub = (messageType, payload) => {
+          // Record the time since the previous 
+          // message and save it to the previous message.
+          const t = performance.now();
+          msg.ms = (t - prev_t);
+          messages.push(msg);
+          msg = {
+            messageType,
+            payload
+          }
+          prev_t = t;
+          pub.call(this.visualiveSession, messageType, payload);
+        }
       }
-    }
 
-    const stop = () => {
-      this.visualiveSession.pub = pub;
+      const stop = () => {
 
-      this.__messages.push({
-        messageType: 'user-left',
-        payload: this.__presenter
-      });
-      this.__replay(this.__messages[i]);
+        messages.push({
+          messageType: 'user-left',
+          payload: presenter
+        });
 
-    }
+        data[presenter.id] = messages;
 
-    actionRegistry.registerAction({
-      path: ['Sessions'],
-      name: 'Start Recording',
-      callback: () => {
-        start();
-      },
-    });
+        this.visualiveSession.pub = pub;
 
-    actionRegistry.registerAction({
-      path: ['Sessions'],
-      name: 'Stop Recording',
-      callback: () => {
-        stop();
-      },
-    });
-    actionRegistry.registerAction({
-      path: ['Sessions'],
-      name: 'Save',
-      callback: () => {
-        saveAs(JSON.stringify(this.__messages, null, 2), 'MyRec.rec', 'application/json');
-      },
-    });
-  }
+        this.__playRecording(data);
+      }
 
-  setPresenterDetails(presenter) {
-    this.__presenter = presenter;
-  }
-
-  setResources(resources) {
-
-    const addRecording = (key, resource)=>{
-      appData.actionRegistry.registerAction({
-        path: ['Sessions', 'Recordings'],
-        name: key,
+      actionRegistry.registerAction({
+        path: ['Sessions'],
+        name: 'Start Recording',
         callback: () => {
-          this.play(key);
+          start();
+        },
+        availableInVR: true
+      });
+
+      actionRegistry.registerAction({
+        path: ['Sessions'],
+        name: 'Stop Recording',
+        callback: () => {
+          stop();
+        },
+        availableInVR: true
+      });
+      actionRegistry.registerAction({
+        path: ['Sessions'],
+        name: 'Save',
+        callback: () => {
+          this.save(data);
+        },
+      });
+    }
+  }
+
+  setVisualiveSession(visualiveSession) {
+    this.visualiveSession = visualiveSession;
+  }
+
+  setResourceLoader(resourceLoader) {
+    this.resourceLoader = resourceLoader;
+
+    const addRecording = (file)=>{
+      this.__recordings[file.name] = file;
+      this.actionRegistry.registerAction({
+        path: ['Sessions', 'Recordings'],
+        name: file.name,
+        callback: () => {
+          this.playRecording(file.name)
         },
         availableInVR: true
       });
     }
 
-    this.__recordings = {};
-    for (let key in resources) {
-      const resource = resourcesDict[key];
-      if (resource.name.endsWith('.rec')) 
-        this.__recordings[key] = resource
-    }
+    this.resourceLoader.registerResourceCallback('.rec', (file)=>{
+      addRecording(file)
+    });
   }
 
-  save() {
-    const data = {}
-    data[this.__presenter.id] = this.__messages;
+  save(data) {
     saveAs(JSON.stringify(data), 'MyRec.rec', 'application/json');
   }
 
-  __replay(stream) {
+  __stopPlayback(){
+    for(let key in this.__timeoutIds)
+      clearTimeout(this.__timeoutIds[key])
+    this.__timeoutIds = {};
+  }
+
+  __play(id, stream, done) {
       let i = 0;
       const next = () => {
         const message = stream[i];
-        this.visualiveSession._emit(message.messageType, message.payload, this.__presenter.id);
+        this.visualiveSession._emit(message.messageType, message.payload, id);
         i++;
-        if (i < this.__messages.length) {
-          setTimeout(next, message.ms);
+        if (i < stream.length) {
+          this.__timeoutIds[id] = setTimeout(next, message.ms);
         }
         else {
-          i = 0;
-          setTimeout(next, 1000);
+          done();
         }
       }
-      setTimeout(next, 1000);
+      this.__timeoutIds[id] = setTimeout(next, 1000);
   }
 
-  play(name) {
-    const resource = this.__recordings[key];
-    fetch(resource.url)
-      .then(function(response) {
-        return response.json();
-      })
-      .then(function(recording) {
-        for(let key of recording) {
-          this.__replay(recording[key])
-        }
-      });
+  __playRecording(recording) {
+    this.__stopPlayback();
+    let count = 0;
+    this.__timeoutIds = {};
+    for(let key in recording) {
+      count++;
+      this.__play(key, recording[key], ()=> {
+        count--;
+        if(count==0)
+          this.__playRecording(recording);
+      } )
+    }
+  }
+
+  playRecording(name) {
+    const file = this.__recordings[name];
+    this.resourceLoader.loadResource(file.id, (entries)=>{
+      const recording = JSON.parse(Visualive.decodeText(entries.rec));
+      this.__playRecording(recording);
+    })
   }
 }
