@@ -17,23 +17,31 @@ class VisualiveSession {
   }
 
   stopCamera(publish = true) {
-    this.stream.getVideoTracks()[0].enabled = false
-    if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STOPPED, {})
+    if (this.stream) {
+      this.stream.getVideoTracks()[0].enabled = false
+      if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STOPPED, {})
+    }
   }
 
   startCamera(publish = true) {
-    this.stream.getVideoTracks()[0].enabled = true
-    if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STARTED, {})
+    if (this.stream) {
+      this.stream.getVideoTracks()[0].enabled = true
+      if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STARTED, {})
+    }
   }
 
   muteAudio(publish = true) {
-    this.stream.getAudioTracks()[0].enabled = false
-    if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STOPPED, {})
+    if (this.stream) {
+      this.stream.getAudioTracks()[0].enabled = false
+      if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STOPPED, {})
+    }
   }
 
   unmuteAudio(publish = true) {
-    this.stream.getAudioTracks()[0].enabled = true
-    if (publish) this.pub(VisualiveSession.actions.USER_AUDIO_STARTED, {})
+    if (this.stream) {
+      this.stream.getAudioTracks()[0].enabled = true
+      if (publish) this.pub(VisualiveSession.actions.USER_AUDIO_STARTED, {})
+    }
   }
 
   getVideoStream(userId) {
@@ -109,13 +117,17 @@ class VisualiveSession {
           userData: this.userData
         }
       })
-      const { userData: newUserData } = message.payload
+      const {
+        userData: newUserData
+      } = message.payload
       this._addUserIfNew(newUserData)
     })
 
     this.socket.on(private_actions.LEAVE_ROOM, message => {
       console.info(`${private_actions.LEAVE_ROOM}:`, message)
-      const { userData } = message.payload
+      const {
+        userData
+      } = message.payload
       const userId = userData.id
       if (userId in this.users) {
         delete this.users[userId]
@@ -127,7 +139,9 @@ class VisualiveSession {
 
     this.socket.on(private_actions.PING_ROOM, message => {
       console.info(`${private_actions.PING_ROOM}:`, message)
-      const { userData } = message.payload
+      const {
+        userData
+      } = message.payload
       this._addUserIfNew(userData)
     })
 
@@ -206,7 +220,10 @@ class VisualiveSession {
       navigator.mediaDevices
         .getUserMedia({
           audio: true,
-          video: { width: 400, height: 300 },
+          video: {
+            width: 400,
+            height: 300
+          },
         })
         .then(stream => {
           this.stream = stream
@@ -278,9 +295,9 @@ class VisualiveSession {
 
   sub(messageType, callback) {
     const callbacks = this.callbacks[messageType]
-    this.callbacks[messageType] = callbacks
-      ? callbacks.concat(callback)
-      : [callback]
+    this.callbacks[messageType] = callbacks ?
+      callbacks.concat(callback) :
+      [callback]
   }
 }
 
