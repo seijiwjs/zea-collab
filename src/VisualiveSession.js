@@ -17,23 +17,31 @@ class VisualiveSession {
   }
 
   stopCamera(publish = true) {
-    this.stream.getVideoTracks()[0].enabled = false
-    if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STOPPED, {})
+    if (this.stream) {
+      this.stream.getVideoTracks()[0].enabled = false
+      if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STOPPED, {})
+    }
   }
 
   startCamera(publish = true) {
-    this.stream.getVideoTracks()[0].enabled = true
-    if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STARTED, {})
+    if (this.stream) {
+      this.stream.getVideoTracks()[0].enabled = true
+      if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STARTED, {})
+    }
   }
 
   muteAudio(publish = true) {
-    this.stream.getAudioTracks()[0].enabled = false
-    if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STOPPED, {})
+    if (this.stream) {
+      this.stream.getAudioTracks()[0].enabled = false
+      if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STOPPED, {})
+    }
   }
 
   unmuteAudio(publish = true) {
-    this.stream.getAudioTracks()[0].enabled = true
-    if (publish) this.pub(VisualiveSession.actions.USER_AUDIO_STARTED, {})
+    if (this.stream) {
+      this.stream.getAudioTracks()[0].enabled = true
+      if (publish) this.pub(VisualiveSession.actions.USER_AUDIO_STARTED, {})
+    }
   }
 
   getVideoStream(userId) {
@@ -62,37 +70,6 @@ class VisualiveSession {
     this.roomId = roomId
 
     this.fullRoomId = projectId + fileId + (roomId || '')
-
-    /*
-     * Peer actions.
-     */
-    const myPhoneNumber = `${this.fullRoomId}${this.userData.id}`
-    console.info('myPhoneNumber:', myPhoneNumber)
-
-    this.peer = new Peer(myPhoneNumber, {
-      debug: 2,
-    })
-
-    // Receive calls.
-    this.peer.on('call', mediaConnection => {
-      this._prepareMediaStream()
-        .then(() => {
-          mediaConnection.answer(this.stream)
-          mediaConnection.on('stream', remoteStream => {
-            const remoteUserId = mediaConnection.peer.substring(
-              mediaConnection.peer.length - 16
-            )
-            this.setVideoStream(remoteStream, remoteUserId)
-          })
-        })
-        .catch(err => {
-          console.error('Failed to get local stream', err)
-        })
-    })
-
-    this.peer.on('error', err => {
-      console.error('Peer error:', err)
-    })
 
     /*
      * Socket actions.
@@ -125,7 +102,6 @@ class VisualiveSession {
         },
       })
       this.socket.close()
-      this.peer.destroy()
     })
 
     this.socket.emit(private_actions.JOIN_ROOM, {
@@ -136,15 +112,79 @@ class VisualiveSession {
 
     this.socket.on(private_actions.JOIN_ROOM, message => {
       console.info(`${private_actions.JOIN_ROOM}:`, message)
-      const { userData: newUserData } = message.payload
+      this.socket.emit(private_actions.PING_ROOM, {
+        payload: {
+          userData: this.userData
+        }
+      })
+      const {
+        userData: newUserData
+      } = message.payload
+      this._addUserIfNew(newUserData)
+    })
 
+    this.socket.on(private_actions.LEAVE_ROOM, message => {
+      console.info(`${private_actions.LEAVE_ROOM}:`, message)
+      const {
+        userData
+      } = message.payload
+      const userId = userData.id
+      if (userId in this.users) {
+        delete this.users[userId]
+        this._emit(VisualiveSession.actions.USER_LEFT, userData)
+        return
+      }
+      console.warn('User not in room.')
+    })
+
+    this.socket.on(private_actions.PING_ROOM, message => {
+      console.info(`${private_actions.PING_ROOM}:`, message)
+      const {
+        userData
+      } = message.payload
+      this._addUserIfNew(userData)
+    })
+
+
+
+    /*
+     * RTC
+    const myPhoneNumber = `${this.fullRoomId}${this.userData.id}`
+    console.info('myPhoneNumber:', myPhoneNumber)
+
+    this.peer = new Peer(myPhoneNumber, {
+      debug: 2,
+    })
+
+    // Receive calls.
+    this.peer.on('call', mediaConnection => {
       this._prepareMediaStream()
         .then(() => {
-          this.socket.emit(private_actions.PING_ROOM, {
-            payload: {
-              userData: this.userData,
-            },
+          mediaConnection.answer(this.stream)
+          mediaConnection.on('stream', remoteStream => {
+            const remoteUserId = mediaConnection.peer.substring(
+              mediaConnection.peer.length - 16
+            )
+            this.setVideoStream(remoteStream, remoteUserId)
           })
+        })
+        .catch(err => {
+          console.error('Failed to get local stream', err)
+        })
+    })
+
+    this.peer.on('error', err => {
+      console.error('Peer error:', err)
+    })
+
+    window.addEventListener('beforeunload', () => {
+      this.peer.destroy()
+    })
+
+    this.socket.on(private_actions.JOIN_ROOM, message => {
+      const { userData: newUserData } = message.payload
+      this._prepareMediaStream()
+        .then(() => {
 
           // Make call to the user who just joined the room.
           const roommatePhoneNumber = `${this.fullRoomId}${newUserData.id}`
@@ -165,27 +205,8 @@ class VisualiveSession {
         .catch(err => {
           console.error('Failed to get local stream', err)
         })
-
-      this._addUserIfNew(newUserData)
     })
-
-    this.socket.on(private_actions.LEAVE_ROOM, message => {
-      console.info(`${private_actions.LEAVE_ROOM}:`, message)
-      const { userData } = message.payload
-      const userId = userData.id
-      if (userId in this.users) {
-        delete this.users[userId]
-        this._emit(VisualiveSession.actions.USER_LEFT, userData)
-        return
-      }
-      console.warn('User not in room.')
-    })
-
-    this.socket.on(private_actions.PING_ROOM, message => {
-      console.info(`${private_actions.PING_ROOM}:`, message)
-      const { userData } = message.payload
-      this._addUserIfNew(userData)
-    })
+     */
   }
 
   _prepareMediaStream() {
@@ -199,7 +220,10 @@ class VisualiveSession {
       navigator.mediaDevices
         .getUserMedia({
           audio: true,
-          video: { width: 400, height: 300 },
+          video: {
+            width: 400,
+            height: 300
+          },
         })
         .then(stream => {
           this.stream = stream
@@ -271,9 +295,9 @@ class VisualiveSession {
 
   sub(messageType, callback) {
     const callbacks = this.callbacks[messageType]
-    this.callbacks[messageType] = callbacks
-      ? callbacks.concat(callback)
-      : [callback]
+    this.callbacks[messageType] = callbacks ?
+      callbacks.concat(callback) :
+      [callback]
   }
 }
 
