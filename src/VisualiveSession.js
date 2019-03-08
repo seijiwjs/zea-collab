@@ -114,20 +114,16 @@ class VisualiveSession {
       console.info(`${private_actions.JOIN_ROOM}:`, message)
       this.socket.emit(private_actions.PING_ROOM, {
         payload: {
-          userData: this.userData
-        }
+          userData: this.userData,
+        },
       })
-      const {
-        userData: newUserData
-      } = message.payload
+      const { userData: newUserData } = message.payload
       this._addUserIfNew(newUserData)
     })
 
     this.socket.on(private_actions.LEAVE_ROOM, message => {
       console.info(`${private_actions.LEAVE_ROOM}:`, message)
-      const {
-        userData
-      } = message.payload
+      const { userData } = message.payload
       const userId = userData.id
       if (userId in this.users) {
         delete this.users[userId]
@@ -139,13 +135,9 @@ class VisualiveSession {
 
     this.socket.on(private_actions.PING_ROOM, message => {
       console.info(`${private_actions.PING_ROOM}:`, message)
-      const {
-        userData
-      } = message.payload
+      const { userData } = message.payload
       this._addUserIfNew(userData)
     })
-
-
 
     /*
      * RTC
@@ -222,7 +214,7 @@ class VisualiveSession {
           audio: true,
           video: {
             width: 400,
-            height: 300
+            height: 300,
           },
         })
         .then(stream => {
@@ -295,9 +287,9 @@ class VisualiveSession {
 
   sub(messageType, callback) {
     const callbacks = this.callbacks[messageType]
-    this.callbacks[messageType] = callbacks ?
-      callbacks.concat(callback) :
-      [callback]
+    this.callbacks[messageType] = callbacks
+      ? callbacks.concat(callback)
+      : [callback]
   }
 }
 

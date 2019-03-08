@@ -1,6 +1,6 @@
 {
   "name": "@visualive/collab",
-  "version": "0.0.17",
+  "version": "0.0.19",
   "main": "index.js",
   "keywords": [],
   "description": "",
@@ -23,9 +23,9 @@
     "socketio-wildcard": "^2.0.0"
   },
   "devDependencies": {
-    "eslint": "^5.5.0",
+    "eslint": "^5.15.1",
     "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.14.0",
-    "prettier": "1.14.3"
+    "eslint-plugin-import": "^2.16.0",
+    "prettier": "1.16.4"
   }
 }
