@@ -69,7 +69,8 @@ class VisualiveSession {
     this.fileId = fileId
     this.roomId = roomId
 
-    this.fullRoomId = projectId + fileId + (roomId || '')
+    this.fullRoomId =
+      projectId + (fileId || '_ALL_FILES_') + (roomId || '_ALL_ROOMS_')
 
     /*
      * Socket actions.
@@ -272,6 +273,8 @@ class VisualiveSession {
   }
 
   pub(messageType, payload) {
+    if (!messageType) throw new Error('Missing messageType')
+    if (!payload) throw new Error('Missing payload')
     this.socket.emit(messageType, {
       userId: this.userData.id,
       payload,
@@ -286,10 +289,20 @@ class VisualiveSession {
   }
 
   sub(messageType, callback) {
+    if (!messageType) throw new Error('Missing messageType')
+    if (!callback) throw new Error('Missing callback')
     const callbacks = this.callbacks[messageType]
-    this.callbacks[messageType] = callbacks
-      ? callbacks.concat(callback)
-      : [callback]
+    this.callbacks[messageType] = this.callbacks[messageType] || []
+    this.callbacks[messageType].push(callback)
+
+    const unsub = () => {
+      this.callbacks[messageType].splice(
+        this.callbacks[messageType].indexOf(callback),
+        1
+      )
+    }
+
+    return unsub
   }
 }
 
@@ -305,6 +318,9 @@ VisualiveSession.actions = {
   POSE_CHANGED: 'pose-message',
   COMMAND_ADDED: 'command-added',
   COMMAND_UPDATED: 'command-updated',
+  UPLOAD_STARTED: 'upload-started',
+  UPLOAD_PROGRESS: 'upload-progress',
+  UPLOAD_FINISHED: 'upload-finished',
 }
 
 export default VisualiveSession
