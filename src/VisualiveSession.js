@@ -318,9 +318,7 @@ VisualiveSession.actions = {
   POSE_CHANGED: 'pose-message',
   COMMAND_ADDED: 'command-added',
   COMMAND_UPDATED: 'command-updated',
-  UPLOAD_STARTED: 'upload-started',
-  UPLOAD_PROGRESS: 'upload-progress',
-  UPLOAD_FINISHED: 'upload-finished',
+  FILE_WITH_PROGRESS: 'file-with-progress',
 }
 
 export default VisualiveSession
