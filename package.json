@@ -1,14 +1,13 @@
 {
   "name": "@visualive/collab",
-  "version": "0.0.21",
-  "main": "index.js",
-  "keywords": [],
+  "version": "0.0.22",
   "description": "",
-  "author": "Visualive",
-  "license": "ISC",
-  "homepage": "https://github.com/VisualiveIO/visualive-collab#readme",
+  "keywords": [],
+  "main": "./dist/visualive-collab.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack --config webpack-prod.config.js",
+    "build:dev": "webpack --mode=development --watch --config webpack-dev.config.js",
+    "dist": "webpack --config webpack-prod.config.js && yarn publish --access=public"
   },
   "repository": {
     "type": "git",
@@ -17,15 +16,20 @@
   "bugs": {
     "url": "https://github.com/VisualiveIO/visualive-collab/issues"
   },
+  "homepage": "https://github.com/VisualiveIO/visualive-collab#readme",
+  "author": "Visualive",
+  "license": "ISC",
   "dependencies": {
     "shortid": "^2.2.13",
     "socket.io-client": "^2.1.1",
     "socketio-wildcard": "^2.0.0"
   },
   "devDependencies": {
-    "eslint": "^5.15.1",
+    "eslint": "^5.8.0",
     "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.16.0",
-    "prettier": "1.16.4"
+    "eslint-plugin-import": "^2.14.0",
+    "prettier": "^1.15.1",
+    "webpack": "^4.25.1",
+    "webpack-cli": "^3.1.2"
   }
 }

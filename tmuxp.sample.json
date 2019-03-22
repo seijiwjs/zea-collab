@@ -1,18 +1,17 @@
 {
   "session_name": "Visualive Collab",
-  "start_directory": "~/your_start_directory/",
+  "start_directory": "~/workspace/visualive/collab/",
   "windows": [
     {
       "window_name": "services",
-      "start_directory": "examples/",
-      "panes": ["yarn start"]
+      "panes": ["yarn build:dev"]
     },
     {
-      "window_name": "editor",
+      "window_name": "nvim",
       "panes": ["v -S Session.vim"]
     },
     {
-      "window_name": "vcs",
+      "window_name": "git",
       "panes": [
         {
           "shell_command": ["g fetch", "g s"]
