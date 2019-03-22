@@ -1,6 +1,6 @@
 {
   "name": "@visualive/collab",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "description": "",
   "keywords": [],
   "main": "./dist/visualive-collab.js",
@@ -29,7 +29,7 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
     "prettier": "^1.15.1",
-    "webpack": "^4.25.1",
-    "webpack-cli": "^3.1.2"
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0"
   }
 }
