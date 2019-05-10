@@ -67,9 +67,21 @@ class VisualiveSession {
   joinRoom(projectId, fileId, roomId) {
     this.projectId = projectId
     this.fileId = fileId
-    this.roomId = roomId
+    if(roomId)
+      this.roomId = roomId
+    else {
+      this.roomId = shortid.generate()
+      window.history.pushState(
+        null,
+        null,
+        `?project-id=${this.projectId}&file-id=${this.fileId}&room-id=${
+          this.roomId
+        }`
+      )
+    }
 
-    this.fullRoomId = projectId + fileId + (roomId || '')
+
+    this.fullRoomId = this.projectId + this.fileId + (this.roomId || '')
 
     /*
      * Socket actions.

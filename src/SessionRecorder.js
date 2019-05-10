@@ -92,23 +92,22 @@ export default class SessionRecorder {
         this.__playRecording(data);
       }
 
+      let recording = false;
       actionRegistry.registerAction({
         path: ['Sessions'],
-        name: 'Start Recording',
+        name: 'Toggle Recording',
         callback: () => {
-          start();
+          if(!recording) {
+            start();
+            recording = true;
+          } else {
+            stop();
+            recording = false;
+          }
         },
         availableInVR: true
       });
 
-      actionRegistry.registerAction({
-        path: ['Sessions'],
-        name: 'Stop Recording',
-        callback: () => {
-          stop();
-        },
-        availableInVR: true
-      });
       actionRegistry.registerAction({
         path: ['Sessions'],
         name: 'Save',
