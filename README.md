@@ -3,11 +3,7 @@
 `npm install @visualive/collab`
 
 
+## To build and dist
 
-# Publishing
+`yarn dist`
 
-No builds required
-
-`
-  yarn publish
-`
