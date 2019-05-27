@@ -64,12 +64,23 @@ class VisualiveSession {
     document.body.appendChild(video)
   }
 
+  static concatFullRoomId(projectId, fileId, roomId) {
+    return projectId + (fileId || '_ALL_FILES_') + (roomId || '_ALL_ROOMS_')
+  }
+
+  isJoiningTheSameRoom(projectId, fileId, roomId) {
+    return (
+      this.fullRoomId ===
+      VisualiveSession.concatFullRoomId(projectId, fileId, roomId)
+    )
+  }
+
   joinRoom(projectId, fileId, roomId) {
     this.projectId = projectId
     this.fileId = fileId
-    if(roomId)
+    if (roomId) {
       this.roomId = roomId
-    else {
+    } else {
       this.roomId = shortid.generate()
       window.history.pushState(
         null,
@@ -80,9 +91,11 @@ class VisualiveSession {
       )
     }
 
-
-    this.fullRoomId =
-      this.projectId + (this.fileId || '_ALL_FILES_') + (this.roomId || '_ALL_ROOMS_')
+    this.fullRoomId = VisualiveSession.concatFullRoomId(
+      this.projectId,
+      this.fileId,
+      this.roomId
+    )
 
     /*
      * Socket actions.
@@ -141,8 +154,8 @@ class VisualiveSession {
     this.socket.on(private_actions.PING_ROOM, message => {
       console.info(`${private_actions.PING_ROOM}:`, message)
 
-      const pingingUserData = message.userData
-      this._addUserIfNew(pingingUserData)
+      const incomingUserData = message.userData
+      this._addUserIfNew(incomingUserData)
     })
 
     /*
@@ -304,6 +317,7 @@ class VisualiveSession {
   sub(messageType, callback) {
     if (!messageType) throw new Error('Missing messageType')
     if (!callback) throw new Error('Missing callback')
+
     const callbacks = this.callbacks[messageType]
     this.callbacks[messageType] = this.callbacks[messageType] || []
     this.callbacks[messageType].push(callback)
