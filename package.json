@@ -4,6 +4,9 @@
   "main": "./dist/visualive-collab.js",
   "keywords": [],
   "description": "",
+  "files": [
+    "/dist/"
+  ],
   "scripts": {
     "build": "webpack --config webpack-prod.config.js",
     "build:dev": "webpack --mode=development --watch --config webpack-dev.config.js",
