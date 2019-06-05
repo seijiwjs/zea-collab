@@ -14,6 +14,8 @@ class VisualiveSession {
     this.users = {}
     this.userStreams = {}
     this.callbacks = {}
+
+    this.envIsBrowser = typeof window !== 'undefined'
   }
 
   stopCamera(publish = true) {
@@ -82,13 +84,15 @@ class VisualiveSession {
       this.roomId = roomId
     } else {
       this.roomId = shortid.generate()
-      window.history.pushState(
-        null,
-        null,
-        `?project-id=${this.projectId}&file-id=${this.fileId}&room-id=${
-          this.roomId
-        }`
-      )
+      if (this.envIsBrowser) {
+        window.history.pushState(
+          null,
+          null,
+          `?project-id=${this.projectId}&file-id=${this.fileId}&room-id=${
+            this.roomId
+          }`
+        )
+      }
     }
 
     this.fullRoomId = VisualiveSession.concatFullRoomId(
@@ -121,7 +125,7 @@ class VisualiveSession {
       this._emit(messageType, message.payload, message.userId)
     })
 
-    if (typeof window !== 'undefined') {
+    if (this.envIsBrowser) {
       window.addEventListener('beforeunload', () => {
         this.leaveRoom()
       })
@@ -274,13 +278,15 @@ class VisualiveSession {
     this.roomId = shortid.generate()
     this.joinRoom(this.projectId, this.fileId, this.roomId)
 
-    window.history.pushState(
-      null,
-      null,
-      `?project-id=${this.projectId}&file-id=${this.fileId}&room-id=${
-        this.roomId
-      }`
-    )
+    if (this.envIsBrowser) {
+      window.history.pushState(
+        null,
+        null,
+        `?project-id=${this.projectId}&file-id=${this.fileId}&room-id=${
+          this.roomId
+        }`
+      )
+    }
 
     return this.roomId
   }
