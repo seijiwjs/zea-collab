@@ -85,13 +85,19 @@ class VisualiveSession {
     } else {
       this.roomId = shortid.generate()
       if (this.envIsBrowser) {
-        window.history.pushState(
-          null,
-          null,
-          `?project-id=${this.projectId}&file-id=${this.fileId}&room-id=${
-            this.roomId
-          }`
-        )
+        if(this.projectId && this.fileId) {
+          window.history.pushState(
+            null,
+            null,
+            `?project-id=${this.projectId}&file-id=${this.fileId}&room-id=${
+              this.roomId
+            }`
+          )
+        }
+        else {
+          window.history.pushState( null, null,`?project-id=room-id=${this.roomId}`
+          )
+        }
       }
     }
 

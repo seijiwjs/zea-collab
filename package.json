@@ -20,7 +20,7 @@
     "url": "https://github.com/VisualiveIO/visualive-collab/issues"
   },
   "homepage": "https://github.com/VisualiveIO/visualive-collab#readme",
-  "author": "Visualive",
+  "author": "Zea Inc.",
   "license": "ISC",
   "dependencies": {
     "shortid": "^2.2.13",
