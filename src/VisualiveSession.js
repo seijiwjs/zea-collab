@@ -80,25 +80,7 @@ class VisualiveSession {
   joinRoom(projectId, fileId, roomId) {
     this.projectId = projectId
     this.fileId = fileId
-    if (roomId) {
-      this.roomId = roomId
-    } else {
-      this.roomId = shortid.generate()
-      if (this.envIsBrowser) {
-        if (this.projectId && this.fileId) {
-          window.history.pushState(
-            null,
-            null,
-            `?project-id=${this.projectId}&file-id=${this.fileId}&room-id=${
-              this.roomId
-            }`
-          )
-        }
-        else {
-          window.history.pushState( null, null,`?project-id=room-id=${this.roomId}`)
-        }
-      }
-    }
+    this.roomId = roomId
 
     this.fullRoomId = VisualiveSession.concatFullRoomId(
       this.projectId,
