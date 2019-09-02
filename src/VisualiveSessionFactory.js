@@ -1,15 +1,20 @@
 import VisualiveSession from './VisualiveSession'
 
-let SOCKET_SERVER_URL = (process.env.NODE_ENV==='local_stage' || process.env.NODE_ENV==='production') ? 'https://websocket-staging.zea.live' : 'http://localhost:8081'
+const SOCKET_SERVER_URL =
+  process.env.NODE_ENV === 'local_stage' ||
+  process.env.NODE_ENV === 'production'
+    ? 'https://websocket-staging.zea.live'
+    : 'http://localhost:8081'
 
 class VisualiveSessionFactory {
   static setSocketURL(socketUrl) {
-    SOCKET_SERVER_URL = socketUrl
+    this.socketUrl = socketUrl
   }
 
   static getInstance(user, projectId, fileId, roomId) {
     if (!this.visualiveSession) {
-      this.visualiveSession = new VisualiveSession(user, SOCKET_SERVER_URL)
+      const socketUrl = this.socketUrl || SOCKET_SERVER_URL
+      this.visualiveSession = new VisualiveSession(user, socketUrl)
     }
 
     if (
