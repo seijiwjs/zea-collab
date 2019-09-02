@@ -9,8 +9,9 @@ const private_actions = {
 }
 
 class VisualiveSession {
-  constructor(userData) {
+  constructor(userData, socketUrl) {
     this.userData = userData
+    this.socketUrl = socketUrl
     this.users = {}
     this.userStreams = {}
     this.callbacks = {}
@@ -93,12 +94,7 @@ class VisualiveSession {
      */
     this.leaveRoom()
 
-    const SOCKET_SERVER_URL =
-      process.env.NODE_ENV === 'development'
-        ? 'http://localhost:8081'
-        : 'https://websocket-staging.zea.live'
-
-    this.socket = io(SOCKET_SERVER_URL, {
+    this.socket = io(this.socketUrl, {
       'sync disconnect on unload': true,
       query: `userId=${this.userData.id}&roomId=${this.fullRoomId}`,
     })
