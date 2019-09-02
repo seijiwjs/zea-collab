@@ -85,7 +85,7 @@ class VisualiveSession {
     } else {
       this.roomId = shortid.generate()
       if (this.envIsBrowser) {
-        if(this.projectId && this.fileId) {
+        if (this.projectId && this.fileId) {
           window.history.pushState(
             null,
             null,
@@ -93,9 +93,11 @@ class VisualiveSession {
               this.roomId
             }`
           )
-        }
-        else {
-          window.history.pushState( null, null,`?project-id=room-id=${this.roomId}`
+        } else {
+          window.history.pushState(
+            null,
+            null,
+            `?project-id=room-id=${this.roomId}`
           )
         }
       }
@@ -112,14 +114,15 @@ class VisualiveSession {
      */
     this.leaveRoom()
 
-    this.socket = io(
-      'https://apistage.visualive.io',
-      // 'http://localhost:7070',
-      {
-        'sync disconnect on unload': true,
-        query: `userId=${this.userData.id}&roomId=${this.fullRoomId}`,
-      }
-    )
+    const SOCKET_SERVER_URL =
+      process.env.NODE_ENV === 'development'
+        ? 'http://localhost:8081'
+        : 'https://websocket-staging.zea.live'
+
+    this.socket = io(SOCKET_SERVER_URL, {
+      'sync disconnect on unload': true,
+      query: `userId=${this.userData.id}&roomId=${this.fullRoomId}`,
+    })
 
     const patch = wildcardMiddleware(io.Manager)
     patch(this.socket)
