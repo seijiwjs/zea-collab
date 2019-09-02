@@ -93,12 +93,9 @@ class VisualiveSession {
               this.roomId
             }`
           )
-        } else {
-          window.history.pushState(
-            null,
-            null,
-            `?project-id=room-id=${this.roomId}`
-          )
+        }
+        else {
+          window.history.pushState( null, null,`?project-id=room-id=${this.roomId}`)
         }
       }
     }
