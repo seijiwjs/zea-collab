@@ -1,6 +1,5 @@
 import io from 'socket.io-client'
 import wildcardMiddleware from 'socketio-wildcard'
-import shortid from 'shortid'
 
 const private_actions = {
   JOIN_ROOM: 'join-room',
