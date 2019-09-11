@@ -12,22 +12,22 @@ class SessionFactory {
   }
 
   static getInstance(user, projectId, fileId, roomId) {
-    if (!this.visualiveSession) {
+    if (!this.session) {
       const socketUrl = this.socketUrl || SOCKET_SERVER_URL
-      this.visualiveSession = new Session(user, socketUrl)
+      this.session = new Session(user, socketUrl)
     }
 
     if (
-      !this.visualiveSession.isJoiningTheSameRoom(projectId, fileId, roomId)
+      !this.session.isJoiningTheSameRoom(projectId, fileId, roomId)
     ) {
-      this.visualiveSession.joinRoom(projectId, fileId, roomId)
+      this.session.joinRoom(projectId, fileId, roomId)
     }
 
-    return this.visualiveSession
+    return this.session
   }
 
   static getCurrentSession() {
-    return this.visualiveSession
+    return this.session
   }
 }
 
