@@ -1,11 +1,11 @@
 {
   "name": "@zeainc/zea-collab",
-  "version": "0.0.32",
+  "version": "0.0.33",
   "main": "./dist/zea-collab.js",
   "keywords": [],
   "description": "",
   "files": [
-    "/dist/"
+    "/dist/**"
   ],
   "scripts": {
     "build": "webpack --config webpack-prod.config.js",
