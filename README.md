@@ -1,6 +1,6 @@
 # Visualive Collab
 
-`npm install @visualive/collab`
+`npm install @zeainc/zea-collab`
 
 
 ## To build and dist
