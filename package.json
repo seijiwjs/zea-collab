@@ -5,7 +5,7 @@
   "keywords": [],
   "description": "",
   "files": [
-    "/dist/**"
+    "/dist/zea-collab.js"
   ],
   "scripts": {
     "build": "webpack --config webpack-prod.config.js",
