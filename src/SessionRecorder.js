@@ -127,7 +127,7 @@ export default class SessionRecorder {
     }
   }
 
-  setVisualiveSession(visualiveSession) {
+  setSession(visualiveSession) {
     this.visualiveSession = visualiveSession
   }
 
