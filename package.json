@@ -14,12 +14,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/VisualiveIO/visualive-collab.git"
+    "url": "git+ssh://git@github.com/ZeaInc/zea-collab.git"
   },
   "bugs": {
-    "url": "https://github.com/VisualiveIO/visualive-collab/issues"
+    "url": "https://github.com/ZeaInc/zea-collab/issues"
   },
-  "homepage": "https://github.com/VisualiveIO/visualive-collab#readme",
+  "homepage": "https://github.com/ZeaInc/zea-collab#readme",
   "author": "Zea Inc.",
   "license": "ISC",
   "dependencies": {

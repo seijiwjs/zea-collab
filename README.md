@@ -1,4 +1,4 @@
-# Visualive Collab
+# Zea Collab
 
 `npm install @zeainc/zea-collab`
 
