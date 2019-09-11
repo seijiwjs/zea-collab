@@ -1,4 +1,4 @@
-import VisualiveSession from './VisualiveSession'
+import Session from './Session'
 
 const SOCKET_SERVER_URL =
   process.env.NODE_ENV === 'local_stage' ||
@@ -6,29 +6,29 @@ const SOCKET_SERVER_URL =
     ? 'https://websocket-staging.zea.live'
     : 'http://localhost:8081'
 
-class VisualiveSessionFactory {
+class SessionFactory {
   static setSocketURL(socketUrl) {
     this.socketUrl = socketUrl
   }
 
   static getInstance(user, projectId, fileId, roomId) {
-    if (!this.visualiveSession) {
+    if (!this.session) {
       const socketUrl = this.socketUrl || SOCKET_SERVER_URL
-      this.visualiveSession = new VisualiveSession(user, socketUrl)
+      this.session = new Session(user, socketUrl)
     }
 
     if (
-      !this.visualiveSession.isJoiningTheSameRoom(projectId, fileId, roomId)
+      !this.session.isJoiningTheSameRoom(projectId, fileId, roomId)
     ) {
-      this.visualiveSession.joinRoom(projectId, fileId, roomId)
+      this.session.joinRoom(projectId, fileId, roomId)
     }
 
-    return this.visualiveSession
+    return this.session
   }
 
   static getCurrentSession() {
-    return this.visualiveSession
+    return this.session
   }
 }
 
-export default VisualiveSessionFactory
+export default SessionFactory

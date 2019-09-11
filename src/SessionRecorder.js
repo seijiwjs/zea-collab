@@ -64,8 +64,8 @@ export default class SessionRecorder {
           payload: presenter,
         }
         let prev_t = performance.now()
-        pub = this.visualiveSession.pub
-        this.visualiveSession.pub = (messageType, payload) => {
+        pub = this.session.pub
+        this.session.pub = (messageType, payload) => {
           // Record the time since the previous
           // message and save it to the previous message.
           const t = performance.now()
@@ -76,7 +76,7 @@ export default class SessionRecorder {
             payload,
           }
           prev_t = t
-          pub.call(this.visualiveSession, messageType, payload)
+          pub.call(this.session, messageType, payload)
         }
       }
 
@@ -88,7 +88,7 @@ export default class SessionRecorder {
 
         data[presenter.id] = messages
 
-        this.visualiveSession.pub = pub
+        this.session.pub = pub
 
         this.__playRecording(data)
       }
@@ -127,8 +127,8 @@ export default class SessionRecorder {
     }
   }
 
-  setVisualiveSession(visualiveSession) {
-    this.visualiveSession = visualiveSession
+  setSession(session) {
+    this.session = session
   }
 
   setResourceLoader(resourceLoader) {
@@ -164,7 +164,7 @@ export default class SessionRecorder {
     let i = 0
     const next = () => {
       const message = stream[i]
-      this.visualiveSession._emit(message.messageType, message.payload, id)
+      this.session._emit(message.messageType, message.payload, id)
       i++
       if (i < stream.length) {
         this.__timeoutIds[id] = setTimeout(next, message.ms)
@@ -191,7 +191,7 @@ export default class SessionRecorder {
   playRecording(name) {
     const file = this.__recordings[name]
     this.resourceLoader.loadResource(file.id, entries => {
-      const recording = JSON.parse(Visualive.decodeText(entries.rec))
+      const recording = JSON.parse(session.decodeText(entries.rec))
       this.__playRecording(recording)
     })
   }

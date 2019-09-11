@@ -10,8 +10,8 @@ module.exports = {
   output: {
     globalObject: 'this',
     path: path.resolve(__dirname, 'dist'),
-    filename: 'visualive-collab.js',
-    library: 'visualiveCollab',
+    filename: 'zea-collab.js',
+    library: 'ZeaCollab',
     libraryTarget: 'umd',
   },
 }

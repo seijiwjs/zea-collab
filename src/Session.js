@@ -7,7 +7,7 @@ const private_actions = {
   LEAVE_ROOM: 'leave-room',
 }
 
-class VisualiveSession {
+class Session {
   constructor(userData, socketUrl) {
     this.userData = userData
     this.socketUrl = socketUrl
@@ -21,28 +21,28 @@ class VisualiveSession {
   stopCamera(publish = true) {
     if (this.stream) {
       this.stream.getVideoTracks()[0].enabled = false
-      if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STOPPED, {})
+      if (publish) this.pub(Session.actions.USER_VIDEO_STOPPED, {})
     }
   }
 
   startCamera(publish = true) {
     if (this.stream) {
       this.stream.getVideoTracks()[0].enabled = true
-      if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STARTED, {})
+      if (publish) this.pub(Session.actions.USER_VIDEO_STARTED, {})
     }
   }
 
   muteAudio(publish = true) {
     if (this.stream) {
       this.stream.getAudioTracks()[0].enabled = false
-      if (publish) this.pub(VisualiveSession.actions.USER_VIDEO_STOPPED, {})
+      if (publish) this.pub(Session.actions.USER_VIDEO_STOPPED, {})
     }
   }
 
   unmuteAudio(publish = true) {
     if (this.stream) {
       this.stream.getAudioTracks()[0].enabled = true
-      if (publish) this.pub(VisualiveSession.actions.USER_AUDIO_STARTED, {})
+      if (publish) this.pub(Session.actions.USER_AUDIO_STARTED, {})
     }
   }
 
@@ -73,7 +73,7 @@ class VisualiveSession {
   isJoiningTheSameRoom(projectId, fileId, roomId) {
     return (
       this.fullRoomId ===
-      VisualiveSession.concatFullRoomId(projectId, fileId, roomId)
+      Session.concatFullRoomId(projectId, fileId, roomId)
     )
   }
 
@@ -82,7 +82,7 @@ class VisualiveSession {
     this.fileId = fileId
     this.roomId = roomId
 
-    this.fullRoomId = VisualiveSession.concatFullRoomId(
+    this.fullRoomId = Session.concatFullRoomId(
       this.projectId,
       this.fileId,
       this.roomId
@@ -132,7 +132,7 @@ class VisualiveSession {
       const outgoingUserId = outgoingUserData.id
       if (outgoingUserId in this.users) {
         delete this.users[outgoingUserId]
-        this._emit(VisualiveSession.actions.USER_LEFT, outgoingUserData)
+        this._emit(Session.actions.USER_LEFT, outgoingUserData)
         return
       }
       console.warn('Outgoing user was not found in room.')
@@ -239,7 +239,7 @@ class VisualiveSession {
 
   leaveRoom() {
     // Instruct Collab's clients to cleanup session user data.
-    this._emit(VisualiveSession.actions.LEFT_ROOM)
+    this._emit(Session.actions.LEFT_ROOM)
     this.users = {}
     // Notify room peers and close socket.
     if (this.socket) {
@@ -253,7 +253,7 @@ class VisualiveSession {
     if (!(userData.id in this.users)) {
       this.users[userData.id] = userData
 
-      this._emit(VisualiveSession.actions.USER_JOINED, userData)
+      this._emit(Session.actions.USER_JOINED, userData)
     }
   }
 
@@ -322,7 +322,7 @@ class VisualiveSession {
   }
 }
 
-VisualiveSession.actions = {
+Session.actions = {
   USER_JOINED: 'user-joined',
   USER_VIDEO_STARTED: 'user-video-started',
   USER_VIDEO_STOPPED: 'user-video-stopped',
@@ -337,4 +337,4 @@ VisualiveSession.actions = {
   FILE_WITH_PROGRESS: 'file-with-progress',
 }
 
-export default VisualiveSession
+export default Session

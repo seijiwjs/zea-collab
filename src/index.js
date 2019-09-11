@@ -1,5 +1,5 @@
-import VisualiveSession from './VisualiveSession'
-import VisualiveSessionFactory from './VisualiveSessionFactory'
+import Session from './Session'
+import SessionFactory from './SessionFactory'
 import SessionRecorder from './SessionRecorder'
 
-export { VisualiveSession, VisualiveSessionFactory, SessionRecorder }
+export { Session, SessionFactory, SessionRecorder }

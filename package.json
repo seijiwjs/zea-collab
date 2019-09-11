@@ -1,11 +1,11 @@
 {
-  "name": "@visualive/collab",
-  "version": "0.0.31",
-  "main": "./dist/visualive-collab.js",
+  "name": "@zeainc/zea-collab",
+  "version": "0.0.35",
+  "main": "./dist/zea-collab.js",
   "keywords": [],
   "description": "",
   "files": [
-    "/dist/"
+    "/dist/zea-collab.js"
   ],
   "scripts": {
     "build": "webpack --config webpack-prod.config.js",
