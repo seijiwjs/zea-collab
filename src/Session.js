@@ -67,13 +67,14 @@ class Session {
   }
 
   static concatFullRoomId(projectId, fileId, roomId) {
-    return projectId + (fileId || '_ALL_FILES_') + (roomId || '_ALL_ROOMS_')
+    const fullRoomId =
+      projectId + (fileId || '_ALL_FILES_') + (roomId || '_ALL_ROOMS_')
+    return fullRoomId
   }
 
   isJoiningTheSameRoom(projectId, fileId, roomId) {
     return (
-      this.fullRoomId ===
-      Session.concatFullRoomId(projectId, fileId, roomId)
+      this.fullRoomId === Session.concatFullRoomId(projectId, fileId, roomId)
     )
   }
 
