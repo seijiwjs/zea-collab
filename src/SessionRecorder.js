@@ -36,7 +36,8 @@ function getRandomInt(max) {
 }
 
 export default class SessionRecorder {
-  constructor(actionRegistry) {
+  constructor(session, actionRegistry) {
+    this.session = session
     this.actionRegistry = actionRegistry
     this.__recordings = {}
 
@@ -90,20 +91,17 @@ export default class SessionRecorder {
 
         this.session.pub = pub
 
-        this.__playRecording(data)
+        this.playRecording(data)
       }
 
       let recording = false;
       actionRegistry.registerAction({
         path: ['Sessions'],
-        name: 'Toggle Recording',
+        name: 'Start Recording',
         callback: () => {
           if(!recording) {
             start();
             recording = true;
-          } else {
-            stop();
-            recording = false;
           }
         },
         availableInVR: true,
@@ -114,6 +112,7 @@ export default class SessionRecorder {
         name: 'Stop Recording',
         callback: () => {
           stop()
+          recording = false;
         },
         availableInVR: true,
       })
@@ -127,20 +126,17 @@ export default class SessionRecorder {
     }
   }
 
-  setSession(session) {
-    this.session = session
-  }
-
   setResourceLoader(resourceLoader) {
     this.resourceLoader = resourceLoader
 
     const addRecording = file => {
       this.__recordings[file.name] = file
+      const name = file.name.split('.')[0]
       this.actionRegistry.registerAction({
         path: ['Sessions', 'Recordings'],
-        name: file.name,
+        name,
         callback: () => {
-          this.playRecording(file.name)
+          this.downloadAndPlayRecording(file.name)
         },
         availableInVR: true,
       })
@@ -149,10 +145,13 @@ export default class SessionRecorder {
     this.resourceLoader.registerResourceCallback('.rec', file => {
       addRecording(file)
     })
+    this.resourceLoader.registerResourceCallback('.zarchive', file => {
+      addRecording(file)
+    })
   }
 
   save(data) {
-    saveAs(JSON.stringify(data), 'MyRec.rec', 'application/json')
+    saveAs(JSON.stringify(data), 'MyRecording.rec', 'application/json')
   }
 
   __stopPlayback() {
@@ -175,7 +174,7 @@ export default class SessionRecorder {
     this.__timeoutIds[id] = setTimeout(next, 1000)
   }
 
-  __playRecording(recording) {
+  playRecording(recording) {
     this.__stopPlayback()
     let count = 0
     this.__timeoutIds = {}
@@ -183,16 +182,32 @@ export default class SessionRecorder {
       count++
       this.__play(key, recording[key], () => {
         count--
-        if (count == 0) this.__playRecording(recording)
+        if (count == 0) this.playRecording(recording)
       })
     }
   }
-
-  playRecording(name) {
+  
+  downloadAndPlayRecording(name) {
     const file = this.__recordings[name]
-    this.resourceLoader.loadResource(file.id, entries => {
-      const recording = JSON.parse(session.decodeText(entries.rec))
-      this.__playRecording(recording)
-    })
+    
+    if (file.name.endsWith('.zarchive')) {
+      this.resourceLoader.loadResource(file.id, entries => {
+        let utf8decoder = new TextDecoder();
+        const recording = JSON.parse(utf8decoder.decode(entries[Object.keys(entries)[0]]));
+        this.playRecording(recording)
+      })
+    } else {
+      fetch(new Request(file.url))
+        .then(response => {
+          if (response.ok) {
+            response.json().then(recording => {
+              this.playRecording(recording)
+            })
+          }
+          else {
+            throw new Error('404 Error: File not found.');
+          }
+        })
+    }
   }
 }
