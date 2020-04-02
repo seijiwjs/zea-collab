@@ -1,16 +1,18 @@
 {
   "name": "@zeainc/zea-collab",
-  "version": "0.0.36",
-  "main": "./dist/zea-collab.js",
+  "version": "1.0.0",
+  "main": "dist/zea-collab.cjs.js",
+  "module": "dist/zea-collab.esm.js",
   "keywords": [],
   "description": "",
   "files": [
-    "/dist/zea-collab.js"
+    "/dist/"
   ],
   "scripts": {
-    "build": "webpack --config webpack-prod.config.js",
-    "build:dev": "webpack --mode=development --watch --config webpack-dev.config.js",
-    "dist": "webpack --config webpack-prod.config.js && yarn publish --access=public"
+    "build": "rollup -c",
+    "dist": "yarn publish --access=public",
+    "prepare": "yarn run build",
+    "start": "rollup -c rollup.config.dev.js -w"
   },
   "repository": {
     "type": "git",
@@ -23,15 +25,15 @@
   "author": "Zea Inc.",
   "license": "ISC",
   "dependencies": {
-    "socket.io-client": "^2.1.1",
+    "socket.io-client": "^2.3.0",
     "socketio-wildcard": "^2.0.0"
   },
   "devDependencies": {
-    "eslint": "^5.16.0",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.17.2",
-    "prettier": "1.17.0",
-    "webpack": "^4.31.0",
-    "webpack-cli": "^3.3.2"
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.2",
+    "prettier": "2.0.4",
+    "rollup": "^2.4.0",
+    "rollup-plugin-terser": "^5.3.0"
   }
 }

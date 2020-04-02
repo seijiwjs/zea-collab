@@ -4,7 +4,7 @@
   "windows": [
     {
       "window_name": "services",
-      "panes": ["yarn build:dev"]
+      "panes": ["yarn run start"]
     },
     {
       "window_name": "nvim",
