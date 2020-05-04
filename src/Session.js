@@ -1,3 +1,5 @@
+import debug from 'debug'
+
 import io from 'socket.io-client'
 import wildcardMiddleware from 'socketio-wildcard'
 
@@ -16,6 +18,8 @@ class Session {
     this.callbacks = {}
 
     this.envIsBrowser = typeof window !== 'undefined'
+
+    this.debugCollab = debug('zea-collab')
   }
 
   stopCamera(publish = true) {
@@ -103,7 +107,7 @@ class Session {
     patch(this.socket)
 
     // Emit all messages, except the private ones.
-    this.socket.on('*', packet => {
+    this.socket.on('*', (packet) => {
       const [messageType, message] = packet.data
       if (messageType in private_actions) return
       this._emit(messageType, message.payload, message.userId)
@@ -117,8 +121,8 @@ class Session {
 
     this.pub(private_actions.JOIN_ROOM)
 
-    this.socket.on(private_actions.JOIN_ROOM, message => {
-      console.info(`${private_actions.JOIN_ROOM}:`, message)
+    this.socket.on(private_actions.JOIN_ROOM, (message) => {
+      this.debugCollab(`${private_actions.JOIN_ROOM}:\n%O`, message)
 
       const incomingUserData = message.userData
       this._addUserIfNew(incomingUserData)
@@ -126,8 +130,8 @@ class Session {
       this.pub(private_actions.PING_ROOM)
     })
 
-    this.socket.on(private_actions.LEAVE_ROOM, message => {
-      console.info(`${private_actions.LEAVE_ROOM}:`, message)
+    this.socket.on(private_actions.LEAVE_ROOM, (message) => {
+      this.debugCollab(`${private_actions.LEAVE_ROOM}:\n%O`, message)
 
       const outgoingUserData = message.userData
       const outgoingUserId = outgoingUserData.id
@@ -136,11 +140,11 @@ class Session {
         this._emit(Session.actions.USER_LEFT, outgoingUserData)
         return
       }
-      console.warn('Outgoing user was not found in room.')
+      this.debugCollab('Outgoing user was not found in room.')
     })
 
-    this.socket.on(private_actions.PING_ROOM, message => {
-      console.info(`${private_actions.PING_ROOM}:`, message)
+    this.socket.on(private_actions.PING_ROOM, (message) => {
+      this.debugCollab(`${private_actions.PING_ROOM}:\n%O`, message)
 
       const incomingUserData = message.userData
       this._addUserIfNew(incomingUserData)
@@ -149,7 +153,7 @@ class Session {
     /*
      * RTC
     const myPhoneNumber = `${this.fullRoomId}${this.userData.id}`
-    console.info('myPhoneNumber:', myPhoneNumber)
+    this.debugCollab('myPhoneNumber:', myPhoneNumber)
 
     this.peer = new Peer(myPhoneNumber, {
       debug: 2,
@@ -168,12 +172,12 @@ class Session {
           })
         })
         .catch(err => {
-          console.error('Failed to get local stream', err)
+          this.debugCollab('Failed to get local stream', err)
         })
     })
 
     this.peer.on('error', err => {
-      console.error('Peer error:', err)
+      this.debugCollab('Peer error:', err)
     })
 
     window.addEventListener('beforeunload', () => {
@@ -189,7 +193,7 @@ class Session {
           const roommatePhoneNumber = `${this.fullRoomId}${newUserData.id}`
 
           if (this.peer.disconnected) {
-            console.log('Peer disconnected. Reconnecting.')
+            this.debugCollab('Peer disconnected. Reconnecting.')
             this.peer.reconnect()
           }
 
@@ -202,7 +206,7 @@ class Session {
           })
         })
         .catch(err => {
-          console.error('Failed to get local stream', err)
+          this.debugCollab('Failed to get local stream', err)
         })
     })
      */
@@ -224,13 +228,13 @@ class Session {
             height: 300,
           },
         })
-        .then(stream => {
+        .then((stream) => {
           this.stream = stream
           this.stopCamera(false)
           this.muteAudio(false)
           resolve()
         })
-        .catch(err => {
+        .catch((err) => {
           reject(err)
         })
     })
@@ -266,9 +270,7 @@ class Session {
       window.history.pushState(
         null,
         null,
-        `?project-id=${this.projectId}&file-id=${this.fileId}&room-id=${
-          this.roomId
-        }`
+        `?project-id=${this.projectId}&file-id=${this.fileId}&room-id=${this.roomId}`
       )
     }
 
@@ -300,7 +302,7 @@ class Session {
   _emit(messageType, payload, userId) {
     const callbacks = this.callbacks[messageType]
     if (callbacks) {
-      callbacks.forEach(callback => callback(payload, userId))
+      callbacks.forEach((callback) => callback(payload, userId))
     }
   }
 
