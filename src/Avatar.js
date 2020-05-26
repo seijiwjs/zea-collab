@@ -32,7 +32,6 @@ export default class Avatar {
     this.__currentUserAvatar = currentUserAvatar
 
     this.__treeItem = new TreeItem(this.__userData.id)
-    this.__treeItem.addRef(this)
     this.__appData.renderer.addTreeItem(this.__treeItem)
 
     this.__avatarColor = new Color(0.3, 0.3, 0.3)
@@ -43,7 +42,6 @@ export default class Avatar {
 
     if (!this.__currentUserAvatar) {
       this.__camera = new Camera()
-      this.__camera.addRef(this)
       this.__cameraBound = false
 
       let avatarImage
@@ -53,13 +51,15 @@ export default class Avatar {
         avatarImage.setImageURL(this.__userData.picture)
         geom = new Disc(0.5, 64)
       } else {
-        avatarImage = new Label(name)
+        const firstName = this.__userData.name || this.__userData.given_name
+        const lastName = this.__userData.lastName || this.__userData.family_name
+        avatarImage = new Label("Name")
         const bgColor = new Color(0.84, 0.84, 0.84)
         avatarImage.getParameter('backgroundColor').setValue(bgColor)
         avatarImage.getParameter('fontSize').setValue(48)
         avatarImage.getParameter('borderRadius').setValue(15)
         avatarImage.getParameter('margin').setValue(8)
-        avatarImage.getParameter('text').setValue(this.__userData.name)
+        avatarImage.getParameter('text').setValue(firstName)
 
         geom = new Plane(2, 0.5)
         avatarImage.labelRendered.connect((event) => {
@@ -86,8 +86,6 @@ export default class Avatar {
       this.__avatarImageXfo.sc.set(0.2, 0.2, 1)
       this.__avatarImageXfo.ori.setFromAxisAndAngle(new Vec3(0, 1, 0), Math.PI)
       this.__avatarImageGeomItem.setLocalXfo(this.__avatarImageXfo)
-
-      this.__avatarImageGeomItem.addRef(this)
     }
   }
 
@@ -114,7 +112,6 @@ export default class Avatar {
         this.__plane,
         this.__avatarCamMaterial
       )
-      this.__avatarCamGeomItem.addRef(this)
 
       const sc = 0.02
       this.__avatarCamXfo = new Xfo()
@@ -222,10 +219,9 @@ export default class Avatar {
     this.pointerXfo.sc.set(1, 1, 0)
 
     this.__pointermat = new Material('pointermat', 'LinesShader')
-    this.__pointermat.getParameter('Color').setValue(this.__avatarColor)
+    this.__pointermat.getParameter('BaseColor').setValue(this.__avatarColor)
 
     this.__pointerItem = new GeomItem('Pointer', line, this.__pointermat)
-    this.__pointerItem.addRef(this)
     this.__pointerItem.setLocalXfo(this.pointerXfo)
 
     // If the webcam stream is available, attach it
@@ -275,10 +271,10 @@ export default class Avatar {
       this.__treeItem.getChild(1).setLocalXfo(this.pointerXfo)
     } else if (data.hilightPointer) {
       this.__pointermat
-        .getParameter('Color')
+        .getParameter('BaseColor')
         .setValue(this.__hilightPointerColor)
     } else if (data.unhilightPointer) {
-      this.__pointermat.getParameter('Color').setValue(this.__avatarColor)
+      this.__pointermat.getParameter('BaseColor').setValue(this.__avatarColor)
     } else if (data.hidePointer) {
       this.pointerXfo.sc.z = 0
       this.__treeItem.getChild(1).setLocalXfo(this.pointerXfo)
@@ -357,7 +353,6 @@ export default class Avatar {
               hmdGeomItem.setLocalXfo(xfo)
 
               this.__hmdGeomItem = hmdGeomItem
-              this.__hmdGeomItem.addRef(this)
 
               if (this.__cameraBound) {
                 this.__hmdGeomItem.setVisible(false)
@@ -382,7 +377,6 @@ export default class Avatar {
         this.__treeItem.addChild(this.__controllerTrees[i], false)
       } else {
         const treeItem = new TreeItem('handleHolder' + i)
-        treeItem.addRef(this)
         this.__controllerTrees[i] = treeItem
         this.__treeItem.addChild(this.__controllerTrees[i], false)
 
@@ -439,7 +433,6 @@ export default class Avatar {
         )
 
         this.__uiGeomItem = new GeomItem('VRControllerUI', this.__plane, uimat)
-        this.__uiGeomItem.addRef(this)
         this.__uiGeomItem.setGeomOffsetXfo(this.__uiGeomOffsetXfo)
 
         const localXfo = new Xfo()
@@ -495,10 +488,6 @@ export default class Avatar {
    */
   destroy() {
     this.__appData.renderer.removeTreeItem(this.__treeItem)
-    this.__treeItem.removeRef(this)
-    if (!this.__camera) {
-      this.__camera.removeRef(this)
-    }
   }
 }
 

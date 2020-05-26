@@ -107,207 +107,214 @@ export default class SessionSync {
 
     // ///////////////////////////////////////////
     // Pose Changes
-    appData.toolManager.movePointer.connect((event) => {
-      const intersectionData = event.viewport.getGeomDataAtPos(
-        event.mousePos,
-        event.mouseRay
-      )
-      const rayLength = intersectionData ? intersectionData.dist : 5.0
-      const data = {
-        interfaceType: 'CameraAndPointer',
-        movePointer: {
-          start: event.mouseRay.start,
-          dir: event.mouseRay.dir,
-          length: rayLength,
-        },
-      }
-      session.pub(Session.actions.POSE_CHANGED, convertValuesToJSON(data))
-    })
-    appData.toolManager.hidePointer.connect((event) => {
-      const data = {
-        interfaceType: 'CameraAndPointer',
-        hidePointer: {},
-      }
-      session.pub(Session.actions.POSE_CHANGED, data)
-    })
-    appData.toolManager.hilightPointer.connect((event) => {
-      const data = {
-        interfaceType: 'CameraAndPointer',
-        hilightPointer: {},
-      }
-      session.pub(Session.actions.POSE_CHANGED, data)
-    })
-    appData.toolManager.unhilightPointer.connect((event) => {
-      const data = {
-        interfaceType: 'CameraAndPointer',
-        unhilightPointer: {},
-      }
-      session.pub(Session.actions.POSE_CHANGED, convertValuesToJSON(data))
-    })
+    if (appData.renderer) {
+      
+      const viewport = appData.renderer.getViewport()
 
-    let tick = 0
-
-    appData.renderer.viewChanged.connect((event) => {
-      tick++
-      const isVRView = event.interfaceType == 'VR'
-      if (isVRView) {
-        // only push every second pose of a vr stream.
-        if (tick % 2 != 0) return
-      }
-
-      const data = {
-        interfaceType: event.interfaceType,
-        viewXfo: event.viewXfo,
-      }
-      if (event.focalDistance) {
-        data.focalDistance = event.focalDistance
-      } else if (isVRView) {
-        data.controllers = []
-        for (const controller of event.controllers) {
-          data.controllers.push({
-            xfo: controller.getTreeItem().getGlobalXfo(),
-          })
+      this.mouseDownId = viewport.mouseDown.connect((event) => {
+        const data = {
+          interfaceType: 'CameraAndPointer',
+          hilightPointer: {},
         }
-      }
-
-      // currentUserAvatar.updatePose(data);
-
-      session.pub(Session.actions.POSE_CHANGED, convertValuesToJSON(data))
-    })
-
-    session.sub(Session.actions.POSE_CHANGED, (jsonData, userId) => {
-      if (!userDatas[userId]) {
-        console.warn('User id not in session:', userId)
-        return
-      }
-      const data = convertValuesFromJSON(jsonData, appData.scene)
-      const avatar = userDatas[userId].avatar
-      avatar.updatePose(data)
-    })
-
-    // Emit a signal to configure remote avatars to the current camera transform.
-    session.pub(
-      Session.actions.POSE_CHANGED,
-      convertValuesToJSON({
-        interfaceType: 'CameraAndPointer',
-        viewXfo: appData.renderer.getViewport().getCamera().getGlobalXfo(),
+        session.pub(Session.actions.POSE_CHANGED, data)
       })
-    )
+      this.mouseUpId = viewport.mouseUp.connect((event) => {
+        const data = {
+          interfaceType: 'CameraAndPointer',
+          unhilightPointer: {},
+        }
+        session.pub(Session.actions.POSE_CHANGED, convertValuesToJSON(data))
+      })
+      this.mouseMoveId = viewport.mouseMove.connect((event) => {
+        const intersectionData = event.viewport.getGeomDataAtPos(
+          event.mousePos,
+          event.mouseRay
+        )
+        const rayLength = intersectionData ? intersectionData.dist : 5.0
+        const data = {
+          interfaceType: 'CameraAndPointer',
+          movePointer: {
+            start: event.mouseRay.start,
+            dir: event.mouseRay.dir,
+            length: rayLength,
+          },
+        }
+        session.pub(Session.actions.POSE_CHANGED, convertValuesToJSON(data))
+      })
+      viewport.mouseLeave.connect((event) => {
+        const data = {
+          interfaceType: 'CameraAndPointer',
+          hidePointer: {},
+        }
+        session.pub(Session.actions.POSE_CHANGED, data)
+      })
+
+      let tick = 0
+
+      appData.renderer.viewChanged.connect((event) => {
+        tick++
+        const isVRView = event.interfaceType == 'VR'
+        if (isVRView) {
+          // only push every second pose of a vr stream.
+          if (tick % 2 != 0) return
+        }
+
+        const data = {
+          interfaceType: event.interfaceType,
+          viewXfo: event.viewXfo,
+        }
+        if (event.focalDistance) {
+          data.focalDistance = event.focalDistance
+        } else if (isVRView) {
+          data.controllers = []
+          for (const controller of event.controllers) {
+            data.controllers.push({
+              xfo: controller.getTreeItem().getGlobalXfo(),
+            })
+          }
+        }
+
+        // currentUserAvatar.updatePose(data);
+
+        session.pub(Session.actions.POSE_CHANGED, convertValuesToJSON(data))
+      })
+
+      session.sub(Session.actions.POSE_CHANGED, (jsonData, userId) => {
+        if (!userDatas[userId]) {
+          console.warn('User id not in session:', userId)
+          return
+        }
+        const data = convertValuesFromJSON(jsonData, appData.scene)
+        const avatar = userDatas[userId].avatar
+        avatar.updatePose(data)
+      })
+
+      // Emit a signal to configure remote avatars to the current camera transform.
+      session.pub(
+        Session.actions.POSE_CHANGED,
+        convertValuesToJSON({
+          interfaceType: 'CameraAndPointer',
+          viewXfo: appData.renderer.getViewport().getCamera().getGlobalXfo(),
+        })
+      )
+    }
 
     // ///////////////////////////////////////////
     // Scene Changes
     // const otherUndoStack = new UndoRedoManager();
+    if (appData.undoRedoManager) {
 
-    const root = appData.scene.getRoot()
-    appData.undoRedoManager.changeAdded.connect((change) => {
-      const context = {
-        appData,
-        makeRelative: (path) => path,
-        resolvePath: (path, cb) => {
-          // Note: Why not return a Promise here?
-          // Promise evaluation is always async, so
-          // all promisses will be resolved after the current call stack
-          // has terminated. In our case, we want all paths
-          // to be resolved before the end of the function, which
-          // we can handle easily with callback functions.
-          if (!path) throw 'Path not spcecified'
-          const item = root.resolvePath(path)
-          if (item) {
-            cb(item)
-          } else {
-            console.warn('Path unable to be resolved:' + path)
-          }
-        },
-      }
-      const data = {
-        changeData: change.toJSON(context),
-        changeClass: UndoRedoManager.getChangeClassName(change),
-      }
-      session.pub(Session.actions.COMMAND_ADDED, data)
+      const root = appData.scene.getRoot()
+      appData.undoRedoManager.changeAdded.connect((change) => {
+        const context = {
+          appData,
+          makeRelative: (path) => path,
+          resolvePath: (path, cb) => {
+            // Note: Why not return a Promise here?
+            // Promise evaluation is always async, so
+            // all promisses will be resolved after the current call stack
+            // has terminated. In our case, we want all paths
+            // to be resolved before the end of the function, which
+            // we can handle easily with callback functions.
+            if (!path) throw 'Path not spcecified'
+            const item = root.resolvePath(path)
+            if (item) {
+              cb(item)
+            } else {
+              console.warn('Path unable to be resolved:' + path)
+            }
+          },
+        }
+        const data = {
+          changeData: change.toJSON(context),
+          changeClass: UndoRedoManager.getChangeClassName(change),
+        }
+        session.pub(Session.actions.COMMAND_ADDED, data)
 
-      // const otherChange = otherUndoStack.constructChange(data.changeClass);
-      // otherChange.fromJSON(data.changeData, { appData })
-      // otherUndoStack.addChange(otherChange);
-    })
+        // const otherChange = otherUndoStack.constructChange(data.changeClass);
+        // otherChange.fromJSON(data.changeData, { appData })
+        // otherUndoStack.addChange(otherChange);
+      })
 
-    appData.undoRedoManager.changeUpdated.connect((data) => {
-      const jsonData = convertValuesToJSON(data)
-      session.pub(Session.actions.COMMAND_UPDATED, jsonData)
+      appData.undoRedoManager.changeUpdated.connect((data) => {
+        const jsonData = convertValuesToJSON(data)
+        session.pub(Session.actions.COMMAND_UPDATED, jsonData)
 
-      // const changeData2 = convertValuesFromJSON(jsonData, appData.scene);
-      // otherUndoStack.getCurrentChange().update(changeData2);
-    })
+        // const changeData2 = convertValuesFromJSON(jsonData, appData.scene);
+        // otherUndoStack.getCurrentChange().update(changeData2);
+      })
 
-    session.sub(Session.actions.COMMAND_ADDED, (data, userId) => {
-      // console.log("Remote Command added:", data.changeClass, userId)
-      if (!userDatas[userId]) {
-        console.warn('User id not in session:', userId)
-        return
-      }
-      const undoRedoManager = userDatas[userId].undoRedoManager
-      const change = undoRedoManager.constructChange(data.changeClass)
+      session.sub(Session.actions.COMMAND_ADDED, (data, userId) => {
+        // console.log("Remote Command added:", data.changeClass, userId)
+        if (!userDatas[userId]) {
+          console.warn('User id not in session:', userId)
+          return
+        }
+        const undoRedoManager = userDatas[userId].undoRedoManager
+        const change = undoRedoManager.constructChange(data.changeClass)
 
-      const context = {
-        appData: {
-          selectionManager: userDatas[userId].selectionManager,
-          scene: appData.scene,
-        },
-      }
-      change.fromJSON(data.changeData, context)
-      undoRedoManager.addChange(change)
-    })
+        const context = {
+          appData: {
+            selectionManager: userDatas[userId].selectionManager,
+            scene: appData.scene,
+          },
+        }
+        change.fromJSON(data.changeData, context)
+        undoRedoManager.addChange(change)
+      })
 
-    session.sub(Session.actions.COMMAND_UPDATED, (data, userId) => {
-      if (!userDatas[userId]) {
-        console.warn('User id not in session:', userId)
-        return
-      }
-      const undoRedoManager = userDatas[userId].undoRedoManager
-      const changeData = convertValuesFromJSON(data, appData.scene)
-      undoRedoManager.getCurrentChange().update(changeData)
-    })
+      session.sub(Session.actions.COMMAND_UPDATED, (data, userId) => {
+        if (!userDatas[userId]) {
+          console.warn('User id not in session:', userId)
+          return
+        }
+        const undoRedoManager = userDatas[userId].undoRedoManager
+        const changeData = convertValuesFromJSON(data, appData.scene)
+        undoRedoManager.getCurrentChange().update(changeData)
+      })
 
-    // ///////////////////////////////////////////
-    // Undostack Changes.
-    // Synchronize undo stacks between users.
+      // ///////////////////////////////////////////
+      // Undostack Changes.
+      // Synchronize undo stacks between users.
 
-    appData.undoRedoManager.changeUndone.connect(() => {
-      session.pub('UndoRedoManager_changeUndone', {})
-    })
+      appData.undoRedoManager.changeUndone.connect(() => {
+        session.pub('UndoRedoManager_changeUndone', {})
+      })
 
-    session.sub('UndoRedoManager_changeUndone', (data, userId) => {
-      const undoRedoManager = userDatas[userId].undoRedoManager
-      undoRedoManager.undo()
-    })
+      session.sub('UndoRedoManager_changeUndone', (data, userId) => {
+        const undoRedoManager = userDatas[userId].undoRedoManager
+        undoRedoManager.undo()
+      })
 
-    appData.undoRedoManager.changeRedone.connect(() => {
-      session.pub('UndoRedoManager_changeRedone', {})
-    })
+      appData.undoRedoManager.changeRedone.connect(() => {
+        session.pub('UndoRedoManager_changeRedone', {})
+      })
 
-    session.sub('UndoRedoManager_changeRedone', (data, userId) => {
-      const undoRedoManager = userDatas[userId].undoRedoManager
-      undoRedoManager.redo()
-    })
+      session.sub('UndoRedoManager_changeRedone', (data, userId) => {
+        const undoRedoManager = userDatas[userId].undoRedoManager
+        undoRedoManager.redo()
+      })
+    }
 
     // ///////////////////////////////////////////
     // State Machine Changes.
     // Synchronize State Machine changes between users.
 
-    sgFactory.registerCallback('StateMachine', (stateMachine) => {
-      stateMachine.stateChanged.connect((name) => {
-        session.pub('StateMachine_stateChanged', {
-          stateMachine: stateMachine.getPath(),
-          stateName: name,
-        })
-      })
-    })
+    // sgFactory.registerCallback('StateMachine', (stateMachine) => {
+    //   stateMachine.stateChanged.connect((name) => {
+    //     session.pub('StateMachine_stateChanged', {
+    //       stateMachine: stateMachine.getPath(),
+    //       stateName: name,
+    //     })
+    //   })
+    // })
 
-    session.sub('StateMachine_stateChanged', (data, userId) => {
-      const stateMachine = appData.scene
-        .getRoot()
-        .resolvePath(data.stateMachine, 1)
-      stateMachine.activateState(data.stateName)
-    })
+    // session.sub('StateMachine_stateChanged', (data, userId) => {
+    //   const stateMachine = appData.scene
+    //     .getRoot()
+    //     .resolvePath(data.stateMachine, 1)
+    //   stateMachine.activateState(data.stateName)
+    // })
   }
 }
 
