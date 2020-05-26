@@ -1,23 +1,3 @@
-// Function to download data to a file
-function saveAs(data, filename, type) {
-  var file = new Blob([data], { type: type })
-  if (window.navigator.msSaveOrOpenBlob)
-    // IE10+
-    window.navigator.msSaveOrOpenBlob(file, filename)
-  else {
-    // Others
-    var a = document.createElement('a'),
-      url = URL.createObjectURL(file)
-    a.href = url
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    setTimeout(function() {
-      document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
-    }, 0)
-  }
-}
 
 function genID() {
   // Math.random should be unique because of its seeding algorithm.
@@ -36,22 +16,23 @@ function getRandomInt(max) {
 }
 
 export default class SessionRecorder {
-  constructor(session, actionRegistry) {
+  constructor(session) {
     this.session = session
-    this.actionRegistry = actionRegistry
-    this.__recordings = {}
 
     // TODO: Check for credentials on the user.
-    if (self.origin.startsWith('https://localhost')) {
+    {
       const pictures = [
         'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
       ]
 
       const data = {}
+      let recording = false;
       let presenter
       let pub
-      let messages
-      const start = () => {
+      let stream
+      this.__startRecording = () => {
+        if (recording) return
+        recording = true
         const picIndex = getRandomInt(pictures.length)
         presenter = {
           id: genID(),
@@ -59,7 +40,7 @@ export default class SessionRecorder {
           name: 'Presenter' + Object.keys(data).length,
         }
 
-        messages = []
+        stream = []
         let msg = {
           messageType: 'user-joined',
           payload: presenter,
@@ -71,7 +52,7 @@ export default class SessionRecorder {
           // message and save it to the previous message.
           const t = performance.now()
           msg.ms = t - prev_t
-          messages.push(msg)
+          stream.push(msg)
           msg = {
             messageType,
             payload,
@@ -81,77 +62,27 @@ export default class SessionRecorder {
         }
       }
 
-      const stop = () => {
-        messages.push({
+      this.__stopRecording = () => {
+        stream.push({
           messageType: 'user-left',
           payload: presenter,
         })
 
-        data[presenter.id] = messages
+        data[presenter.id] = stream
 
         this.session.pub = pub
 
-        this.playRecording(data)
+        this.__playRecording(data)
       }
-
-      let recording = false;
-      actionRegistry.registerAction({
-        path: ['Sessions'],
-        name: 'Start Recording',
-        callback: () => {
-          if(!recording) {
-            start();
-            recording = true;
-          }
-        },
-        availableInVR: true,
-      })
-
-      actionRegistry.registerAction({
-        path: ['Sessions'],
-        name: 'Stop Recording',
-        callback: () => {
-          stop()
-          recording = false;
-        },
-        availableInVR: true,
-      })
-      actionRegistry.registerAction({
-        path: ['Sessions'],
-        name: 'Save',
-        callback: () => {
-          this.save(data)
-        },
-      })
     }
   }
-
-  setResourceLoader(resourceLoader) {
-    this.resourceLoader = resourceLoader
-
-    const addRecording = file => {
-      this.__recordings[file.name] = file
-      const name = file.name.split('.')[0]
-      this.actionRegistry.registerAction({
-        path: ['Sessions', 'Recordings'],
-        name,
-        callback: () => {
-          this.downloadAndPlayRecording(file.name)
-        },
-        availableInVR: true,
-      })
-    }
-
-    this.resourceLoader.registerResourceCallback('.rec', file => {
-      addRecording(file)
-    })
-    this.resourceLoader.registerResourceCallback('.zarchive', file => {
-      addRecording(file)
-    })
+  
+  startRecording() {
+    this.__startRecording();
   }
-
-  save(data) {
-    saveAs(JSON.stringify(data), 'MyRecording.rec', 'application/json')
+  
+  stopRecording() {
+    this.__stopRecording();
   }
 
   __stopPlayback() {
@@ -162,11 +93,11 @@ export default class SessionRecorder {
   __play(id, stream, done) {
     let i = 0
     const next = () => {
-      const message = stream[i]
-      this.session._emit(message.messageType, message.payload, id)
+      const msg = stream[i]
+      this.session._emit(msg.messageType, msg.payload, id)
       i++
       if (i < stream.length) {
-        this.__timeoutIds[id] = setTimeout(next, message.ms)
+        this.__timeoutIds[id] = setTimeout(next, msg.ms)
       } else {
         done()
       }
@@ -174,7 +105,7 @@ export default class SessionRecorder {
     this.__timeoutIds[id] = setTimeout(next, 1000)
   }
 
-  playRecording(recording) {
+  __playRecording(recording) {
     this.__stopPlayback()
     let count = 0
     this.__timeoutIds = {}
@@ -182,32 +113,23 @@ export default class SessionRecorder {
       count++
       this.__play(key, recording[key], () => {
         count--
-        if (count == 0) this.playRecording(recording)
+        if (count == 0) this.__playRecording(recording)
       })
     }
   }
   
-  downloadAndPlayRecording(name) {
+  downloadAndPlayRecording(url) {
     const file = this.__recordings[name]
-    
-    if (file.name.endsWith('.zarchive')) {
-      this.resourceLoader.loadResource(file.id, entries => {
-        let utf8decoder = new TextDecoder();
-        const recording = JSON.parse(utf8decoder.decode(entries[Object.keys(entries)[0]]));
-        this.playRecording(recording)
+    fetch(new Request(url))
+      .then(response => {
+        if (response.ok) {
+          response.json().then(recording => {
+            this.__playRecording(recording)
+          })
+        }
+        else {
+          throw new Error('404 Error: File not found.');
+        }
       })
-    } else {
-      fetch(new Request(file.url))
-        .then(response => {
-          if (response.ok) {
-            response.json().then(recording => {
-              this.playRecording(recording)
-            })
-          }
-          else {
-            throw new Error('404 Error: File not found.');
-          }
-        })
-    }
   }
 }
