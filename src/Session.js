@@ -1,7 +1,9 @@
-import debug from 'debug'
-
-import io from 'socket.io-client'
+// Note: this import is disabled for the rawimport version of collab
+// We need to figure out if we can remove this only for the rawimport version.
+// import io from 'socket.io-client'
 import wildcardMiddleware from 'socketio-wildcard'
+
+// import debug from 'debug'
 
 const private_actions = {
   JOIN_ROOM: 'join-room',
@@ -19,7 +21,7 @@ class Session {
 
     this.envIsBrowser = typeof window !== 'undefined'
 
-    this.debugCollab = debug('zea-collab')
+    // this.debugCollab = debug('zea-collab')
   }
 
   stopCamera(publish = true) {
@@ -122,7 +124,7 @@ class Session {
     this.pub(private_actions.JOIN_ROOM)
 
     this.socket.on(private_actions.JOIN_ROOM, (message) => {
-      this.debugCollab(`${private_actions.JOIN_ROOM}:\n%O`, message)
+      // this.debugCollab(`${private_actions.JOIN_ROOM}:\n%O`, message)
 
       const incomingUserData = message.userData
       this._addUserIfNew(incomingUserData)
@@ -131,7 +133,7 @@ class Session {
     })
 
     this.socket.on(private_actions.LEAVE_ROOM, (message) => {
-      this.debugCollab(`${private_actions.LEAVE_ROOM}:\n%O`, message)
+      // this.debugCollab(`${private_actions.LEAVE_ROOM}:\n%O`, message)
 
       const outgoingUserData = message.userData
       const outgoingUserId = outgoingUserData.id
@@ -140,11 +142,11 @@ class Session {
         this._emit(Session.actions.USER_LEFT, outgoingUserData)
         return
       }
-      this.debugCollab('Outgoing user was not found in room.')
+      // this.debugCollab('Outgoing user was not found in room.')
     })
 
     this.socket.on(private_actions.PING_ROOM, (message) => {
-      this.debugCollab(`${private_actions.PING_ROOM}:\n%O`, message)
+      // this.debugCollab(`${private_actions.PING_ROOM}:\n%O`, message)
 
       const incomingUserData = message.userData
       this._addUserIfNew(incomingUserData)
@@ -153,7 +155,7 @@ class Session {
     /*
      * RTC
     const myPhoneNumber = `${this.fullRoomId}${this.userData.id}`
-    this.debugCollab('myPhoneNumber:', myPhoneNumber)
+    // this.debugCollab('myPhoneNumber:', myPhoneNumber)
 
     this.peer = new Peer(myPhoneNumber, {
       debug: 2,
@@ -172,12 +174,12 @@ class Session {
           })
         })
         .catch(err => {
-          this.debugCollab('Failed to get local stream', err)
+          // this.debugCollab('Failed to get local stream', err)
         })
     })
 
     this.peer.on('error', err => {
-      this.debugCollab('Peer error:', err)
+      // this.debugCollab('Peer error:', err)
     })
 
     window.addEventListener('beforeunload', () => {
@@ -193,7 +195,7 @@ class Session {
           const roommatePhoneNumber = `${this.fullRoomId}${newUserData.id}`
 
           if (this.peer.disconnected) {
-            this.debugCollab('Peer disconnected. Reconnecting.')
+            // this.debugCollab('Peer disconnected. Reconnecting.')
             this.peer.reconnect()
           }
 
@@ -206,7 +208,7 @@ class Session {
           })
         })
         .catch(err => {
-          this.debugCollab('Failed to get local stream', err)
+          // this.debugCollab('Failed to get local stream', err)
         })
     })
      */
