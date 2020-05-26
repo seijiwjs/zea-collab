@@ -1,12 +1,13 @@
 {
   "name": "@zeainc/zea-collab",
   "version": "2.1.0",
-  "main": "dist/zea-collab.cjs.js",
-  "module": "dist/zea-collab.esm.js",
   "keywords": [],
   "description": "",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
   "files": [
-    "/dist/"
+    "/dist/index.cjs.js",
+    "/dist/index.esm.js"
   ],
   "scripts": {
     "build": "rollup -c",
@@ -25,6 +26,8 @@
   "author": "Zea Inc.",
   "license": "ISC",
   "dependencies": {
+    "@zeainc/zea-engine": "^1.0.7",
+    "@zeainc/zea-ux": "^1.2.9",
     "debug": "^4.1.1",
     "socket.io-client": "^2.3.0",
     "socketio-wildcard": "^2.0.0"
