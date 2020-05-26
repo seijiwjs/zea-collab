@@ -72,28 +72,14 @@ class Session {
     document.body.appendChild(video)
   }
 
-  static concatFullRoomId(projectId, fileId, roomId) {
-    const fullRoomId =
-      projectId + (fileId || '_ALL_FILES_') + (roomId || '_ALL_ROOMS_')
-    return fullRoomId
-  }
-
-  isJoiningTheSameRoom(projectId, fileId, roomId) {
+  isJoiningTheSameRoom(roomId) {
     return (
-      this.fullRoomId === Session.concatFullRoomId(projectId, fileId, roomId)
+      this.roomId === roomId
     )
   }
 
-  joinRoom(projectId, fileId, roomId) {
-    this.projectId = projectId
-    this.fileId = fileId
+  joinRoom(roomId) {
     this.roomId = roomId
-
-    this.fullRoomId = Session.concatFullRoomId(
-      this.projectId,
-      this.fileId,
-      this.roomId
-    )
 
     /*
      * Socket actions.
@@ -102,7 +88,7 @@ class Session {
 
     this.socket = io(this.socketUrl, {
       'sync disconnect on unload': true,
-      query: `userId=${this.userData.id}&roomId=${this.fullRoomId}`,
+      query: `userId=${this.userData.id}&roomId=${this.roomId}`,
     })
 
     const patch = wildcardMiddleware(io.Manager)
@@ -154,7 +140,7 @@ class Session {
 
     /*
      * RTC
-    const myPhoneNumber = `${this.fullRoomId}${this.userData.id}`
+    const myPhoneNumber = `${this.roomId}${this.userData.id}`
     // this.debugCollab('myPhoneNumber:', myPhoneNumber)
 
     this.peer = new Peer(myPhoneNumber, {
@@ -192,7 +178,7 @@ class Session {
         .then(() => {
 
           // Make call to the user who just joined the room.
-          const roommatePhoneNumber = `${this.fullRoomId}${newUserData.id}`
+          const roommatePhoneNumber = `${this.roomId}${newUserData.id}`
 
           if (this.peer.disconnected) {
             // this.debugCollab('Peer disconnected. Reconnecting.')
@@ -262,21 +248,6 @@ class Session {
 
       this._emit(Session.actions.USER_JOINED, userData)
     }
-  }
-
-  createRoom() {
-    this.roomId = shortid.generate()
-    this.joinRoom(this.projectId, this.fileId, this.roomId)
-
-    if (this.envIsBrowser) {
-      window.history.pushState(
-        null,
-        null,
-        `?project-id=${this.projectId}&file-id=${this.fileId}&room-id=${this.roomId}`
-      )
-    }
-
-    return this.roomId
   }
 
   getUsers() {
