@@ -34,8 +34,8 @@ export default class Avatar {
     this.__treeItem = new TreeItem(this.__userData.id)
     this.__appData.renderer.addTreeItem(this.__treeItem)
 
-    this.__avatarColor = new Color(0.3, 0.3, 0.3)
-    this.__hilightPointerColor = new Color(1.2, 0, 0)
+    this.__avatarColor = new Color(userData.color || '#0000ff')
+    this.__hilightPointerColor = this.__avatarColor
 
     this.__plane = new Plane(1, 1)
     this.__uiGeomIndex = -1
@@ -56,10 +56,10 @@ export default class Avatar {
         avatarImage = new Label("Name")
         const bgColor = new Color(0.84, 0.84, 0.84)
         avatarImage.getParameter('backgroundColor').setValue(bgColor)
-        avatarImage.getParameter('fontSize').setValue(48)
+        avatarImage.getParameter('fontSize').setValue(32)
         avatarImage.getParameter('borderRadius').setValue(15)
         avatarImage.getParameter('margin').setValue(8)
-        avatarImage.getParameter('text').setValue(firstName)
+        avatarImage.getParameter('text').setValue(`${firstName} ${lastName}`)
 
         geom = new Plane(2, 0.5)
         avatarImage.labelRendered.connect((event) => {

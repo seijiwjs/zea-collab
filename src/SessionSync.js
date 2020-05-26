@@ -1,4 +1,4 @@
-import { typeRegistry, BaseItem, sgFactory } from '@zeainc/zea-engine'
+import { typeRegistry, BaseItem } from '@zeainc/zea-engine'
 import { UndoRedoManager, SelectionManager } from '@zeainc/zea-ux'
 
 import Session from './Session.js'
