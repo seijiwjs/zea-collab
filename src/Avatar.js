@@ -51,20 +51,24 @@ export default class Avatar {
         avatarImage.setImageURL(this.__userData.picture)
         geom = new Disc(0.5, 64)
       } else {
-        const firstName = this.__userData.name || this.__userData.given_name
-        const lastName = this.__userData.lastName || this.__userData.family_name
+        const firstName = this.__userData.name || this.__userData.given_name || ""
+        const lastName = this.__userData.lastName || this.__userData.family_name || ""
         avatarImage = new Label("Name")
-        const bgColor = new Color(0.84, 0.84, 0.84)
+        const bgColor = new Color(1, 1, 1, 0)
         avatarImage.getParameter('backgroundColor').setValue(bgColor)
-        avatarImage.getParameter('fontSize').setValue(32)
-        avatarImage.getParameter('borderRadius').setValue(15)
-        avatarImage.getParameter('margin').setValue(8)
-        avatarImage.getParameter('text').setValue(`${firstName} ${lastName}`)
+        avatarImage.getParameter('fontSize').setValue(42)
+        avatarImage.getParameter('borderRadius').setValue(42)
+        avatarImage.getParameter('borderWidth').setValue(1)
+        avatarImage.getParameter('margin').setValue(18)
+        avatarImage.getParameter('text').setValue(`${firstName.charAt(0)} ${lastName.charAt(0)}`)
 
-        geom = new Plane(2, 0.5)
+        geom = new Plane(1, 1)
         avatarImage.labelRendered.connect((event) => {
+          console.log(event)
           const aspect = event.width / event.height
-          geom.getParameter('SizeX').setValue(0.5 * aspect)
+          // geom.getParameter('SizeX').setValue(0.1 * aspect)
+          this.__avatarImageXfo.sc.set(0.15 * aspect, 0.15, 1)
+          this.__avatarImageGeomItem.setLocalXfo(this.__avatarImageXfo)
         })
       }
 
