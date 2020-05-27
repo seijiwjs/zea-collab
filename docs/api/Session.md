@@ -8,6 +8,14 @@ Also has the actions to stream media.</p>
 </dd>
 </dl>
 
+## Constants
+
+<dl>
+<dt><a href="#private_actions">private_actions</a></dt>
+<dd><p>User specific room actions.</p>
+</dd>
+</dl>
+
 <a name="Session"></a>
 
 ## Session
@@ -26,6 +34,11 @@ Session is used to store information about users and the communication method(So
         * [setVideoStream(remoteStream, userId)](#setVideoStream)
         * [isJoiningTheSameRoom(roomId)](#isJoiningTheSameRoom)
         * [joinRoom(roomId)](#joinRoom)
+        * [leaveRoom()](#leaveRoom)
+        * [getUsers()](#getUsers)
+        * [getUser(id) ⇒ <code>object</code> \| <code>undefined</code>](#getUser)
+        * [pub(messageType, payload, ack)](#pub)
+        * [sub(messageType, callback)](#sub)
     * _static_
         * [.actions](#Session.actions)
 
@@ -122,7 +135,7 @@ Checks if this Session's roomId is the same as the passed in the parameters.
 <a name="Session+joinRoom"></a>
 
 ### joinRoom
-Joins the user to a room, and subscribes it to all private actions
+Joins the user to a room and subscribes to all [private actions](#private_actions). Also subscribes the user to a wildcard event that can recieve any custom action(Excluding private actions). This is very useful when you wanna emit/publish custom events that are not in the pre-stablished custom [actions](#actions).<br>Emits/publishes the `JOIN_ROOM` event. **See:** [action](#action)
 
 **Kind**: instance method of [<code>Session</code>](#Session)  
 
@@ -130,36 +143,63 @@ Joins the user to a room, and subscribes it to all private actions
 | --- | --- | --- |
 | roomId | <code>string</code> \| <code>number</code> | Room ID value |
 
+<a name="Session+leaveRoom"></a>
+
+### leaveRoom
+Disconnects the user from his current room, emitting/publishing the `LEFT_ROOM` event. **See:** [action](#action)<br>If the socket exists then `USER_LEFT` will be also emitted, check [joinRoom](#joinRoom) method.
+
+**Kind**: instance method of [<code>Session</code>](#Session)  
+<a name="Session+getUsers"></a>
+
+### getUsers
+Returns userData for all the users in the session.
+
+**Kind**: instance method of [<code>Session</code>](#Session)  
+<a name="Session+getUser"></a>
+
+### getUser
+Returns the specific user information using the userId.
+
+**Kind**: instance method of [<code>Session</code>](#Session)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| id | <code>string</code> \| <code>number</code> | id specified in userData param. |
+
+<a name="Session+pub"></a>
+
+### pub
+Emits/Publishes an event action to the socket.
+
+**Kind**: instance method of [<code>Session</code>](#Session)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| messageType | <code>string</code> | Represents the event action that is published |
+| payload | <code>any</code> | It could be anything that you want to send to other users |
+| ack | <code>function</code> | Function that will be called right after server response |
+
+<a name="Session+sub"></a>
+
+### sub
+Registers a new handler for a given event.**Note:** The session can handle multiple callbacks for a single event.
+
+**Kind**: instance method of [<code>Session</code>](#Session)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| messageType | <code>string</code> | Represents the event action subscribed to. |
+| callback | <code>function</code> | Recieves by parameters the payload sent by the publisher |
+
 <a name="Session.actions"></a>
 
 ### action
-**Kind**: static enum of [<code>Session</code>](#Session)  
-**Properties**
+Represents Custom Default Events used by `Session` class.
 
-| Name | Default |
-| --- | --- |
-| USER_JOINED | <code>user-joined</code> | 
-| USER_VIDEO_STARTED | <code>user-video-started</code> | 
-| USER_VIDEO_STOPPED | <code>user-video-stopped</code> | 
-| USER_AUDIO_STARTED | <code>user-audio-started</code> | 
-| USER_AUDIO_STOPPED | <code>user-audio-stopped</code> | 
-| USER_LEFT | <code>user-left</code> | 
-| LEFT_ROOM | <code>left-room</code> | 
-| TEXT_MESSAGE | <code>text-message</code> | 
-| POSE_CHANGED | <code>pose-message</code> | 
-| COMMAND_ADDED | <code>command-added</code> | 
-| COMMAND_UPDATED | <code>command-updated</code> | 
-| FILE_WITH_PROGRESS | <code>file-with-progress</code> | 
-
+**Kind**: static property of [<code>Session</code>](#Session)  
 <a name="private_actions"></a>
 
 ## private\_actions
-**Kind**: global enum  
-**Properties**
+User specific room actions.
 
-| Name | Default |
-| --- | --- |
-| JOIN_ROOM | <code>join-room</code> | 
-| PING_ROOM | <code>ping-room</code> | 
-| LEAVE_ROOM | <code>leave-room</code> | 
-
+**Kind**: global constant  
