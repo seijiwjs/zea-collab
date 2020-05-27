@@ -1,7 +1,9 @@
-import debug from 'debug'
-
-import io from 'socket.io-client'
+// Note: this import is disabled for the rawimport version of collab
+// We need to figure out if we can remove this only for the rawimport version.
+// import io from 'socket.io-client'
 import wildcardMiddleware from 'socketio-wildcard'
+
+// import debug from 'debug'
 
 const private_actions = {
   JOIN_ROOM: 'join-room',
@@ -19,7 +21,7 @@ class Session {
 
     this.envIsBrowser = typeof window !== 'undefined'
 
-    this.debugCollab = debug('zea-collab')
+    // this.debugCollab = debug('zea-collab')
   }
 
   stopCamera(publish = true) {
@@ -70,28 +72,14 @@ class Session {
     document.body.appendChild(video)
   }
 
-  static concatFullRoomId(projectId, fileId, roomId) {
-    const fullRoomId =
-      projectId + (fileId || '_ALL_FILES_') + (roomId || '_ALL_ROOMS_')
-    return fullRoomId
-  }
-
-  isJoiningTheSameRoom(projectId, fileId, roomId) {
+  isJoiningTheSameRoom(roomId) {
     return (
-      this.fullRoomId === Session.concatFullRoomId(projectId, fileId, roomId)
+      this.roomId === roomId
     )
   }
 
-  joinRoom(projectId, fileId, roomId) {
-    this.projectId = projectId
-    this.fileId = fileId
+  joinRoom(roomId) {
     this.roomId = roomId
-
-    this.fullRoomId = Session.concatFullRoomId(
-      this.projectId,
-      this.fileId,
-      this.roomId
-    )
 
     /*
      * Socket actions.
@@ -100,7 +88,7 @@ class Session {
 
     this.socket = io(this.socketUrl, {
       'sync disconnect on unload': true,
-      query: `userId=${this.userData.id}&roomId=${this.fullRoomId}`,
+      query: `userId=${this.userData.id}&roomId=${this.roomId}`,
     })
 
     const patch = wildcardMiddleware(io.Manager)
@@ -122,7 +110,7 @@ class Session {
     this.pub(private_actions.JOIN_ROOM)
 
     this.socket.on(private_actions.JOIN_ROOM, (message) => {
-      this.debugCollab(`${private_actions.JOIN_ROOM}:\n%O`, message)
+      // this.debugCollab(`${private_actions.JOIN_ROOM}:\n%O`, message)
 
       const incomingUserData = message.userData
       this._addUserIfNew(incomingUserData)
@@ -131,7 +119,7 @@ class Session {
     })
 
     this.socket.on(private_actions.LEAVE_ROOM, (message) => {
-      this.debugCollab(`${private_actions.LEAVE_ROOM}:\n%O`, message)
+      // this.debugCollab(`${private_actions.LEAVE_ROOM}:\n%O`, message)
 
       const outgoingUserData = message.userData
       const outgoingUserId = outgoingUserData.id
@@ -140,11 +128,11 @@ class Session {
         this._emit(Session.actions.USER_LEFT, outgoingUserData)
         return
       }
-      this.debugCollab('Outgoing user was not found in room.')
+      // this.debugCollab('Outgoing user was not found in room.')
     })
 
     this.socket.on(private_actions.PING_ROOM, (message) => {
-      this.debugCollab(`${private_actions.PING_ROOM}:\n%O`, message)
+      // this.debugCollab(`${private_actions.PING_ROOM}:\n%O`, message)
 
       const incomingUserData = message.userData
       this._addUserIfNew(incomingUserData)
@@ -152,8 +140,8 @@ class Session {
 
     /*
      * RTC
-    const myPhoneNumber = `${this.fullRoomId}${this.userData.id}`
-    this.debugCollab('myPhoneNumber:', myPhoneNumber)
+    const myPhoneNumber = `${this.roomId}${this.userData.id}`
+    // this.debugCollab('myPhoneNumber:', myPhoneNumber)
 
     this.peer = new Peer(myPhoneNumber, {
       debug: 2,
@@ -172,12 +160,12 @@ class Session {
           })
         })
         .catch(err => {
-          this.debugCollab('Failed to get local stream', err)
+          // this.debugCollab('Failed to get local stream', err)
         })
     })
 
     this.peer.on('error', err => {
-      this.debugCollab('Peer error:', err)
+      // this.debugCollab('Peer error:', err)
     })
 
     window.addEventListener('beforeunload', () => {
@@ -190,10 +178,10 @@ class Session {
         .then(() => {
 
           // Make call to the user who just joined the room.
-          const roommatePhoneNumber = `${this.fullRoomId}${newUserData.id}`
+          const roommatePhoneNumber = `${this.roomId}${newUserData.id}`
 
           if (this.peer.disconnected) {
-            this.debugCollab('Peer disconnected. Reconnecting.')
+            // this.debugCollab('Peer disconnected. Reconnecting.')
             this.peer.reconnect()
           }
 
@@ -206,7 +194,7 @@ class Session {
           })
         })
         .catch(err => {
-          this.debugCollab('Failed to get local stream', err)
+          // this.debugCollab('Failed to get local stream', err)
         })
     })
      */
@@ -260,21 +248,6 @@ class Session {
 
       this._emit(Session.actions.USER_JOINED, userData)
     }
-  }
-
-  createRoom() {
-    this.roomId = shortid.generate()
-    this.joinRoom(this.projectId, this.fileId, this.roomId)
-
-    if (this.envIsBrowser) {
-      window.history.pushState(
-        null,
-        null,
-        `?project-id=${this.projectId}&file-id=${this.fileId}&room-id=${this.roomId}`
-      )
-    }
-
-    return this.roomId
   }
 
   getUsers() {

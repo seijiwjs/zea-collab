@@ -1,18 +1,22 @@
 {
   "name": "@zeainc/zea-collab",
   "version": "2.1.0",
-  "main": "dist/zea-collab.cjs.js",
-  "module": "dist/zea-collab.esm.js",
   "keywords": [],
   "description": "",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "rawimport": "dist/index.rawimport.js",
   "files": [
-    "/dist/"
+    "/dist/index.cjs.js",
+    "/dist/index.esm.js",
+    "/dist/index.rawimport.js"
   ],
   "scripts": {
-    "build": "rollup -c",
+    "build": "rollup -c && rollup -c rollup.config.rawimport.js",
     "dist": "yarn publish --access=public",
     "prepare": "yarn run build",
-    "start": "rollup -c rollup.config.dev.js -w"
+    "start": "rollup -c rollup.config.dev.js -w",
+    "start-rawimport": "rollup -c rollup.config.rawimport.js -w"
   },
   "repository": {
     "type": "git",
@@ -25,16 +29,28 @@
   "author": "Zea Inc.",
   "license": "ISC",
   "dependencies": {
+    "@zeainc/zea-engine": "^1.0.7",
+    "@zeainc/zea-ux": "^1.2.9",
     "debug": "^4.1.1",
     "socket.io-client": "^2.3.0",
     "socketio-wildcard": "^2.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^12.0.0",
+    "@rollup/plugin-node-resolve": "^8.0.0",
+    "bufferutil": "^4.0.1",
+    "builtin-modules": "^3.1.0",
+    "crypto": "^1.0.1",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-import": "^2.20.2",
+    "path": "^0.12.7",
     "prettier": "2.0.4",
     "rollup": "^2.4.0",
-    "rollup-plugin-terser": "^5.3.0"
+    "rollup-plugin-node-polyfills": "^0.2.1",
+    "rollup-plugin-terser": "^5.3.0",
+    "stream": "^0.0.2",
+    "tls": "^0.0.1",
+    "utf-8-validate": "^5.0.2"
   }
 }
