@@ -1,130 +1,82 @@
-## Functions
+<a name="Avatar"></a>
 
-<dl>
-<dt><a href="#attachRTCStream">attachRTCStream(video)</a></dt>
-<dd><p>The attachRTCStream method.</p>
-</dd>
-<dt><a href="#detachRTCStream">detachRTCStream()</a></dt>
-<dd><p>The detachRTCStream method.</p>
-</dd>
-<dt><a href="#getCamera">getCamera()</a> ⇒ <code>any</code></dt>
-<dd><p>The getCamera method.</p>
-</dd>
-<dt><a href="#bindCamera">bindCamera()</a></dt>
-<dd><p>The bindCamera method.</p>
-</dd>
-<dt><a href="#unbindCamera">unbindCamera()</a></dt>
-<dd><p>The unbindCamera method.</p>
-</dd>
-<dt><a href="#setCameraAndPointerRepresentation">setCameraAndPointerRepresentation()</a></dt>
-<dd><p>The setCameraAndPointerRepresentation method.</p>
-</dd>
-<dt><a href="#updateCameraAndPointerPose">updateCameraAndPointerPose(data)</a></dt>
-<dd><p>The updateCameraAndPointerPose method.</p>
-</dd>
-<dt><a href="#setVRRepresentation">setVRRepresentation(data)</a></dt>
-<dd><p>The setVRRepresentation method.</p>
-</dd>
-<dt><a href="#updateVRPose">updateVRPose(data)</a></dt>
-<dd><p>The updateVRPose method.</p>
-</dd>
-<dt><a href="#updatePose">updatePose(data)</a></dt>
-<dd><p>The updatePose method.</p>
-</dd>
-<dt><a href="#destroy">destroy()</a></dt>
-<dd><p>The destroy method.</p>
-</dd>
-</dl>
+## Avatar
+Represents the state on steroids of a user in the session.
 
-<a name="attachRTCStream"></a>
+**Kind**: global class  
 
-## attachRTCStream(video)
-The attachRTCStream method.
+* [Avatar](#Avatar)
+    * [new Avatar(appData, userData, currentUserAvatar)](#new-Avatar)
+    * [attachRTCStream(video)](#attachRTCStream)
+    * [detachRTCStream()](#detachRTCStream)
+    * [getCamera() ⇒ <code>Camera</code>](#getCamera)
+    * [bindCamera()](#bindCamera)
+    * [unbindCamera()](#unbindCamera)
+    * [updatePose(data)](#updatePose)
+    * [destroy()](#destroy)
 
-**Kind**: global function  
+<a name="new_Avatar_new"></a>
+
+### new Avatar
+Initializes all the components of the Avatar like, user image, labels, tranformations, color, etc.<br>Contains a TreeItem property to which all the children items can be attached to. i.e. Camera.
+
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| appData | <code>object</code> |  | The appData value. Must contain the renderer |
+| userData | <code>object</code> |  | The userData value. |
+| currentUserAvatar | <code>boolean</code> | <code>false</code> | The currentUserAvatar value. |
+
+<a name="Avatar+attachRTCStream"></a>
+
+### attachRTCStream
+Usually called on `USER_VIDEO_STARTED` Session action this attaches the video MediaStream to the avatar cam geometry item.
+
+**Kind**: instance method of [<code>Avatar</code>](#Avatar)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| video | <code>any</code> | The video param. |
+| video | <code>MediaStream</code> | The video param. |
 
-<a name="detachRTCStream"></a>
+<a name="Avatar+detachRTCStream"></a>
 
-## detachRTCStream()
-The detachRTCStream method.
+### detachRTCStream
+As opposite of the `attachRTCStream` method, this is usually called on `USER_VIDEO_STOPPED` Session action, removing the RTC Stream from the treeItem
 
-**Kind**: global function  
-<a name="getCamera"></a>
+**Kind**: instance method of [<code>Avatar</code>](#Avatar)  
+<a name="Avatar+getCamera"></a>
 
-## getCamera() ⇒ <code>any</code>
-The getCamera method.
+### getCamera
+Returns Avatar's Camera tree item.
 
-**Kind**: global function  
-**Returns**: <code>any</code> - The return value.  
-<a name="bindCamera"></a>
+**Kind**: instance method of [<code>Avatar</code>](#Avatar)  
+**Returns**: <code>Camera</code> - The return value.  
+<a name="Avatar+bindCamera"></a>
 
-## bindCamera()
-The bindCamera method.
+### bindCamera
+Traverses Camera's sibling items and hide them, but shows Camera item.
 
-**Kind**: global function  
-<a name="unbindCamera"></a>
+**Kind**: instance method of [<code>Avatar</code>](#Avatar)  
+<a name="Avatar+unbindCamera"></a>
 
-## unbindCamera()
-The unbindCamera method.
+### unbindCamera
+Traverses Camera's sibling items and show them, but hides Camera item.
 
-**Kind**: global function  
-<a name="setCameraAndPointerRepresentation"></a>
+**Kind**: instance method of [<code>Avatar</code>](#Avatar)  
+<a name="Avatar+updatePose"></a>
 
-## setCameraAndPointerRepresentation()
-The setCameraAndPointerRepresentation method.
+### updatePose
+Method that executes the representation methods for the specified `interfaceType` in the data object.<br>Valid `interfaceType` values: `CameraAndPointer`, `Vive` and `VR`
 
-**Kind**: global function  
-<a name="updateCameraAndPointerPose"></a>
-
-## updateCameraAndPointerPose(data)
-The updateCameraAndPointerPose method.
-
-**Kind**: global function  
+**Kind**: instance method of [<code>Avatar</code>](#Avatar)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| data | <code>any</code> | The data param. |
+| data | <code>object</code> | The data param. |
 
-<a name="setVRRepresentation"></a>
+<a name="Avatar+destroy"></a>
 
-## setVRRepresentation(data)
-The setVRRepresentation method.
+### destroy
+Removes Avatar's TreeItem from the renderer.
 
-**Kind**: global function  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| data | <code>any</code> | The data param. |
-
-<a name="updateVRPose"></a>
-
-## updateVRPose(data)
-The updateVRPose method.
-
-**Kind**: global function  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| data | <code>any</code> | The data param. |
-
-<a name="updatePose"></a>
-
-## updatePose(data)
-The updatePose method.
-
-**Kind**: global function  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| data | <code>any</code> | The data param. |
-
-<a name="destroy"></a>
-
-## destroy()
-The destroy method.
-
-**Kind**: global function  
+**Kind**: instance method of [<code>Avatar</code>](#Avatar)  

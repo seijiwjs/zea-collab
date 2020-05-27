@@ -15,7 +15,15 @@ function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max))
 }
 
-export default class SessionRecorder {
+/**
+ * Utility class that lets you record/play/download all the `pub` actions triggered on user's session.
+ */
+class SessionRecorder {
+  /**
+   * Initializes the state of the SessionRecorder object declaring the start and stop recording methods.
+   * 
+   * @param {Session} session - An instance of the Session class.
+   */
   constructor(session) {
     this.session = session
 
@@ -77,10 +85,16 @@ export default class SessionRecorder {
     }
   }
   
+  /**
+   * Starts recording all the `pub` action methods triggered in user's session.
+   */
   startRecording() {
     this.__startRecording();
   }
   
+  /**
+   * Stops the recording of all `pub` actions and starts playing the recording.
+   */
   stopRecording() {
     this.__stopRecording();
   }
@@ -118,6 +132,10 @@ export default class SessionRecorder {
     }
   }
   
+  /**
+   * Downloads the recorded data from an external url and starts playing it.
+   * @param {string} url 
+   */
   downloadAndPlayRecording(url) {
     const file = this.__recordings[name]
     fetch(new Request(url))
@@ -133,3 +151,6 @@ export default class SessionRecorder {
       })
   }
 }
+
+
+export default SessionRecorder;

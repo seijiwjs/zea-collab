@@ -8,14 +8,6 @@ Also has the actions to stream media.</p>
 </dd>
 </dl>
 
-## Constants
-
-<dl>
-<dt><a href="#private_actions">private_actions</a></dt>
-<dd><p>User specific room actions.</p>
-</dd>
-</dl>
-
 <a name="Session"></a>
 
 ## Session
@@ -40,7 +32,7 @@ Session is used to store information about users and the communication method(So
         * [pub(messageType, payload, ack)](#pub)
         * [sub(messageType, callback)](#sub)
     * _static_
-        * [.actions](#Session.actions)
+        * [actions](#actions)
 
 <a name="new_Session_new"></a>
 
@@ -62,7 +54,7 @@ Looks in the media stream tracks for an object that has the `kind` attribute to 
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| publish | <code>boolean</code> | <code>true</code> | Determines if the socket emits/publishes or not the `USER_VIDEO_STOPPED` event. **See:** [action](#action) |
+| publish | <code>boolean</code> | <code>true</code> | Determines if the socket emits/publishes or not the `USER_VIDEO_STOPPED` event. **See:** [action |](#action)
 
 <a name="Session+startCamera"></a>
 
@@ -73,7 +65,7 @@ Looks in the media stream tracks for an object that has the `kind` attribute to 
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| publish | <code>boolean</code> | <code>true</code> | Determines if the socket emits/publishes or not the `USER_VIDEO_STARTED` event. **See:** [action](#action) |
+| publish | <code>boolean</code> | <code>true</code> | Determines if the socket emits/publishes or not the `USER_VIDEO_STARTED` event. **See:** [action |](#action)
 
 <a name="Session+muteAudio"></a>
 
@@ -84,7 +76,7 @@ Looks in the media stream tracks for an object that has the `kind` attribute to 
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| publish | <code>boolean</code> | <code>true</code> | Determines if the socket emits/publishes or not the `USER_AUDIO_STOPPED` event. **See:** [action](#action) |
+| publish | <code>boolean</code> | <code>true</code> | Determines if the socket emits/publishes or not the `USER_AUDIO_STOPPED` event. **See:** [action |](#action)
 
 <a name="Session+unmuteAudio"></a>
 
@@ -95,7 +87,7 @@ Looks in the media stream tracks for an object that has the `kind` attribute to 
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| publish | <code>boolean</code> | <code>true</code> | Determines if the socket emits/publishes or not the `USER_AUDIO_STARTED` event. **See:** [action](#action) |
+| publish | <code>boolean</code> | <code>true</code> | Determines if the socket emits/publishes or not the `USER_AUDIO_STARTED` event. **See:** [action |](#action)
 
 <a name="Session+getVideoStream"></a>
 
@@ -196,10 +188,35 @@ Registers a new handler for a given event.**Note:** The session can handle mult
 ### action
 Represents Custom Default Events used by `Session` class.
 
-**Kind**: static property of [<code>Session</code>](#Session)  
+**Kind**: static enum of [<code>Session</code>](#Session)  
+**Properties**
+
+| Name | Default |
+| --- | --- |
+| USER_JOINED | <code>user-joined</code> | 
+| USER_VIDEO_STARTED | <code>user-video-started</code> | 
+| USER_VIDEO_STOPPED | <code>user-video-stopped</code> | 
+| USER_AUDIO_STARTED | <code>user-audio-started</code> | 
+| USER_AUDIO_STOPPED | <code>user-audio-stopped</code> | 
+| USER_LEFT | <code>user-left</code> | 
+| LEFT_ROOM | <code>left-room</code> | 
+| TEXT_MESSAGE | <code>text-message</code> | 
+| POSE_CHANGED | <code>pose-message</code> | 
+| COMMAND_ADDED | <code>command-added</code> | 
+| COMMAND_UPDATED | <code>command-updated</code> | 
+| FILE_WITH_PROGRESS | <code>file-with-progress</code> | 
+
 <a name="private_actions"></a>
 
 ## private\_actions
 User specific room actions.
 
-**Kind**: global constant  
+**Kind**: global enum  
+**Properties**
+
+| Name | Default |
+| --- | --- |
+| JOIN_ROOM | <code>join-room</code> | 
+| PING_ROOM | <code>ping-room</code> | 
+| LEAVE_ROOM | <code>leave-room</code> | 
+

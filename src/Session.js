@@ -7,6 +7,7 @@ import wildcardMiddleware from 'socketio-wildcard'
 
 /**
  * User specific room actions.
+ * @enum
  */
 const private_actions = {
   JOIN_ROOM: 'join-room',
@@ -399,6 +400,7 @@ class Session {
 
 /**
  * Represents Custom Default Events used by `Session` class.
+ * @enum
  */
 Session.actions = {
   USER_JOINED: 'user-joined',
