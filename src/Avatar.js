@@ -22,7 +22,7 @@ const up = new Vec3(0, 0, 1)
 export default class Avatar {
   /**
    * Create an avatar.
-   * @param {any} appData - The appData value.
+   * @param {object} appData - The appData value.
    * @param {any} userData - The userData value.
    * @param {boolean} currentUserAvatar - The currentUserAvatar value.
    */
