@@ -49,13 +49,18 @@ const convertValuesFromJSON = (value, scene) => {
   }
 }
 
-/* * Class representing a session sync. */
-export default class SessionSync {
+/** 
+ * Helper class with default session sync behaviour 
+ */
+class SessionSync {
   /**
-   * Create a session sync.
-   * @param {any} session - The session value.
-   * @param {any} appData - The appData value.
-   * @param {any} currentUser - The currentUser value.
+   * All default behaviours for session sub actions are defined here. 
+   * You can use this as a guide or as the starter configuration for sub actions.
+   * 
+   * @see [Session](api/Session.md)
+   * @param {Session} session - The session value.
+   * @param {object} appData - The appData value.
+   * @param {object} currentUser - The currentUser value.
    */
   constructor(session, appData, currentUser, options) {
     // const currentUserAvatar = new Avatar(appData, currentUser, true);
@@ -319,3 +324,5 @@ export default class SessionSync {
 }
 
 
+
+export default SessionSync;

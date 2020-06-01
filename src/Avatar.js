@@ -18,12 +18,17 @@ import {
 
 const up = new Vec3(0, 0, 1)
 
-/** Class representing an avatar. */
-export default class Avatar {
+/**
+ * Represents the state on steroids of a user in the session. 
+ */
+class Avatar {
   /**
-   * Create an avatar.
-   * @param {any} appData - The appData value.
-   * @param {any} userData - The userData value.
+   * Initializes all the components of the Avatar like, user image, labels, tranformations, color, etc.
+   * <br>
+   * Contains a TreeItem property to which all the children items can be attached to. i.e. Camera.
+   * 
+   * @param {object} appData - The appData value. Must contain the renderer
+   * @param {object} userData - The userData value.
    * @param {boolean} currentUserAvatar - The currentUserAvatar value.
    */
   constructor(appData, userData, currentUserAvatar = false) {
@@ -109,8 +114,9 @@ export default class Avatar {
   }
 
   /**
-   * The attachRTCStream method.
-   * @param {any} video - The video param.
+   * Usually called on `USER_VIDEO_STARTED` Session action this attaches the video MediaStream to the avatar cam geometry item.
+   *
+   * @param {MediaStream} video - The video param.
    */
   attachRTCStream(video) {
     if (!this.__avatarCamGeomItem) {
@@ -150,7 +156,7 @@ export default class Avatar {
   }
 
   /**
-   * The detachRTCStream method.
+   * As opposite of the `attachRTCStream` method, this is usually called on `USER_VIDEO_STOPPED` Session action, removing the RTC Stream from the treeItem
    */
   detachRTCStream() {
     if (this.__currentViewMode == 'CameraAndPointer') {
@@ -165,15 +171,16 @@ export default class Avatar {
   }
 
   /**
-   * The getCamera method.
-   * @return {any} The return value.
+   * Returns Avatar's Camera tree item.
+   *
+   * @return {Camera} The return value.
    */
   getCamera() {
     return this.__camera
   }
 
   /**
-   * The bindCamera method.
+   * Traverses Camera's sibling items and hide them, but shows Camera item.
    */
   bindCamera() {
     this.__cameraBound = true
@@ -187,7 +194,7 @@ export default class Avatar {
   }
 
   /**
-   * The unbindCamera method.
+   * Traverses Camera's sibling items and show them, but hides Camera item.
    */
   unbindCamera() {
     this.__cameraBound = false
@@ -202,6 +209,7 @@ export default class Avatar {
 
   /**
    * The setCameraAndPointerRepresentation method.
+   * @private
    */
   setCameraAndPointerRepresentation() {
     this.__treeItem.removeAllChildren()
@@ -269,7 +277,8 @@ export default class Avatar {
 
   /**
    * The updateCameraAndPointerPose method.
-   * @param {any} data - The data param.
+   * @param {object} data - The data param.
+   * @private
    */
   updateCameraAndPointerPose(data) {
     if (this.__currentUserAvatar) return
@@ -302,7 +311,8 @@ export default class Avatar {
 
   /**
    * The setVRRepresentation method.
-   * @param {any} data - The data param.
+   * @param {object} data - The data param.
+   * @private
    */
   setVRRepresentation(data) {
     this.__treeItem.removeAllChildren()
@@ -388,7 +398,8 @@ export default class Avatar {
 
   /**
    * The updateVRPose method.
-   * @param {any} data - The data param.
+   * @param {object} data - The data param.
+   * @private
    */
   updateVRPose(data) {
     const setupController = (i) => {
@@ -481,8 +492,11 @@ export default class Avatar {
   }
 
   /**
-   * The updatePose method.
-   * @param {any} data - The data param.
+   * Method that executes the representation methods for the specified `interfaceType` in the data object.
+   * <br>
+   * Valid `interfaceType` values: `CameraAndPointer`, `Vive` and `VR`
+   * 
+   * @param {object} data - The data param.
    */
   updatePose(data) {
     switch (data.interfaceType) {
@@ -503,10 +517,11 @@ export default class Avatar {
   }
 
   /**
-   * The destroy method.
+   * Removes Avatar's TreeItem from the renderer.
    */
   destroy() {
     this.__appData.renderer.removeTreeItem(this.__treeItem)
   }
 }
 
+export default Avatar

@@ -5,13 +5,36 @@ import wildcardMiddleware from 'socketio-wildcard'
 
 // import debug from 'debug'
 
+/**
+ * User specific room actions.
+ * @enum
+ */
 const private_actions = {
   JOIN_ROOM: 'join-room',
   PING_ROOM: 'ping-room',
   LEAVE_ROOM: 'leave-room',
 }
-
+/**
+ * Session is used to store information about users and the communication method(Sockets).
+ * <br>
+ * Also has the actions to stream media.
+ */
 class Session {
+  /**
+   * Instantiates a new session object that contains user's data and the socketUrl that is going to connect to.
+   * <br>
+   * In the userData object you can pass any information you want, but you must provide an `id`. 
+   * In case you would like to use the [`zea-user-chip`](https://github.com/ZeaInc/zea-web-components/tree/staging/src/components/zea-user-chip) component, 
+   * some specific data will be required, although they are not mandatory, it would be nice to have:
+   *
+   * * **firstName** or **given_name**
+   * * **lastName** or **family_name**
+   * * **avatar** or **picture** - The URL to the image
+   * * **color** - The RGBA hexadecimal string. i.e. #FFFFFF. (Random color in case you don't specify it)
+   * 
+   * @param {object} userData - Specifies user's information
+   * @param {string} socketUrl - Socket server you're connecting to.
+   */
   constructor(userData, socketUrl) {
     this.userData = userData
     this.socketUrl = socketUrl
@@ -24,6 +47,11 @@ class Session {
     // this.debugCollab = debug('zea-collab')
   }
 
+  /**
+   * Looks in the media stream tracks for an object that has the `kind` attribute to `video` and **disables** the first one in the list.
+   * 
+   * @param {boolean} publish - Determines if the socket emits/publishes or not the `USER_VIDEO_STOPPED` event. **See:** [action](#action)
+   */
   stopCamera(publish = true) {
     if (this.stream) {
       this.stream.getVideoTracks()[0].enabled = false
@@ -31,6 +59,11 @@ class Session {
     }
   }
 
+  /**
+   * Looks in the media stream tracks for an object that has the `kind` attribute to `video` and **enables** the first one in the list.
+   * 
+   * @param {boolean} publish - Determines if the socket emits/publishes or not the `USER_VIDEO_STARTED` event. **See:** [action](#action)
+   */
   startCamera(publish = true) {
     if (this.stream) {
       this.stream.getVideoTracks()[0].enabled = true
@@ -38,13 +71,23 @@ class Session {
     }
   }
 
+  /**
+   * Looks in the media stream tracks for an object that has the `kind` attribute to `audio` and **disables** the first one in the list.
+   *
+   * @param {boolean} publish - Determines if the socket emits/publishes or not the `USER_AUDIO_STOPPED` event. **See:** [action](#action)
+   */
   muteAudio(publish = true) {
     if (this.stream) {
       this.stream.getAudioTracks()[0].enabled = false
-      if (publish) this.pub(Session.actions.USER_VIDEO_STOPPED, {})
+      if (publish) this.pub(Session.actions.USER_AUDIO_STOPPED, {})
     }
   }
 
+  /**
+   * Looks in the media stream tracks for an object that has the `kind` attribute to `audio` and **enables** the first one in the list.
+   *
+   * @param {boolean} publish - Determines if the socket emits/publishes or not the `USER_AUDIO_STARTED` event. **See:** [action](#action)
+   */
   unmuteAudio(publish = true) {
     if (this.stream) {
       this.stream.getAudioTracks()[0].enabled = true
@@ -52,10 +95,25 @@ class Session {
     }
   }
 
+  /**
+   * Returns the [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement) of requested user(If exists).
+   * 
+   * @param {string | number} userId - User id specified in userData
+   * @returns {MediaStream | undefined} - User's video stream
+   */
   getVideoStream(userId) {
     return this.userStreams[userId]
   }
 
+  /**
+   * Creates the [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement) and adds it to the body.
+   * The video will start playing as soon as the duration and dimensions of the media have been determined
+   * <br>
+   * In case the user already has a stream nothing would happend.
+   * 
+   * @param {MediaStream | MediaSource | Blob | File} remoteStream 
+   * @param {string | number} userId 
+   */
   setVideoStream(remoteStream, userId) {
     if (this.userStreams[userId]) {
       return
@@ -72,12 +130,26 @@ class Session {
     document.body.appendChild(video)
   }
 
+  /**
+   * Checks if this Session's roomId is the same as the passed in the parameters.
+   *
+   * @param {boolean} roomId 
+   */
   isJoiningTheSameRoom(roomId) {
     return (
       this.roomId === roomId
     )
   }
 
+  /**
+   * Joins the user to a room and subscribes to all [private actions](#private_actions). 
+   * Also subscribes the user to a wildcard event that can recieve any custom action(Excluding private actions). 
+   * This is very useful when you wanna emit/publish custom events that are not in the pre-stablished custom [actions](#actions).
+   * <br>
+   * Emits/publishes the `JOIN_ROOM` event. **See:** [action](#action)
+   *
+   * @param {string | number} roomId - Room ID value
+   */
   joinRoom(roomId) {
     this.roomId = roomId
 
@@ -230,6 +302,11 @@ class Session {
     return this.__streamPromise
   }
 
+  /**
+   * Disconnects the user from his current room, emitting/publishing the `LEFT_ROOM` event. **See:** [action](#action)
+   * <br>
+   * If the socket exists then `USER_LEFT` will be also emitted, check [joinRoom](#joinRoom) method.
+   */
   leaveRoom() {
     // Instruct Collab's clients to cleanup session user data.
     this._emit(Session.actions.LEFT_ROOM)
@@ -250,14 +327,30 @@ class Session {
     }
   }
 
+  /**
+   * Returns userData for all the users in the session.
+   */
   getUsers() {
     return this.users
   }
 
+  /**
+   * Returns the specific user information using the userId.
+   * 
+   * @param {string| number} id - id specified in userData param.
+   * @returns {object | undefined}
+   */
   getUser(id) {
     return this.users[id]
   }
 
+  /**
+   * Emits/Publishes an event action to the socket.
+   * 
+   * @param {string} messageType - Represents the event action that is published
+   * @param {any} payload - It could be anything that you want to send to other users
+   * @param {function} ack - Function that will be called right after server response
+   */
   pub(messageType, payload, ack) {
     if (!messageType) throw new Error('Missing messageType')
 
@@ -279,6 +372,13 @@ class Session {
     }
   }
 
+  /**
+   * Registers a new handler for a given event.
+   * **Note:** The session can handle multiple callbacks for a single event.
+   * 
+   * @param {string} messageType - Represents the event action subscribed to.
+   * @param {function} callback - Recieves by parameters the payload sent by the publisher
+   */
   sub(messageType, callback) {
     if (!messageType) throw new Error('Missing messageType')
     if (!callback) throw new Error('Missing callback')
@@ -298,6 +398,10 @@ class Session {
   }
 }
 
+/**
+ * Represents Custom Default Events used by `Session` class.
+ * @enum
+ */
 Session.actions = {
   USER_JOINED: 'user-joined',
   USER_VIDEO_STARTED: 'user-video-started',
