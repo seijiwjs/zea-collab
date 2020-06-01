@@ -45,29 +45,24 @@ export default class Avatar {
       this.__cameraBound = false
 
       let avatarImage
-      let geom
+      let geom = new Disc(0.5, 64)
       if (this.__userData.picture && this.__userData.picture != '') {
         avatarImage = new LDRImage('user' + this.__userData.id + 'AvatarImage')
         avatarImage.setImageURL(this.__userData.picture)
-        geom = new Disc(0.5, 64)
       } else {
         const firstName = this.__userData.name || this.__userData.given_name || ""
         const lastName = this.__userData.lastName || this.__userData.family_name || ""
         avatarImage = new Label("Name")
-        const bgColor = new Color(1, 1, 1, 0)
-        avatarImage.getParameter('backgroundColor').setValue(bgColor)
-        avatarImage.getParameter('fontSize').setValue(42)
-        avatarImage.getParameter('borderRadius').setValue(42)
-        avatarImage.getParameter('borderWidth').setValue(1)
-        avatarImage.getParameter('margin').setValue(18)
-        avatarImage.getParameter('text').setValue(`${firstName.charAt(0)} ${lastName.charAt(0)}`)
-
-        geom = new Plane(1, 1)
+        avatarImage.getParameter('BackgroundColor').setValue(this.__avatarColor)
+        avatarImage.getParameter('FontSize').setValue(42)
+        avatarImage.getParameter('BorderRadius').setValue(0)
+        avatarImage.getParameter('BorderWidth').setValue(0)
+        avatarImage.getParameter('Margin').setValue(12)
+        avatarImage.getParameter('StrokeBackgroundOutline').setValue(false)
+        avatarImage.getParameter('Text').setValue(`${firstName.charAt(0)}${lastName.charAt(0)}`)
+        
         avatarImage.labelRendered.connect((event) => {
-          console.log(event)
-          const aspect = event.width / event.height
-          // geom.getParameter('SizeX').setValue(0.1 * aspect)
-          this.__avatarImageXfo.sc.set(0.15 * aspect, 0.15, 1)
+          this.__avatarImageXfo.sc.set(0.15, 0.15, 1)
           this.__avatarImageGeomItem.setLocalXfo(this.__avatarImageXfo)
         })
       }
@@ -90,6 +85,26 @@ export default class Avatar {
       this.__avatarImageXfo.sc.set(0.2, 0.2, 1)
       this.__avatarImageXfo.ori.setFromAxisAndAngle(new Vec3(0, 1, 0), Math.PI)
       this.__avatarImageGeomItem.setLocalXfo(this.__avatarImageXfo)
+
+      ///////////////////////////////////////////////
+      
+      const avatarImageBorderMaterial = new Material(
+        'avatarImageBorderMaterial',
+        'FlatSurfaceShader'
+      )
+      avatarImageBorderMaterial.getParameter('BaseColor').setValue(new Color(0,0,0,1))
+      avatarImageBorderMaterial.visibleInGeomDataBuffer = false
+      const avatarImageBorderGeomItem = new GeomItem(
+        'avatarImageBorder',
+        geom,
+        avatarImageBorderMaterial
+      )
+
+      const borderXfo = new Xfo()
+      borderXfo.sc.set(1.1, 1.1, 1.1)
+      borderXfo.tr.set(0.0, 0.0, -0.001)
+      avatarImageBorderGeomItem.setLocalXfo(borderXfo)
+      this.__avatarImageGeomItem.addChild(avatarImageBorderGeomItem, false)
     }
   }
 
@@ -207,7 +222,7 @@ export default class Avatar {
       'SimpleSurfaceShader'
     )
     material.visibleInGeomDataBuffer = false
-    material.getParameter('BaseColor').setValue(this.__avatarColor)
+    material.getParameter('BaseColor').setValue(new Color(0.5, 0.5, 0.5, 0))
     const geomItem = new GeomItem('camera', shape, material)
     const geomXfo = new Xfo()
     geomItem.setGeomOffsetXfo(geomXfo)
