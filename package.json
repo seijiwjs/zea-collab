@@ -12,11 +12,10 @@
     "/dist/index.rawimport.js"
   ],
   "scripts": {
-    "build": "rollup -c && rollup -c rollup.config.rawimport.js",
+    "build": "rollup -c",
     "dist": "yarn publish --access=public",
     "prepare": "yarn run build",
-    "start": "rollup -c rollup.config.dev.js -w",
-    "start-rawimport": "rollup -c rollup.config.rawimport.js -w"
+    "start": "rollup -c rollup.config.dev.js -w"
   },
   "repository": {
     "type": "git",
