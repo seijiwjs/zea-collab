@@ -66,7 +66,7 @@ class Avatar {
         avatarImage.getParameter('StrokeBackgroundOutline').setValue(false)
         avatarImage.getParameter('Text').setValue(`${firstName.charAt(0)}${lastName.charAt(0)}`)
         
-        avatarImage.labelRendered.connect((event) => {
+        avatarImage.on('labelRendered', (event) => {
           this.__avatarImageXfo.sc.set(0.15, 0.15, 1)
           this.__avatarImageGeomItem.setLocalXfo(this.__avatarImageXfo)
         })
@@ -362,7 +362,7 @@ class Avatar {
           this.__vrAsset = this.__appData.scene.loadCommonAssetResource(
             hmdAssetId
           )
-          this.__vrAsset.geomsLoaded.connect(() => {
+          this.__vrAsset.on('geomsLoaded', () => {
             const materialLibrary = this.__vrAsset.getMaterialLibrary()
             const materialNames = materialLibrary.getMaterialNames()
             for (const name of materialNames) {
@@ -429,7 +429,7 @@ class Avatar {
           controllerTree.setLocalXfo(xfo)
           treeItem.addChild(controllerTree, false)
         }
-        this.__vrAsset.geomsLoaded.connect(() => {
+        this.__vrAsset.on('geomsLoaded', () => {
           setupControllerGeom()
         })
       }

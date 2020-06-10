@@ -116,21 +116,21 @@ class SessionSync {
       
       const viewport = appData.renderer.getViewport()
 
-      this.mouseDownId = viewport.mouseDown.connect((event) => {
+      this.mouseDownId = viewport.on('mouseDown', (event) => {
         const data = {
           interfaceType: 'CameraAndPointer',
           hilightPointer: {},
         }
         session.pub(Session.actions.POSE_CHANGED, data)
       })
-      this.mouseUpId = viewport.mouseUp.connect((event) => {
+      this.mouseUpId = viewport.on('mouseUp', (event) => {
         const data = {
           interfaceType: 'CameraAndPointer',
           unhilightPointer: {},
         }
         session.pub(Session.actions.POSE_CHANGED, convertValuesToJSON(data))
       })
-      this.mouseMoveId = viewport.mouseMove.connect((event) => {
+      this.mouseMoveId = viewport.on('mouseMove', (event) => {
         const intersectionData = event.viewport.getGeomDataAtPos(
           event.mousePos,
           event.mouseRay
@@ -146,7 +146,7 @@ class SessionSync {
         }
         session.pub(Session.actions.POSE_CHANGED, convertValuesToJSON(data))
       })
-      viewport.mouseLeave.connect((event) => {
+      viewport.on('mouseLeave', (event) => {
         const data = {
           interfaceType: 'CameraAndPointer',
           hidePointer: {},
@@ -156,7 +156,7 @@ class SessionSync {
 
       let tick = 0
 
-      appData.renderer.viewChanged.connect((event) => {
+      appData.renderer.on('viewChanged', (event) => {
         tick++
         const isVRView = event.interfaceType == 'VR'
         if (isVRView) {
@@ -210,7 +210,7 @@ class SessionSync {
     if (appData.undoRedoManager) {
 
       const root = appData.scene.getRoot()
-      appData.undoRedoManager.changeAdded.connect((change) => {
+      appData.undoRedoManager.on('changeAdded', (change) => {
         const context = {
           appData,
           makeRelative: (path) => path,
@@ -241,7 +241,7 @@ class SessionSync {
         // otherUndoStack.addChange(otherChange);
       })
 
-      appData.undoRedoManager.changeUpdated.connect((data) => {
+      appData.undoRedoManager.on('changeUpdated', (data) => {
         const jsonData = convertValuesToJSON(data)
         session.pub(Session.actions.COMMAND_UPDATED, jsonData)
 
@@ -282,7 +282,7 @@ class SessionSync {
       // Undostack Changes.
       // Synchronize undo stacks between users.
 
-      appData.undoRedoManager.changeUndone.connect(() => {
+      appData.undoRedoManager.on('changeUndone', () => {
         session.pub('UndoRedoManager_changeUndone', {})
       })
 
@@ -291,7 +291,7 @@ class SessionSync {
         undoRedoManager.undo()
       })
 
-      appData.undoRedoManager.changeRedone.connect(() => {
+      appData.undoRedoManager.on('changeRedone', () => {
         session.pub('UndoRedoManager_changeRedone', {})
       })
 
@@ -306,7 +306,7 @@ class SessionSync {
     // Synchronize State Machine changes between users.
 
     // sgFactory.registerCallback('StateMachine', (stateMachine) => {
-    //   stateMachine.stateChanged.connect((name) => {
+    //   stateMachine.on('stateChanged', (name) => {
     //     session.pub('StateMachine_stateChanged', {
     //       stateMachine: stateMachine.getPath(),
     //       stateName: name,
