@@ -65,6 +65,9 @@ class SessionSync {
   constructor(session, appData, currentUser, options) {
     // const currentUserAvatar = new Avatar(appData, currentUser, true);
 
+    this.session = session;
+    this.appData = appData;
+
     const userDatas = {}
 
     session.sub(Session.actions.USER_JOINED, (userData) => {
@@ -210,7 +213,8 @@ class SessionSync {
     if (appData.undoRedoManager) {
 
       const root = appData.scene.getRoot()
-      appData.undoRedoManager.on('changeAdded', (change) => {
+      appData.undoRedoManager.on('changeAdded', (event) => {
+        const { change } = event
         const context = {
           appData,
           makeRelative: (path) => path,
@@ -301,25 +305,23 @@ class SessionSync {
       })
     }
 
+  }
+
+  syncStateMachines(stateMachine) {
+
     // ///////////////////////////////////////////
     // State Machine Changes.
     // Synchronize State Machine changes between users.
+    stateMachine.on('stateChanged', (event) => {
+      this.session.pub('StateMachine_stateChanged', {
+        stateMachine: stateMachine.getPath(),
+        stateName: event.name,
+      })
+    })
 
-    // sgFactory.registerCallback('StateMachine', (stateMachine) => {
-    //   stateMachine.on('stateChanged', (name) => {
-    //     session.pub('StateMachine_stateChanged', {
-    //       stateMachine: stateMachine.getPath(),
-    //       stateName: name,
-    //     })
-    //   })
-    // })
-
-    // session.sub('StateMachine_stateChanged', (data, userId) => {
-    //   const stateMachine = appData.scene
-    //     .getRoot()
-    //     .resolvePath(data.stateMachine, 1)
-    //   stateMachine.activateState(data.stateName)
-    // })
+    this.session.sub('StateMachine_stateChanged', (data, userId) => {
+      stateMachine.activateState(data.stateName)
+    })
   }
 }
 
