@@ -366,6 +366,18 @@ class Session {
   }
 
   _emit(messageType, payload, userId) {
+
+    // If messages are recieved for users not actually in
+    // the session, we can safely ignore them.
+    // This can occur, if during the PING_ROOM, anoter message
+    // is sent, like a mouseMove, which happens frequently.
+    // In this case, the other users recieve a 'mouseMove' message
+    // for a user they have not yet recieved the USER_JOINED message.
+    if (userId && !this.users[userId]) {
+      console.warn(`Ignoring message for user not in session: ${messageType}. User id: ${userId}`)
+      return;
+    }
+
     const callbacks = this.callbacks[messageType]
     if (callbacks) {
       callbacks.forEach((callback) => callback(payload, userId))
