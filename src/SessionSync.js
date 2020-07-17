@@ -69,6 +69,19 @@ class SessionSync {
     this.appData = appData;
 
     const userDatas = {}
+    
+    const sendCurrentPose = ()=>{
+      // Emit an event to configure remote avatars to the current camera transform.
+      const camera = appData.renderer.getViewport().getCamera()
+      session.pub(
+        "poseChanged",
+        convertValuesToJSON({
+          interfaceType: 'CameraAndPointer',
+          viewXfo: camera.getGlobalXfo(),
+          focalDistance: camera.getParameter('focalDistance').getValue(),
+        })
+      )
+    }
 
     session.sub(Session.actions.USER_JOINED, (userData) => {
       if (!(userData.id in userDatas)) {
@@ -80,6 +93,11 @@ class SessionSync {
             enableXfoHandles: false,
             setItemsSelected: false,
           }),
+        }
+
+        // Send our pose to the new user to update our avatar in their view.
+        if (appData.renderer) {
+          sendCurrentPose()
         }
       }
     })
@@ -124,14 +142,14 @@ class SessionSync {
           interfaceType: 'CameraAndPointer',
           hilightPointer: {},
         }
-        session.pub(Session.actions.POSE_CHANGED, data)
+        session.pub("poseChanged", data)
       })
       this.mouseUpId = viewport.on('mouseUp', (event) => {
         const data = {
           interfaceType: 'CameraAndPointer',
           unhilightPointer: {},
         }
-        session.pub(Session.actions.POSE_CHANGED, convertValuesToJSON(data))
+        session.pub("poseChanged", convertValuesToJSON(data))
       })
       this.mouseMoveId = viewport.on('mouseMove', (event) => {
         const intersectionData = event.viewport.getGeomDataAtPos(
@@ -147,14 +165,14 @@ class SessionSync {
             length: rayLength,
           },
         }
-        session.pub(Session.actions.POSE_CHANGED, convertValuesToJSON(data))
+        session.pub("poseChanged", convertValuesToJSON(data))
       })
       viewport.on('mouseLeave', (event) => {
         const data = {
           interfaceType: 'CameraAndPointer',
           hidePointer: {},
         }
-        session.pub(Session.actions.POSE_CHANGED, data)
+        session.pub("poseChanged", data)
       })
 
       let tick = 0
@@ -184,10 +202,10 @@ class SessionSync {
 
         // currentUserAvatar.updatePose(data);
 
-        session.pub(Session.actions.POSE_CHANGED, convertValuesToJSON(data))
+        session.pub("poseChanged", convertValuesToJSON(data))
       })
 
-      session.sub(Session.actions.POSE_CHANGED, (jsonData, userId) => {
+      session.sub("poseChanged", (jsonData, userId) => {
         if (!userDatas[userId]) {
           console.warn('User id not in session:', userId)
           return
@@ -197,14 +215,7 @@ class SessionSync {
         avatar.updatePose(data)
       })
 
-      // Emit a signal to configure remote avatars to the current camera transform.
-      session.pub(
-        Session.actions.POSE_CHANGED,
-        convertValuesToJSON({
-          interfaceType: 'CameraAndPointer',
-          viewXfo: appData.renderer.getViewport().getCamera().getGlobalXfo(),
-        })
-      )
+      sendCurrentPose()
     }
 
     // ///////////////////////////////////////////
