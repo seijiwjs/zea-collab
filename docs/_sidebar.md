@@ -9,7 +9,12 @@
 * [Enable collaboration](how-to/enable-collab.md)
 
 - API References
-  * [API](api/README.md)
+[//]: <> (API)
+* [Avatar](api/Avatar)
+* [Session](api/Session)
+* [SessionRecorder](api/SessionRecorder)
+* [SessionSync](api/SessionSync)
+[//]: <> (API)
 
 - Technical Overview
   * [Introduction](technical-overview/introduction.md)
