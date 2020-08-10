@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/ZeaInc/zea-collab#readme",
   "author": "Zea Inc.",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@zeainc/zea-engine": "^1.0.7",
     "@zeainc/zea-ux": "^1.2.9",
