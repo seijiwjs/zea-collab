@@ -41,8 +41,7 @@ const convertValuesFromJSON = (value, scene) => {
     return arr
   } else if (typeof value === 'object') {
     const dict = {}
-    for (const key in value)
-      dict[key] = convertValuesFromJSON(value[key], scene)
+    for (const key in value) dict[key] = convertValuesFromJSON(value[key], scene)
     return dict
   } else {
     return value
@@ -127,8 +126,7 @@ class SessionSync {
         return
       }
       console.log('USER_VIDEO_STOPPED:', userId, ' us:', currentUser.id)
-      if (userDatas[userId].avatar)
-        userDatas[userId].avatar.detachRTCStream(session.getVideoStream(userId))
+      if (userDatas[userId].avatar) userDatas[userId].avatar.detachRTCStream(session.getVideoStream(userId))
     })
 
     // ///////////////////////////////////////////
@@ -151,10 +149,7 @@ class SessionSync {
         session.pub('poseChanged', convertValuesToJSON(data))
       })
       this.mouseMoveId = viewport.on('mouseMove', (event) => {
-        const intersectionData = event.viewport.getGeomDataAtPos(
-          event.mousePos,
-          event.mouseRay
-        )
+        const intersectionData = event.viewport.getGeomDataAtPos(event.mousePos, event.mouseRay)
         const rayLength = intersectionData ? intersectionData.dist : 5.0
         const data = {
           interfaceType: 'CameraAndPointer',
