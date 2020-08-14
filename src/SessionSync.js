@@ -1,4 +1,4 @@
-import { typeRegistry, BaseItem } from '@zeainc/zea-engine'
+import { Registry, BaseItem } from '@zeainc/zea-engine'
 import { UndoRedoManager, SelectionManager } from '@zeainc/zea-ux'
 
 import Session from './Session.js'
@@ -11,7 +11,7 @@ const convertValuesToJSON = (value) => {
     return '::' + value.getPath()
   } else if (value.toJSON) {
     const result = value.toJSON()
-    result.typeName = typeRegistry.getTypeName(value.constructor)
+    result.typeName = Registry.getBlueprintName(value.constructor)
     return result
   } else if (Array.isArray(value)) {
     const arr = []
@@ -32,7 +32,7 @@ const convertValuesFromJSON = (value, scene) => {
   } else if (typeof value === 'string' && value.startsWith('::')) {
     return scene.getRoot().resolvePath(value, 1)
   } else if (value.typeName) {
-    const newval = typeRegistry.getType(value.typeName).create()
+    const newval = Registry.getBlueprint(value.typeName).create()
     newval.fromJSON(value)
     return newval
   } else if (Array.isArray(value)) {
@@ -49,14 +49,14 @@ const convertValuesFromJSON = (value, scene) => {
   }
 }
 
-/** 
- * Helper class with default session sync behaviour 
+/**
+ * Helper class with default session sync behaviour
  */
 class SessionSync {
   /**
-   * All default behaviours for session sub actions are defined here. 
+   * All default behaviours for session sub actions are defined here.
    * You can use this as a guide or as the starter configuration for sub actions.
-   * 
+   *
    * @see [Session](api/Session.md)
    * @param {Session} session - The session value.
    * @param {object} appData - The appData value.
@@ -65,16 +65,16 @@ class SessionSync {
   constructor(session, appData, currentUser, options) {
     // const currentUserAvatar = new Avatar(appData, currentUser, true);
 
-    this.session = session;
-    this.appData = appData;
+    this.session = session
+    this.appData = appData
 
     const userDatas = {}
-    
-    const sendCurrentPose = ()=>{
+
+    const sendCurrentPose = () => {
       // Emit an event to configure remote avatars to the current camera transform.
       const camera = appData.renderer.getViewport().getCamera()
       session.pub(
-        "poseChanged",
+        'poseChanged',
         convertValuesToJSON({
           interfaceType: 'CameraAndPointer',
           viewXfo: camera.getGlobalXfo(),
@@ -134,7 +134,6 @@ class SessionSync {
     // ///////////////////////////////////////////
     // Pose Changes
     if (appData.renderer) {
-      
       const viewport = appData.renderer.getViewport()
 
       this.mouseDownId = viewport.on('mouseDown', (event) => {
@@ -142,14 +141,14 @@ class SessionSync {
           interfaceType: 'CameraAndPointer',
           hilightPointer: {},
         }
-        session.pub("poseChanged", data)
+        session.pub('poseChanged', data)
       })
       this.mouseUpId = viewport.on('mouseUp', (event) => {
         const data = {
           interfaceType: 'CameraAndPointer',
           unhilightPointer: {},
         }
-        session.pub("poseChanged", convertValuesToJSON(data))
+        session.pub('poseChanged', convertValuesToJSON(data))
       })
       this.mouseMoveId = viewport.on('mouseMove', (event) => {
         const intersectionData = event.viewport.getGeomDataAtPos(
@@ -165,14 +164,14 @@ class SessionSync {
             length: rayLength,
           },
         }
-        session.pub("poseChanged", convertValuesToJSON(data))
+        session.pub('poseChanged', convertValuesToJSON(data))
       })
       viewport.on('mouseLeave', (event) => {
         const data = {
           interfaceType: 'CameraAndPointer',
           hidePointer: {},
         }
-        session.pub("poseChanged", data)
+        session.pub('poseChanged', data)
       })
 
       let tick = 0
@@ -202,10 +201,10 @@ class SessionSync {
 
         // currentUserAvatar.updatePose(data);
 
-        session.pub("poseChanged", convertValuesToJSON(data))
+        session.pub('poseChanged', convertValuesToJSON(data))
       })
 
-      session.sub("poseChanged", (jsonData, userId) => {
+      session.sub('poseChanged', (jsonData, userId) => {
         if (!userDatas[userId]) {
           console.warn('User id not in session:', userId)
           return
@@ -222,7 +221,6 @@ class SessionSync {
     // Scene Changes
     // const otherUndoStack = new UndoRedoManager();
     if (appData.undoRedoManager) {
-
       const root = appData.scene.getRoot()
       appData.undoRedoManager.on('changeAdded', (event) => {
         const { change } = event
@@ -315,11 +313,9 @@ class SessionSync {
         undoRedoManager.redo()
       })
     }
-
   }
 
   syncStateMachines(stateMachine) {
-
     // ///////////////////////////////////////////
     // State Machine Changes.
     // Synchronize State Machine changes between users.
@@ -336,6 +332,4 @@ class SessionSync {
   }
 }
 
-
-
-export default SessionSync;
+export default SessionSync
