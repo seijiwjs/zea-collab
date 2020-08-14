@@ -15,7 +15,9 @@
     "build": "rollup -c",
     "dist": "yarn publish --access=public",
     "prepare": "yarn run build",
-    "start": "rollup -c rollup.config.dev.js -w"
+    "start": "rollup -c rollup.config.dev.js -w",
+    "docs": "adg --config adg.config.json",
+    "docs-w": "adg -w --config=adg.config.json"
   },
   "repository": {
     "type": "git",
@@ -26,7 +28,7 @@
   },
   "homepage": "https://github.com/ZeaInc/zea-collab#readme",
   "author": "Zea Inc.",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@zeainc/zea-engine": "^1.0.7",
     "@zeainc/zea-ux": "^1.2.9",
@@ -37,6 +39,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^12.0.0",
     "@rollup/plugin-node-resolve": "^8.0.0",
+    "@zeainc/jsdocs2md": "^0.0.3",
     "bufferutil": "^4.0.1",
     "builtin-modules": "^3.1.0",
     "crypto": "^1.0.1",

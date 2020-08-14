@@ -1,6 +1,6 @@
 // Note: this import is disabled for the rawimport version of collab
 // We need to figure out if we can remove this only for the rawimport version.
-// import io from 'socket.io-client'
+import io from 'socket.io-client'
 import wildcardMiddleware from 'socketio-wildcard'
 
 import zeaDebug from './helpers/zeaDebug'
@@ -358,10 +358,19 @@ class Session {
   pub(messageType, payload, ack) {
     if (!messageType) throw new Error('Missing messageType')
 
+    const compactedUserData = {...this.userData}
+    
+    if(messageType != 'join-room' 
+    && messageType != 'userChanged'
+    && messageType != 'ping-room'){
+      compactedUserData.avatar = null
+      compactedUserData.picture = null
+    }
+
     this.socket.emit(
       messageType,
       {
-        userData: this.userData,
+        userData: compactedUserData,
         userId: this.userData.id,
         payload,
       },
