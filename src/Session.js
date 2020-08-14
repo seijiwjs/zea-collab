@@ -182,10 +182,16 @@ class Session {
     this.socket.on(private_actions.JOIN_ROOM, (message) => {
       zeaDebug(`${private_actions.JOIN_ROOM}:\n%O`, message)
 
+      // Note: reciprocate the ping so that all users are added.
+      // This means that when USER_JOINED is emitted, the session
+      // can immediately send messages to that user.
+      // This addresses a race condition where remote avatars could not be configures
+      // for users as soon as they were joined, because the user was not yet joined on
+      // the other machines.
+      this.pub(private_actions.PING_ROOM)
+
       const incomingUserData = message.userData
       this._addUserIfNew(incomingUserData)
-
-      this.pub(private_actions.PING_ROOM)
     })
 
     this.socket.on(private_actions.LEAVE_ROOM, (message) => {
@@ -432,7 +438,6 @@ Session.actions = {
   USER_LEFT: 'user-left',
   LEFT_ROOM: 'left-room',
   TEXT_MESSAGE: 'text-message',
-  POSE_CHANGED: 'pose-message',
   COMMAND_ADDED: 'command-added',
   COMMAND_UPDATED: 'command-updated',
   FILE_WITH_PROGRESS: 'file-with-progress',

@@ -13,6 +13,15 @@
       }
     </style>  
     <script src="./libs/socket.io.js"></script>
+    <script>
+      
+// Note: this is a workaround untill Issue #20 is fixed
+window.debug = function(key) {
+  return (msg) => {
+    console.log(msg)
+  }
+}
+    </script>
   </head>
   <body>
     <div id="viewport"></div>
@@ -24,12 +33,12 @@ import {
   Color,
   Scene,
   GLRenderer,
-} from './libs/zea-engine/dist/index.esm.js'
+} from 'https://unpkg.com/@zeainc/zea-engine/dist/index.esm.js'
 
 import {
   Session, 
   SessionSync
-} from './libs/zea-collab/dist/index.rawimport.js'
+} from 'https://unpkg.com/@zeainc/zea-collab/dist/index.rawimport.js'
 
 const domElement = document.getElementById("viewport");
 
@@ -47,7 +56,6 @@ const appData = {
   scene,
   renderer
 }
-
 
 const socketUrl = 'https://websocket-staging.zea.live'
 
@@ -70,3 +78,4 @@ const sessionSync = new SessionSync(session, appData, userData);
 
   </script>
 </html>
+
