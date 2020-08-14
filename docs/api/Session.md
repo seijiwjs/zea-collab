@@ -1,4 +1,4 @@
-## Classes
+### Classes
 
 <dl>
 <dt><a href="#Session">Session</a></dt>
@@ -10,10 +10,12 @@ Also has the actions to stream media.</p>
 
 <a name="Session"></a>
 
-## Session
-Session is used to store information about users and the communication method(Sockets).<br>Also has the actions to stream media.
+### Session
+Session is used to store information about users and the communication method(Sockets).
+<br>
+Also has the actions to stream media.
 
-**Kind**: global class  
+
 
 * [Session](#Session)
     * [new Session(userData, socketUrl)](#new-Session)
@@ -37,7 +39,16 @@ Session is used to store information about users and the communication method(So
 <a name="new_Session_new"></a>
 
 ### new Session
-Instantiates a new session object that contains user's data and the socketUrl that is going to connect to.<br>In the userData object you can pass any information you want, but you must provide an `id`. In case you would like to use the [`zea-user-chip`](https://github.com/ZeaInc/zea-web-components/tree/staging/src/components/zea-user-chip) component, some specific data will be required, although they are not mandatory, it would be nice to have:* **firstName** or **given_name*** **lastName** or **family_name*** **avatar** or **picture** - The URL to the image* **color** - The RGBA hexadecimal string. i.e. #FFFFFF. (Random color in case you don't specify it)
+Instantiates a new session object that contains user's data and the socketUrl that is going to connect to.
+<br>
+In the userData object you can pass any information you want, but you must provide an `id`. 
+In case you would like to use the [`zea-user-chip`](https://github.com/ZeaInc/zea-web-components/tree/staging/src/components/zea-user-chip) component, 
+some specific data will be required, although they are not mandatory, it would be nice to have:
+
+* **firstName** or **given_name**
+* **lastName** or **family_name**
+* **avatar** or **picture** - The URL to the image
+* **color** - The RGBA hexadecimal string. i.e. #FFFFFF. (Random color in case you don't specify it)
 
 
 | Param | Type | Description |
@@ -50,7 +61,7 @@ Instantiates a new session object that contains user's data and the socketUrl th
 ### stopCamera
 Looks in the media stream tracks for an object that has the `kind` attribute to `video` and **disables** the first one in the list.
 
-**Kind**: instance method of [<code>Session</code>](#Session)  
+
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -61,7 +72,7 @@ Looks in the media stream tracks for an object that has the `kind` attribute to 
 ### startCamera
 Looks in the media stream tracks for an object that has the `kind` attribute to `video` and **enables** the first one in the list.
 
-**Kind**: instance method of [<code>Session</code>](#Session)  
+
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -72,7 +83,7 @@ Looks in the media stream tracks for an object that has the `kind` attribute to 
 ### muteAudio
 Looks in the media stream tracks for an object that has the `kind` attribute to `audio` and **disables** the first one in the list.
 
-**Kind**: instance method of [<code>Session</code>](#Session)  
+
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -83,7 +94,7 @@ Looks in the media stream tracks for an object that has the `kind` attribute to 
 ### unmuteAudio
 Looks in the media stream tracks for an object that has the `kind` attribute to `audio` and **enables** the first one in the list.
 
-**Kind**: instance method of [<code>Session</code>](#Session)  
+
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -94,7 +105,7 @@ Looks in the media stream tracks for an object that has the `kind` attribute to 
 ### getVideoStream
 Returns the [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement) of requested user(If exists).
 
-**Kind**: instance method of [<code>Session</code>](#Session)  
+
 **Returns**: <code>MediaStream</code> \| <code>undefined</code> - - User's video stream  
 
 | Param | Type | Description |
@@ -104,9 +115,12 @@ Returns the [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/
 <a name="Session+setVideoStream"></a>
 
 ### setVideoStream
-Creates the [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement) and adds it to the body.The video will start playing as soon as the duration and dimensions of the media have been determined<br>In case the user already has a stream nothing would happend.
+Creates the [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement) and adds it to the body.
+The video will start playing as soon as the duration and dimensions of the media have been determined
+<br>
+In case the user already has a stream nothing would happend.
 
-**Kind**: instance method of [<code>Session</code>](#Session)  
+
 
 | Param | Type |
 | --- | --- |
@@ -118,7 +132,7 @@ Creates the [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/
 ### isJoiningTheSameRoom
 Checks if this Session's roomId is the same as the passed in the parameters.
 
-**Kind**: instance method of [<code>Session</code>](#Session)  
+
 
 | Param | Type |
 | --- | --- |
@@ -127,9 +141,13 @@ Checks if this Session's roomId is the same as the passed in the parameters.
 <a name="Session+joinRoom"></a>
 
 ### joinRoom
-Joins the user to a room and subscribes to all [private actions](#private_actions). Also subscribes the user to a wildcard event that can recieve any custom action(Excluding private actions). This is very useful when you wanna emit/publish custom events that are not in the pre-stablished custom [actions](#actions).<br>Emits/publishes the `JOIN_ROOM` event. **See:** [action](#action)
+Joins the user to a room and subscribes to all [private actions](#private_actions). 
+Also subscribes the user to a wildcard event that can recieve any custom action(Excluding private actions). 
+This is very useful when you wanna emit/publish custom events that are not in the pre-stablished custom [actions](#actions).
+<br>
+Emits/publishes the `JOIN_ROOM` event. **See:** [action](#action)
 
-**Kind**: instance method of [<code>Session</code>](#Session)  
+
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -138,21 +156,23 @@ Joins the user to a room and subscribes to all [private actions](#private_action
 <a name="Session+leaveRoom"></a>
 
 ### leaveRoom
-Disconnects the user from his current room, emitting/publishing the `LEFT_ROOM` event. **See:** [action](#action)<br>If the socket exists then `USER_LEFT` will be also emitted, check [joinRoom](#joinRoom) method.
+Disconnects the user from his current room, emitting/publishing the `LEFT_ROOM` event. **See:** [action](#action)
+<br>
+If the socket exists then `USER_LEFT` will be also emitted, check [joinRoom](#joinRoom) method.
 
-**Kind**: instance method of [<code>Session</code>](#Session)  
+
 <a name="Session+getUsers"></a>
 
 ### getUsers
 Returns userData for all the users in the session.
 
-**Kind**: instance method of [<code>Session</code>](#Session)  
+
 <a name="Session+getUser"></a>
 
 ### getUser
 Returns the specific user information using the userId.
 
-**Kind**: instance method of [<code>Session</code>](#Session)  
+
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -163,7 +183,7 @@ Returns the specific user information using the userId.
 ### pub
 Emits/Publishes an event action to the socket.
 
-**Kind**: instance method of [<code>Session</code>](#Session)  
+
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -174,9 +194,10 @@ Emits/Publishes an event action to the socket.
 <a name="Session+sub"></a>
 
 ### sub
-Registers a new handler for a given event.**Note:** The session can handle multiple callbacks for a single event.
+Registers a new handler for a given event.
+**Note:** The session can handle multiple callbacks for a single event.
 
-**Kind**: instance method of [<code>Session</code>](#Session)  
+
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -185,10 +206,10 @@ Registers a new handler for a given event.**Note:** The session can handle mult
 
 <a name="Session.actions"></a>
 
-### action
+### actions
 Represents Custom Default Events used by `Session` class.
 
-**Kind**: static enum of [<code>Session</code>](#Session)  
+
 **Properties**
 
 | Name | Default |
@@ -208,10 +229,10 @@ Represents Custom Default Events used by `Session` class.
 
 <a name="private_actions"></a>
 
-## private\_actions
+### private
 User specific room actions.
 
-**Kind**: global enum  
+
 **Properties**
 
 | Name | Default |

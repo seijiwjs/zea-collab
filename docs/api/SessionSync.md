@@ -1,14 +1,15 @@
 <a name="SessionSync"></a>
 
-## SessionSync
+### SessionSync
 Helper class with default session sync behaviour
 
-**Kind**: global class  
+
 **See**: [Session](api/Session.md)  
 <a name="new_SessionSync_new"></a>
 
 ### new SessionSync
-All default behaviours for session sub actions are defined here. You can use this as a guide or as the starter configuration for sub actions.
+All default behaviours for session sub actions are defined here. 
+You can use this as a guide or as the starter configuration for sub actions.
 
 
 | Param | Type | Description |
