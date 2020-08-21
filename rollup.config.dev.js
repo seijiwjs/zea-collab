@@ -1,9 +1,8 @@
 import pkg from './package.json'
 
-import resolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import nodePolyfills from 'rollup-plugin-node-polyfills';
-
+import resolve from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
+import nodePolyfills from 'rollup-plugin-node-polyfills'
 
 // Transforms imports for raw imports.
 // We use this for unit testing, so we can use the libraries
@@ -21,11 +20,25 @@ const rawImportPathsPlugin = {
   renderChunk(code, chunk, options) {
     const repl = {
       '@zeainc/zea-engine': '../../zea-engine/dist/index.esm.js',
-      '@zeainc/zea-ux': '../../zea-ux/dist/index.rawimport.js'
+      '@zeainc/zea-ux': '../../zea-ux/dist/index.rawimport.js',
     }
-    let result = code;
+    let result = code
     for (let key in repl) result = result.replace(key, repl[key])
-    return result;
+    return result
+  },
+}
+
+const stripImportsPlugin = () => {
+  return {
+    name: 'strip-imports',
+    transform(code, id) {
+      const repl = {
+        "import io from 'socket.io-client'": '// Stripped : socket.io-client',
+      }
+      let result = code
+      for (let key in repl) result = result.replace(key, repl[key])
+      return result
+    },
   }
 }
 
@@ -42,18 +55,13 @@ export default [
     plugins: [],
     output: [
       { file: pkg.main, format: 'cjs' },
-      { file: pkg.module, format: 'es' }
+      { file: pkg.module, format: 'es' },
     ],
   },
   {
     input: 'src/index.js',
-    external: [
-      "@zeainc/zea-engine",
-      "@zeainc/zea-ux",
-    ],
-    plugins: [nodePolyfills(), resolve(), commonjs()],
-    output: [
-      { file: pkg.rawimport, format: 'es', plugins: [rawImportPathsPlugin] },
-    ],
-  }
+    external: ['@zeainc/zea-engine', '@zeainc/zea-ux', 'debug'],
+    plugins: [stripImportsPlugin(), nodePolyfills(), resolve(), commonjs()],
+    output: [{ file: pkg.rawimport, format: 'es', plugins: [rawImportPathsPlugin] }],
+  },
 ]

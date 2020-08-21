@@ -19,14 +19,14 @@ import {
 const up = new Vec3(0, 0, 1)
 
 /**
- * Represents the state on steroids of a user in the session. 
+ * Represents the state on steroids of a user in the session.
  */
 class Avatar {
   /**
    * Initializes all the components of the Avatar like, user image, labels, tranformations, color, etc.
    * <br>
    * Contains a TreeItem property to which all the children items can be attached to. i.e. Camera.
-   * 
+   *
    * @param {object} appData - The appData value. Must contain the renderer
    * @param {object} userData - The userData value.
    * @param {boolean} currentUserAvatar - The currentUserAvatar value.
@@ -55,9 +55,9 @@ class Avatar {
         avatarImage = new LDRImage('user' + this.__userData.id + 'AvatarImage')
         avatarImage.setImageURL(this.__userData.picture)
       } else {
-        const firstName = this.__userData.name || this.__userData.given_name || ""
-        const lastName = this.__userData.lastName || this.__userData.family_name || ""
-        avatarImage = new Label("Name")
+        const firstName = this.__userData.name || this.__userData.given_name || ''
+        const lastName = this.__userData.lastName || this.__userData.family_name || ''
+        avatarImage = new Label('Name')
         avatarImage.getParameter('BackgroundColor').setValue(this.__avatarColor)
         avatarImage.getParameter('FontSize').setValue(42)
         avatarImage.getParameter('BorderRadius').setValue(0)
@@ -65,26 +65,19 @@ class Avatar {
         avatarImage.getParameter('Margin').setValue(12)
         avatarImage.getParameter('StrokeBackgroundOutline').setValue(false)
         avatarImage.getParameter('Text').setValue(`${firstName.charAt(0)}${lastName.charAt(0)}`)
-        
+
         avatarImage.on('labelRendered', (event) => {
           this.__avatarImageXfo.sc.set(0.15, 0.15, 1)
           this.__avatarImageGeomItem.setLocalXfo(this.__avatarImageXfo)
         })
       }
 
-      const avatarImageMaterial = new Material(
-        'user' + this.__userData.id + 'AvatarImageMaterial',
-        'FlatSurfaceShader'
-      )
+      const avatarImageMaterial = new Material('user' + this.__userData.id + 'AvatarImageMaterial', 'FlatSurfaceShader')
       avatarImageMaterial.getParameter('BaseColor').setValue(this.__avatarColor)
       avatarImageMaterial.getParameter('BaseColor').setImage(avatarImage)
 
       avatarImageMaterial.visibleInGeomDataBuffer = false
-      this.__avatarImageGeomItem = new GeomItem(
-        'avatarImage',
-        geom,
-        avatarImageMaterial
-      )
+      this.__avatarImageGeomItem = new GeomItem('avatarImage', geom, avatarImageMaterial)
 
       this.__avatarImageXfo = new Xfo()
       this.__avatarImageXfo.sc.set(0.2, 0.2, 1)
@@ -92,18 +85,11 @@ class Avatar {
       this.__avatarImageGeomItem.setLocalXfo(this.__avatarImageXfo)
 
       ///////////////////////////////////////////////
-      
-      const avatarImageBorderMaterial = new Material(
-        'avatarImageBorderMaterial',
-        'FlatSurfaceShader'
-      )
-      avatarImageBorderMaterial.getParameter('BaseColor').setValue(new Color(0,0,0,1))
+
+      const avatarImageBorderMaterial = new Material('avatarImageBorderMaterial', 'FlatSurfaceShader')
+      avatarImageBorderMaterial.getParameter('BaseColor').setValue(new Color(0, 0, 0, 1))
       avatarImageBorderMaterial.visibleInGeomDataBuffer = false
-      const avatarImageBorderGeomItem = new GeomItem(
-        'avatarImageBorder',
-        geom,
-        avatarImageBorderMaterial
-      )
+      const avatarImageBorderGeomItem = new GeomItem('avatarImageBorder', geom, avatarImageBorderMaterial)
 
       const borderXfo = new Xfo()
       borderXfo.sc.set(1.1, 1.1, 1.1)
@@ -123,20 +109,11 @@ class Avatar {
       const videoItem = new VideoStreamImage2D('webcamStream')
       videoItem.setVideoStream(video)
 
-      this.__avatarCamMaterial = new Material(
-        'user' + this.__userData.id + 'AvatarImageMaterial',
-        'FlatSurfaceShader'
-      )
-      this.__avatarCamMaterial
-        .getParameter('BaseColor')
-        .setValue(this.__avatarColor)
+      this.__avatarCamMaterial = new Material('user' + this.__userData.id + 'AvatarImageMaterial', 'FlatSurfaceShader')
+      this.__avatarCamMaterial.getParameter('BaseColor').setValue(this.__avatarColor)
       this.__avatarCamMaterial.getParameter('BaseColor').setImage(videoItem)
       this.__avatarCamMaterial.visibleInGeomDataBuffer = false
-      this.__avatarCamGeomItem = new GeomItem(
-        'avatarImage',
-        this.__plane,
-        this.__avatarCamMaterial
-      )
+      this.__avatarCamGeomItem = new GeomItem('avatarImage', this.__plane, this.__avatarCamMaterial)
 
       const sc = 0.02
       this.__avatarCamXfo = new Xfo()
@@ -225,10 +202,7 @@ class Avatar {
     shape.getVertex(3).multiplyInPlace(pinch)
 
     shape.computeVertexNormals()
-    const material = new Material(
-      'user' + this.__userData.id + 'Material',
-      'SimpleSurfaceShader'
-    )
+    const material = new Material('user' + this.__userData.id + 'Material', 'SimpleSurfaceShader')
     material.visibleInGeomDataBuffer = false
     material.getParameter('BaseColor').setValue(new Color(0.5, 0.5, 0.5, 1.0))
     const geomItem = new GeomItem('camera', shape, material)
@@ -298,9 +272,7 @@ class Avatar {
       this.pointerXfo.sc.z = data.movePointer.length
       this.__treeItem.getChild(1).setLocalXfo(this.pointerXfo)
     } else if (data.hilightPointer) {
-      this.__pointermat
-        .getParameter('BaseColor')
-        .setValue(this.__hilightPointerColor)
+      this.__pointermat.getParameter('BaseColor').setValue(this.__hilightPointerColor)
     } else if (data.unhilightPointer) {
       this.__pointermat.getParameter('BaseColor').setValue(this.__avatarColor)
     } else if (data.hidePointer) {
@@ -335,8 +307,7 @@ class Avatar {
     if (this.__camera) hmdHolder.addChild(this.__camera, false)
 
     if (this.__hmdGeomItem) {
-      if (!this.__currentUserAvatar)
-        hmdHolder.addChild(this.__hmdGeomItem, false)
+      if (!this.__currentUserAvatar) hmdHolder.addChild(this.__hmdGeomItem, false)
       if (this.__cameraBound) {
         this.__hmdGeomItem.setVisible(false)
       }
@@ -359,9 +330,7 @@ class Avatar {
       if (!this.__vrAsset) {
         const hmdAssetId = resourceLoader.resolveFilePathToId(assetPath)
         if (hmdAssetId) {
-          this.__vrAsset = this.__appData.scene.loadCommonAssetResource(
-            hmdAssetId
-          )
+          this.__vrAsset = this.__appData.scene.loadCommonAssetResource(hmdAssetId)
           this.__vrAsset.on('geomsLoaded', () => {
             const materialLibrary = this.__vrAsset.getMaterialLibrary()
             const materialNames = materialLibrary.getMaterialNames()
@@ -412,12 +381,9 @@ class Avatar {
 
         const setupControllerGeom = () => {
           let srcControllerTree
-          if (i == 0)
-            srcControllerTree = this.__vrAsset.getChildByName('LeftController')
-          else if (i == 1)
-            srcControllerTree = this.__vrAsset.getChildByName('RightController')
-          if (!srcControllerTree)
-            srcControllerTree = this.__vrAsset.getChildByName('Controller')
+          if (i == 0) srcControllerTree = this.__vrAsset.getChildByName('LeftController')
+          else if (i == 1) srcControllerTree = this.__vrAsset.getChildByName('RightController')
+          if (!srcControllerTree) srcControllerTree = this.__vrAsset.getChildByName('Controller')
           const controllerTree = srcControllerTree.clone()
           const xfo = new Xfo(
             new Vec3(0, -0.035, -0.085),
@@ -451,16 +417,9 @@ class Avatar {
         uimat.getParameter('BaseColor').setValue(this.__avatarColor)
 
         this.__uiGeomOffsetXfo = new Xfo()
-        this.__uiGeomOffsetXfo.sc.set(
-          data.showUIPanel.size.x,
-          data.showUIPanel.size.y,
-          1
-        )
+        this.__uiGeomOffsetXfo.sc.set(data.showUIPanel.size.x, data.showUIPanel.size.y, 1)
         // Flip it over so we see the front.
-        this.__uiGeomOffsetXfo.ori.setFromAxisAndAngle(
-          new Vec3(0, 1, 0),
-          Math.PI
-        )
+        this.__uiGeomOffsetXfo.ori.setFromAxisAndAngle(new Vec3(0, 1, 0), Math.PI)
 
         this.__uiGeomItem = new GeomItem('VRControllerUI', this.__plane, uimat)
         this.__uiGeomItem.setGeomOffsetXfo(this.__uiGeomOffsetXfo)
@@ -469,23 +428,15 @@ class Avatar {
         localXfo.fromJSON(data.showUIPanel.localXfo)
         this.__uiGeomItem.setLocalXfo(localXfo)
       }
-      this.__uiGeomIndex = this.__controllerTrees[
-        data.showUIPanel.controllerId
-      ].addChild(this.__uiGeomItem, false)
+      this.__uiGeomIndex = this.__controllerTrees[data.showUIPanel.controllerId].addChild(this.__uiGeomItem, false)
     } else if (data.updateUIPanel) {
       if (this.__uiGeomItem) {
-        this.__uiGeomOffsetXfo.sc.set(
-          data.updateUIPanel.size.x,
-          data.updateUIPanel.size.y,
-          1
-        )
+        this.__uiGeomOffsetXfo.sc.set(data.updateUIPanel.size.x, data.updateUIPanel.size.y, 1)
         this.__uiGeomItem.setGeomOffsetXfo(this.__uiGeomOffsetXfo)
       }
     } else if (data.hideUIPanel) {
       if (this.__uiGeomIndex >= 0) {
-        this.__controllerTrees[data.hideUIPanel.controllerId].removeChild(
-          this.__uiGeomIndex
-        )
+        this.__controllerTrees[data.hideUIPanel.controllerId].removeChild(this.__uiGeomIndex)
         this.__uiGeomIndex = -1
       }
     }
@@ -495,7 +446,7 @@ class Avatar {
    * Method that executes the representation methods for the specified `interfaceType` in the data object.
    * <br>
    * Valid `interfaceType` values: `CameraAndPointer`, `Vive` and `VR`
-   * 
+   *
    * @param {object} data - The data param.
    */
   updatePose(data) {

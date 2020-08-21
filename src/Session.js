@@ -1,9 +1,8 @@
-// Note: this import is disabled for the rawimport version of collab
-// We need to figure out if we can remove this only for the rawimport version.
-// import io from 'socket.io-client'
+// Note: this import is disabled for the rawimport version of collab and io must be loaded by a script tag.
+import io from 'socket.io-client'
 import wildcardMiddleware from 'socketio-wildcard'
 
-// import debug from 'debug'
+import zeaDebug from './helpers/zeaDebug'
 
 /**
  * User specific room actions.
@@ -23,15 +22,15 @@ class Session {
   /**
    * Instantiates a new session object that contains user's data and the socketUrl that is going to connect to.
    * <br>
-   * In the userData object you can pass any information you want, but you must provide an `id`. 
-   * In case you would like to use the [`zea-user-chip`](https://github.com/ZeaInc/zea-web-components/tree/staging/src/components/zea-user-chip) component, 
+   * In the userData object you can pass any information you want, but you must provide an `id`.
+   * In case you would like to use the [`zea-user-chip`](https://github.com/ZeaInc/zea-web-components/tree/staging/src/components/zea-user-chip) component,
    * some specific data will be required, although they are not mandatory, it would be nice to have:
    *
    * * **firstName** or **given_name**
    * * **lastName** or **family_name**
    * * **avatar** or **picture** - The URL to the image
    * * **color** - The RGBA hexadecimal string. i.e. #FFFFFF. (Random color in case you don't specify it)
-   * 
+   *
    * @param {object} userData - Specifies user's information
    * @param {string} socketUrl - Socket server you're connecting to.
    */
@@ -43,13 +42,11 @@ class Session {
     this.callbacks = {}
 
     this.envIsBrowser = typeof window !== 'undefined'
-
-    // this.debugCollab = debug('zea-collab')
   }
 
   /**
    * Looks in the media stream tracks for an object that has the `kind` attribute to `video` and **disables** the first one in the list.
-   * 
+   *
    * @param {boolean} publish - Determines if the socket emits/publishes or not the `USER_VIDEO_STOPPED` event. **See:** [action](#action)
    */
   stopCamera(publish = true) {
@@ -61,7 +58,7 @@ class Session {
 
   /**
    * Looks in the media stream tracks for an object that has the `kind` attribute to `video` and **enables** the first one in the list.
-   * 
+   *
    * @param {boolean} publish - Determines if the socket emits/publishes or not the `USER_VIDEO_STARTED` event. **See:** [action](#action)
    */
   startCamera(publish = true) {
@@ -97,7 +94,7 @@ class Session {
 
   /**
    * Returns the [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement) of requested user(If exists).
-   * 
+   *
    * @param {string | number} userId - User id specified in userData
    * @returns {MediaStream | undefined} - User's video stream
    */
@@ -110,9 +107,9 @@ class Session {
    * The video will start playing as soon as the duration and dimensions of the media have been determined
    * <br>
    * In case the user already has a stream nothing would happend.
-   * 
-   * @param {MediaStream | MediaSource | Blob | File} remoteStream 
-   * @param {string | number} userId 
+   *
+   * @param {MediaStream | MediaSource | Blob | File} remoteStream
+   * @param {string | number} userId
    */
   setVideoStream(remoteStream, userId) {
     if (this.userStreams[userId]) {
@@ -133,17 +130,15 @@ class Session {
   /**
    * Checks if this Session's roomId is the same as the passed in the parameters.
    *
-   * @param {boolean} roomId 
+   * @param {boolean} roomId
    */
   isJoiningTheSameRoom(roomId) {
-    return (
-      this.roomId === roomId
-    )
+    return this.roomId === roomId
   }
 
   /**
-   * Joins the user to a room and subscribes to all [private actions](#private_actions). 
-   * Also subscribes the user to a wildcard event that can recieve any custom action(Excluding private actions). 
+   * Joins the user to a room and subscribes to all [private actions](#private_actions).
+   * Also subscribes the user to a wildcard event that can recieve any custom action(Excluding private actions).
    * This is very useful when you wanna emit/publish custom events that are not in the pre-stablished custom [actions](#actions).
    * <br>
    * Emits/publishes the `JOIN_ROOM` event. **See:** [action](#action)
@@ -182,16 +177,22 @@ class Session {
     this.pub(private_actions.JOIN_ROOM)
 
     this.socket.on(private_actions.JOIN_ROOM, (message) => {
-      // this.debugCollab(`${private_actions.JOIN_ROOM}:\n%O`, message)
+      zeaDebug(`${private_actions.JOIN_ROOM}:\n%O`, message)
+
+      // Note: reciprocate the ping so that all users are added.
+      // This means that when USER_JOINED is emitted, the session
+      // can immediately send messages to that user.
+      // This addresses a race condition where remote avatars could not be configures
+      // for users as soon as they were joined, because the user was not yet joined on
+      // the other machines.
+      this.pub(private_actions.PING_ROOM)
 
       const incomingUserData = message.userData
       this._addUserIfNew(incomingUserData)
-
-      this.pub(private_actions.PING_ROOM)
     })
 
     this.socket.on(private_actions.LEAVE_ROOM, (message) => {
-      // this.debugCollab(`${private_actions.LEAVE_ROOM}:\n%O`, message)
+      zeaDebug(`${private_actions.LEAVE_ROOM}:\n%O`, message)
 
       const outgoingUserData = message.userData
       const outgoingUserId = outgoingUserData.id
@@ -200,11 +201,11 @@ class Session {
         this._emit(Session.actions.USER_LEFT, outgoingUserData)
         return
       }
-      // this.debugCollab('Outgoing user was not found in room.')
+      zeaDebug('Outgoing user was not found in room.')
     })
 
     this.socket.on(private_actions.PING_ROOM, (message) => {
-      // this.debugCollab(`${private_actions.PING_ROOM}:\n%O`, message)
+      zeaDebug(`${private_actions.PING_ROOM}:\n%O`, message)
 
       const incomingUserData = message.userData
       this._addUserIfNew(incomingUserData)
@@ -213,7 +214,7 @@ class Session {
     /*
      * RTC
     const myPhoneNumber = `${this.roomId}${this.userData.id}`
-    // this.debugCollab('myPhoneNumber:', myPhoneNumber)
+    zeaDebug('myPhoneNumber:', myPhoneNumber)
 
     this.peer = new Peer(myPhoneNumber, {
       debug: 2,
@@ -232,12 +233,12 @@ class Session {
           })
         })
         .catch(err => {
-          // this.debugCollab('Failed to get local stream', err)
+          zeaDebug('Failed to get local stream', err)
         })
     })
 
     this.peer.on('error', err => {
-      // this.debugCollab('Peer error:', err)
+      zeaDebug('Peer error:', err)
     })
 
     window.addEventListener('beforeunload', () => {
@@ -253,7 +254,7 @@ class Session {
           const roommatePhoneNumber = `${this.roomId}${newUserData.id}`
 
           if (this.peer.disconnected) {
-            // this.debugCollab('Peer disconnected. Reconnecting.')
+            zeaDebug('Peer disconnected. Reconnecting.')
             this.peer.reconnect()
           }
 
@@ -266,7 +267,7 @@ class Session {
           })
         })
         .catch(err => {
-          // this.debugCollab('Failed to get local stream', err)
+          zeaDebug('Failed to get local stream', err)
         })
     })
      */
@@ -336,7 +337,7 @@ class Session {
 
   /**
    * Returns the specific user information using the userId.
-   * 
+   *
    * @param {string| number} id - id specified in userData param.
    * @returns {object | undefined}
    */
@@ -346,7 +347,7 @@ class Session {
 
   /**
    * Emits/Publishes an event action to the socket.
-   * 
+   *
    * @param {string} messageType - Represents the event action that is published
    * @param {any} payload - It could be anything that you want to send to other users
    * @param {function} ack - Function that will be called right after server response
@@ -354,10 +355,17 @@ class Session {
   pub(messageType, payload, ack) {
     if (!messageType) throw new Error('Missing messageType')
 
+    const compactedUserData = { ...this.userData }
+
+    if (messageType != 'join-room' && messageType != 'userChanged' && messageType != 'ping-room') {
+      compactedUserData.avatar = null
+      compactedUserData.picture = null
+    }
+
     this.socket.emit(
       messageType,
       {
-        userData: this.userData,
+        userData: compactedUserData,
         userId: this.userData.id,
         payload,
       },
@@ -366,6 +374,17 @@ class Session {
   }
 
   _emit(messageType, payload, userId) {
+    // If messages are recieved for users not actually in
+    // the session, we can safely ignore them.
+    // This can occur, if during the PING_ROOM, anoter message
+    // is sent, like a mouseMove, which happens frequently.
+    // In this case, the other users recieve a 'mouseMove' message
+    // for a user they have not yet recieved the USER_JOINED message.
+    if (userId && !this.users[userId]) {
+      zeaDebug(`Ignoring message for user not in session: ${messageType}. User id: ${userId}`)
+      return
+    }
+
     const callbacks = this.callbacks[messageType]
     if (callbacks) {
       callbacks.forEach((callback) => callback(payload, userId))
@@ -375,7 +394,7 @@ class Session {
   /**
    * Registers a new handler for a given event.
    * **Note:** The session can handle multiple callbacks for a single event.
-   * 
+   *
    * @param {string} messageType - Represents the event action subscribed to.
    * @param {function} callback - Recieves by parameters the payload sent by the publisher
    */
@@ -388,10 +407,7 @@ class Session {
     this.callbacks[messageType].push(callback)
 
     const unsub = () => {
-      this.callbacks[messageType].splice(
-        this.callbacks[messageType].indexOf(callback),
-        1
-      )
+      this.callbacks[messageType].splice(this.callbacks[messageType].indexOf(callback), 1)
     }
 
     return unsub
@@ -411,7 +427,6 @@ Session.actions = {
   USER_LEFT: 'user-left',
   LEFT_ROOM: 'left-room',
   TEXT_MESSAGE: 'text-message',
-  POSE_CHANGED: 'pose-message',
   COMMAND_ADDED: 'command-added',
   COMMAND_UPDATED: 'command-updated',
   FILE_WITH_PROGRESS: 'file-with-progress',
