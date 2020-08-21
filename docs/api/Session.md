@@ -41,8 +41,8 @@ Also has the actions to stream media.
 ### new Session
 Instantiates a new session object that contains user's data and the socketUrl that is going to connect to.
 <br>
-In the userData object you can pass any information you want, but you must provide an `id`. 
-In case you would like to use the [`zea-user-chip`](https://github.com/ZeaInc/zea-web-components/tree/staging/src/components/zea-user-chip) component, 
+In the userData object you can pass any information you want, but you must provide an `id`.
+In case you would like to use the [`zea-user-chip`](https://github.com/ZeaInc/zea-web-components/tree/staging/src/components/zea-user-chip) component,
 some specific data will be required, although they are not mandatory, it would be nice to have:
 
 * **firstName** or **given_name**
@@ -141,8 +141,8 @@ Checks if this Session's roomId is the same as the passed in the parameters.
 <a name="Session+joinRoom"></a>
 
 ### joinRoom
-Joins the user to a room and subscribes to all [private actions](#private_actions). 
-Also subscribes the user to a wildcard event that can recieve any custom action(Excluding private actions). 
+Joins the user to a room and subscribes to all [private actions](#private_actions).
+Also subscribes the user to a wildcard event that can recieve any custom action(Excluding private actions).
 This is very useful when you wanna emit/publish custom events that are not in the pre-stablished custom [actions](#actions).
 <br>
 Emits/publishes the `JOIN_ROOM` event. **See:** [action](#action)
@@ -222,7 +222,6 @@ Represents Custom Default Events used by `Session` class.
 | USER_LEFT | <code>user-left</code> | 
 | LEFT_ROOM | <code>left-room</code> | 
 | TEXT_MESSAGE | <code>text-message</code> | 
-| POSE_CHANGED | <code>pose-message</code> | 
 | COMMAND_ADDED | <code>command-added</code> | 
 | COMMAND_UPDATED | <code>command-updated</code> | 
 | FILE_WITH_PROGRESS | <code>file-with-progress</code> | 

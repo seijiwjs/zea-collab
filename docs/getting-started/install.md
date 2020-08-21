@@ -1,7 +1,5 @@
 [//]: <> (Author: Michael Smith)
 [//]: <> (Date: May 25, 2020)
-[//]: <> (links from: N/A)
-[//]: <> (links: recommended tools from the zea engine.))
 
 # Install These Applications
 
