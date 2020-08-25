@@ -8,7 +8,7 @@ Helper class with default session sync behaviour
 <a name="new_SessionSync_new"></a>
 
 ### new SessionSync
-All default behaviours for session sub actions are defined here. 
+All default behaviours for session sub actions are defined here.
 You can use this as a guide or as the starter configuration for sub actions.
 
 

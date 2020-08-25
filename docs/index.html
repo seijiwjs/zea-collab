@@ -96,14 +96,9 @@
           // Examine the text in the response
           response.json().then(function (data) {
             const search = {
-              paths: [
-                '/',
-                '/tutorials/',
-                '/getting-started/',
-                '/technical-overview/',
-                ...data.searchToc,
-              ],
+              paths: 'auto',
               depth: 6,
+              namespace: 'collab-nsp'
             }
 
             window.$docsify = {
