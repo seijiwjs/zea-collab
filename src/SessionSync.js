@@ -76,7 +76,7 @@ class SessionSync {
         'poseChanged',
         convertValuesToJSON({
           interfaceType: 'CameraAndPointer',
-          viewXfo: camera.getGlobalXfo(),
+          viewXfo: camera.getParameter('GlobalXfo').getValue(),
           focalDistance: camera.getParameter('focalDistance').getValue(),
         })
       )
