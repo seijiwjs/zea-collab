@@ -14,10 +14,11 @@
   "scripts": {
     "build": "rollup -c",
     "dist": "yarn publish --access=public",
+    "docs": "adg --config adg.config.json",
+    "docs-w": "adg -w --config=adg.config.json",
     "prepare": "yarn run build",
     "start": "rollup -c rollup.config.dev.js -w",
-    "docs": "adg --config adg.config.json",
-    "docs-w": "adg -w --config=adg.config.json"
+    "release": "standard-version"
   },
   "repository": {
     "type": "git",
