@@ -1,6 +1,6 @@
 {
   "name": "@zeainc/zea-collab",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "keywords": [],
   "description": "",
   "main": "dist/index.cjs.js",
@@ -14,10 +14,11 @@
   "scripts": {
     "build": "rollup -c",
     "dist": "yarn publish --access=public",
+    "docs": "adg --config adg.config.json",
+    "docs-w": "adg -w --config=adg.config.json",
     "prepare": "yarn run build",
     "start": "rollup -c rollup.config.dev.js -w",
-    "docs": "adg --config adg.config.json",
-    "docs-w": "adg -w --config=adg.config.json"
+    "release": "standard-version"
   },
   "repository": {
     "type": "git",
@@ -51,6 +52,7 @@
     "rollup": "^2.4.0",
     "rollup-plugin-node-polyfills": "^0.2.1",
     "rollup-plugin-terser": "^5.3.0",
+    "standard-version": "^9.0.0",
     "stream": "^0.0.2",
     "tls": "^0.0.1",
     "utf-8-validate": "^5.0.2"
