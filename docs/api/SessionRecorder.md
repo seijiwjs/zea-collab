@@ -19,7 +19,7 @@ Initializes the state of the SessionRecorder object declaring the start and stop
 
 | Param | Type | Description |
 | --- | --- | --- |
-| session | <code>Session</code> | An instance of the Session class. |
+| session | <code>[Session](api/Session.md)</code> | An instance of the Session class. |
 
 <a name="SessionRecorder+startRecording"></a>
 

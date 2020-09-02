@@ -14,10 +14,10 @@
 
 - API References
 [//]: <> (API)
-  * [Avatar](api/Avatar)
-  * [Session](api/Session)
-  * [SessionRecorder](api/SessionRecorder)
-  * [SessionSync](api/SessionSync)
+* [Avatar](api/Avatar)
+* [Session](api/Session)
+* [SessionRecorder](api/SessionRecorder)
+* [SessionSync](api/SessionSync)
 [//]: <> (API)
 
 

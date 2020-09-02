@@ -5,7 +5,7 @@
 
 # Zea Collab
 
-> Collaboration Extension for the Zea Engine
+> Collaboration Plug-in for Zea Engine
 
 
 <ul style="display:inline-block">
