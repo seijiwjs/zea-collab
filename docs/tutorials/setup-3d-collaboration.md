@@ -47,5 +47,9 @@ const sessionSync = new SessionSync(session, appData, userData);
 
 [Labels](./setup-3d-collaboration.html ':include :type=iframe width=100% height=800px')
 
-Click here to download the file to your computer to try it for yourself: 
-<a id="raw-url" onClick="downloadTutorial('setup-3d-collaboration.zip', ['./tutorials/setup-3d-collaboration.html', './tutorials/assets/Dead_eye_bearing.zcad', './tutorials/libs/zea-engine/dist/index.esm.js', './tutorials/libs/zea-collab/dist/index.rawimport.js', './tutorials/libs/zea-ux/dist/index.rawimport.js', './tutorials/libs/socket.io.js'])" download>Download</a>
+<div class="download-section">
+  <a class="download-btn" title="Download"
+    onClick="downloadTutorial('setup-3d-collaboration.zip', ['/tutorials/setup-3d-collaboration.html'])" download>
+    Download
+  </a>
+</div>
