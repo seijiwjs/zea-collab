@@ -10,7 +10,7 @@ const visualiveSession = new VisualiveSession(tokenFromUrl)
 
 visualiveSession.joinRoom(projectIdFromUrl, fileIdFromUrl, roomIdFromUrl)
 
-document.formCreateRoom.addEventListener('submit', e => {
+document.formCreateRoom.addEventListener('submit', (e) => {
   const $form = e.target
   const roomId = visualiveSession.createRoom()
   $form.roomId.value = roomId
@@ -24,13 +24,13 @@ $copyRoomId.addEventListener('click', () => {
     () => {
       console.info('Room Id copied to clipboard.')
     },
-    err => {
+    (err) => {
       console.error('Error copying room Id:', err)
     }
   )
 })
 
-document.formSendMessage.addEventListener('submit', e => {
+document.formSendMessage.addEventListener('submit', (e) => {
   const $form = e.target
   visualiveSession.sendTextMessage($form.messageToSend.value)
 
@@ -40,13 +40,13 @@ document.formSendMessage.addEventListener('submit', e => {
 
 const $receivedMessages = document.getElementById('receivedMessages')
 
-visualiveSession.sub(VisualiveSession.actions.TEXT_MESSAGE, message => {
+visualiveSession.sub(VisualiveSession.actions.TEXT_MESSAGE, (message) => {
   const p = document.createElement('p')
   p.innerHTML = `<strong>${message.userId}:</strong> ${message.payload.text}`
   $receivedMessages.appendChild(p)
 })
 
-visualiveSession.sub(VisualiveSession.actions.USER_JOINED, message => {
+visualiveSession.sub(VisualiveSession.actions.USER_JOINED, (message) => {
   const p = document.createElement('p')
   p.innerHTML = `<strong>(User Joined: ${message.userId})</strong>`
   $receivedMessages.appendChild(p)

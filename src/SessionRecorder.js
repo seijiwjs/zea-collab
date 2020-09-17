@@ -1,14 +1,8 @@
-
 function genID() {
   // Math.random should be unique because of its seeding algorithm.
   // Convert it to base 36 (numbers + letters), and grab the first 9 characters
   // after the decimal.
-  return (
-    '_' +
-    Math.random()
-      .toString(36)
-      .substr(2, 9)
-  )
+  return '_' + Math.random().toString(36).substr(2, 9)
 }
 
 function getRandomInt(max) {
@@ -21,7 +15,7 @@ function getRandomInt(max) {
 class SessionRecorder {
   /**
    * Initializes the state of the SessionRecorder object declaring the start and stop recording methods.
-   * 
+   *
    * @param {Session} session - An instance of the Session class.
    */
   constructor(session) {
@@ -29,12 +23,10 @@ class SessionRecorder {
 
     // TODO: Check for credentials on the user.
     {
-      const pictures = [
-        'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
-      ]
+      const pictures = ['https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png']
 
       const data = {}
-      let recording = false;
+      let recording = false
       let presenter
       let pub
       let stream
@@ -84,19 +76,19 @@ class SessionRecorder {
       }
     }
   }
-  
+
   /**
    * Starts recording all the `pub` action methods triggered in user's session.
    */
   startRecording() {
-    this.__startRecording();
+    this.__startRecording()
   }
-  
+
   /**
    * Stops the recording of all `pub` actions and starts playing the recording.
    */
   stopRecording() {
-    this.__stopRecording();
+    this.__stopRecording()
   }
 
   __stopPlayback() {
@@ -131,26 +123,23 @@ class SessionRecorder {
       })
     }
   }
-  
+
   /**
    * Downloads the recorded data from an external url and starts playing it.
-   * @param {string} url 
+   * @param {string} url
    */
   downloadAndPlayRecording(url) {
     const file = this.__recordings[name]
-    fetch(new Request(url))
-      .then(response => {
-        if (response.ok) {
-          response.json().then(recording => {
-            this.__playRecording(recording)
-          })
-        }
-        else {
-          throw new Error('404 Error: File not found.');
-        }
-      })
+    fetch(new Request(url)).then((response) => {
+      if (response.ok) {
+        response.json().then((recording) => {
+          this.__playRecording(recording)
+        })
+      } else {
+        throw new Error('404 Error: File not found.')
+      }
+    })
   }
 }
 
-
-export default SessionRecorder;
+export default SessionRecorder

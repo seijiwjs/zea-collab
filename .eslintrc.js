@@ -19,4 +19,4 @@ module.exports = {
     'function-paren-newline': ['error', 'consistent'],
     'object-curly-newline': ['error', { consistent: true }],
   },
-};
+}
