@@ -142,7 +142,7 @@ Checks if this Session's roomId is the same as the passed in the parameters.
 
 ### joinRoom
 Joins the user to a room and subscribes to all [private actions](#private_actions).
-Also subscribes the user to a wildcard event that can recieve any custom action(Excluding private actions).
+Also subscribes the user to a wildcard event that can recieve any custom action (Excluding private actions).
 This is very useful when you wanna emit/publish custom events that are not in the pre-stablished custom [actions](#actions).
 <br>
 Emits/publishes the `JOIN_ROOM` event. **See:** [action](#action)
