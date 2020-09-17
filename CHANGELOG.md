@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.0.0](https://github.com/ZeaInc/zea-collab/compare/v3.4.0...v4.0.0) (2020-09-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* **npm:** Raw imports are no longer supported.
+
+### build
+
+* **npm:** Add UMD support ([#29](https://github.com/ZeaInc/zea-collab/issues/29)) ([9124081](https://github.com/ZeaInc/zea-collab/commit/9124081afe6a69f80e497a1ac65047f23fa1f4b6)), closes [#30](https://github.com/ZeaInc/zea-collab/issues/30)
+
 ## [3.4.0](https://github.com/ZeaInc/zea-collab/compare/v3.2.0...v3.4.0) (2020-08-26)
 
 
