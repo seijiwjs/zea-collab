@@ -61,7 +61,7 @@ class SessionSync {
    * @param {object} appData - The appData value.
    * @param {object} currentUser - The currentUser value.
    */
-  constructor(session, appData, currentUser, options) {
+  constructor(session, appData, currentUser, options = {}) {
     // const currentUserAvatar = new Avatar(appData, currentUser, true);
 
     this.session = session
