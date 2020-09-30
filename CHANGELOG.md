@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.1.0](https://github.com/ZeaInc/zea-collab/compare/v4.0.0...v4.1.0) (2020-09-30)
+
+
+### Features
+
+* Add collision protection ([6e39aac](https://github.com/ZeaInc/zea-collab/commit/6e39aacd8a7e8cdb81b138f0d8588a76193640c3)), closes [#39](https://github.com/ZeaInc/zea-collab/issues/39)
+* SessionSync options defaults to object ([7833206](https://github.com/ZeaInc/zea-collab/commit/78332064a148459d20f516d4805f9c19ff116535))
+
 ## [4.0.0](https://github.com/ZeaInc/zea-collab/compare/v3.4.0...v4.0.0) (2020-09-17)
 
 
