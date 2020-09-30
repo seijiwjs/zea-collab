@@ -12,6 +12,7 @@ const private_actions = {
   PING_ROOM: 'ping-room',
   LEAVE_ROOM: 'leave-room',
 }
+
 /**
  * Session is used to store information about users and the communication method(Sockets).
  * <br>
@@ -143,11 +144,33 @@ class Session {
    * Emits/publishes the `JOIN_ROOM` event. **See:** [action](#action)
    *
    * @param {string | number} roomId - Room ID value
+   * @param {object} options - Used to describe the following optional configs:
+   *    isCollisionProtected: ensures that every room is unique to each app, otherwise it'd be easy for users to
+   *    collide by simply using the same room id across different apps.
    */
-  joinRoom(roomId) {
-    this.roomId = roomId
+  joinRoom(roomId, options = {}) {
+    const defaultOptions = {
+      isCollisionProtected: true,
+    }
 
-    zeaDebug('Attempting connection to server "%s" and room id "%s"', this.socketUrl, this.roomId)
+    const actualOptions = {
+      ...defaultOptions,
+      ...options,
+    }
+
+    this.roomId = (() => {
+      if (!actualOptions.isCollisionProtected) {
+        return roomId
+      }
+
+      if (this._isLocalHost()) {
+        return `${this._getRandomString()}-${roomId}`
+      }
+
+      return `${window.location.host}-${roomId}`
+    })()
+
+    zeaDebug('Attempting connection to server "%s" and room id "%s".', this.socketUrl, this.roomId)
 
     /*
      * Socket actions.
@@ -412,6 +435,25 @@ class Session {
     }
 
     return unsub
+  }
+
+  _isLocalHost() {
+    const retval = Boolean(
+      window.location.hostname === 'localhost' ||
+        // [::1] is the IPv6 localhost address.
+        window.location.hostname === '[::1]' ||
+        // 127.0.0.1/8 is considered localhost for IPv4.
+        window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
+    )
+
+    return retval
+  }
+
+  _getRandomString() {
+    return Math.random()
+      .toString(36)
+      .replace(/[^a-z]+/g, '')
+      .substr(0, 5)
   }
 }
 

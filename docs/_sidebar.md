@@ -1,9 +1,10 @@
 - Getting Started
-  * [Install](getting-started/install.md)
+  * [Setting up your workspace](getting-started/install.md)
 <!-- * [Test Your Browser](getting-started/test-your-browser.md) -->
 
 - Tutorials
-  * [Setup 3D Collaboration](tutorials/setup-3d-collaboration.md)
+  * [Setting up 3D Collaboration](tutorials/setup-3d-collaboration.md)
+  * [Collision protected by default](tutorials/collision-protected.md)
 
 <!-- - How-To
 * [Enable collaboration](how-to/enable-collab.md) -->

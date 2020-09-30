@@ -1,6 +1,6 @@
 [//]: <> (Author: Michael Smith)
 [//]: <> (Date: May 25, 2020)
 
-# Install These Applications
+# Setting up your workspace
 
-If it's your first time using the Collab Extension for the Zea Engine, make sure you have the [Recommended Web Development Tools](https://zeainc.github.io/zea-engine/#/getting-started/development-setup) installed on your local machine.
+ℹ️ Before we begin, please make sure you're already familiar with [Setting up your workspace](https://zea.live/zea-engine/#/getting-started/development-setup).

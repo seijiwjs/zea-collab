@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>collision-protection</title>
+
+    <script crossorigin src="https://unpkg.com/@zeainc/zea-engine@2"></script>
+    <script crossorigin src="https://unpkg.com/@zeainc/zea-cad@2"></script>
+    <script crossorigin src="https://unpkg.com/@zeainc/zea-ux@2/dist/index.umd.js"></script>
+
+    <script src="https://websocket-staging.zea.live/socket.io/socket.io.js"></script>
+
+    <script src="../dist/index.umd.js"></script>
+
+    <script type="module">
+      const { Session } = window.zeaCollab
+
+      const getRandomString = () =>
+        Math.random()
+          .toString(36)
+          .replace(/[^a-z]+/g, '')
+          .substr(0, 5)
+
+      const addUser = (user) => {
+        console.log('Add: ', user)
+      }
+
+      const removeUser = (user) => {
+        console.log('Remove: ', user)
+      }
+
+      const userData = {
+        family_name: getRandomString(),
+        given_name: getRandomString(),
+        id: getRandomString(),
+      }
+
+      console.log('I am:', userData)
+
+      const socketUrl = 'https://websocket-staging.zea.live'
+      const session = new Session(userData, socketUrl)
+      session.joinRoom('any-random-string', {
+        isCollisionProtected: false,
+      })
+
+      session.sub('user-joined', (user) => {
+        addUser(user)
+      })
+
+      session.sub('user-left', (user) => {
+        removeUser(user)
+      })
+    </script>
+  </head>
+  <body></body>
+</html>
