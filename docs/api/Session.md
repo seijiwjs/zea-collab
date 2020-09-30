@@ -27,7 +27,7 @@ Also has the actions to stream media.
         * [getVideoStream(userId) ⇒ <code>MediaStream</code> \| <code>undefined</code>](#getVideoStream)
         * [setVideoStream(remoteStream, userId)](#setVideoStream)
         * [isJoiningTheSameRoom(roomId)](#isJoiningTheSameRoom)
-        * [joinRoom(roomId)](#joinRoom)
+        * [joinRoom(roomId, options)](#joinRoom)
         * [leaveRoom()](#leaveRoom)
         * [getUsers()](#getUsers)
         * [getUser(id) ⇒ <code>object</code> \| <code>undefined</code>](#getUser)
@@ -152,6 +152,7 @@ Emits/publishes the `JOIN_ROOM` event. **See:** [action](#action)
 | Param | Type | Description |
 | --- | --- | --- |
 | roomId | <code>string</code> \| <code>number</code> | Room ID value |
+| options | <code>object</code> | Used to describe the following optional configs:    isCollisionProtected: ensures that every room is unique to each app, otherwise it'd be easy for users to    collide by simply using the same room id across different apps. |
 
 <a name="Session+leaveRoom"></a>
 
