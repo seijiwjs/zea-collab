@@ -149,6 +149,10 @@ class Session {
    *    collide by simply using the same room id across different apps.
    */
   joinRoom(roomId, options = {}) {
+    if (!roomId) {
+      throw new Error('Missing roomId')
+    }
+
     const defaultOptions = {
       isCollisionProtected: true,
     }
