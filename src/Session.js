@@ -162,17 +162,7 @@ class Session {
       ...options,
     }
 
-    this.roomId = (() => {
-      if (!actualOptions.isCollisionProtected) {
-        return roomId
-      }
-
-      if (this._isLocalHost()) {
-        return `${this._getRandomString()}-${roomId}`
-      }
-
-      return `${window.location.host}-${roomId}`
-    })()
+    this.roomId = actualOptions.isCollisionProtected ? `${window.location.host}-${roomId}` : roomId
 
     zeaDebug('Attempting connection to server "%s" and room id "%s".', this.socketUrl, this.roomId)
 
@@ -439,27 +429,6 @@ class Session {
     }
 
     return unsub
-  }
-
-  _isLocalHost() {
-    if (!this.envIsBrowser) {
-      return true
-    }
-
-    return Boolean(
-      window.location.hostname === 'localhost' ||
-        // [::1] is the IPv6 localhost address.
-        window.location.hostname === '[::1]' ||
-        // 127.0.0.1/8 is considered localhost for IPv4.
-        window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
-    )
-  }
-
-  _getRandomString() {
-    return Math.random()
-      .toString(36)
-      .replace(/[^a-z]+/g, '')
-      .substr(0, 5)
   }
 }
 
