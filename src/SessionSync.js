@@ -214,10 +214,10 @@ class SessionSync {
 
     // ///////////////////////////////////////////
     // Scene Changes
-    // const otherUndoStack = new UndoRedoManager();
-    if (appData.undoRedoManager) {
+    const undoRedoManager = UndoRedoManager.getInstance();
+    if (undoRedoManager) {
       const root = appData.scene.getRoot()
-      appData.undoRedoManager.on('changeAdded', (event) => {
+      undoRedoManager.on('changeAdded', (event) => {
         const { change } = event
         const context = {
           appData,
@@ -225,11 +225,11 @@ class SessionSync {
           resolvePath: (path, cb) => {
             // Note: Why not return a Promise here?
             // Promise evaluation is always async, so
-            // all promisses will be resolved after the current call stack
+            // all promises will be resolved after the current call stack
             // has terminated. In our case, we want all paths
             // to be resolved before the end of the function, which
             // we can handle easily with callback functions.
-            if (!path) throw 'Path not spcecified'
+            if (!path) throw 'Path not specified'
             const item = root.resolvePath(path)
             if (item) {
               cb(item)
@@ -242,22 +242,18 @@ class SessionSync {
           changeData: change.toJSON(context),
           changeClass: UndoRedoManager.getChangeClassName(change),
         }
-        session.pub(Session.actions.COMMAND_ADDED, data)
-
-        // const otherChange = otherUndoStack.constructChange(data.changeClass);
-        // otherChange.fromJSON(data.changeData, { appData })
-        // otherUndoStack.addChange(otherChange);
+        session.pub('change-added', data)
       })
 
-      appData.undoRedoManager.on('changeUpdated', (data) => {
+      undoRedoManager.on('changeUpdated', (data) => {
         const jsonData = convertValuesToJSON(data)
-        session.pub(Session.actions.COMMAND_UPDATED, jsonData)
+        session.pub('change-updated', jsonData)
 
         // const changeData2 = convertValuesFromJSON(jsonData, appData.scene);
         // otherUndoStack.getCurrentChange().update(changeData2);
       })
 
-      session.sub(Session.actions.COMMAND_ADDED, (data, userId) => {
+      session.sub('change-added', (data, userId) => {
         // console.log("Remote Command added:", data.changeClass, userId)
         if (!userDatas[userId]) {
           console.warn('User id not in session:', userId)
@@ -276,7 +272,7 @@ class SessionSync {
         undoRedoManager.addChange(change)
       })
 
-      session.sub(Session.actions.COMMAND_UPDATED, (data, userId) => {
+      session.sub('change-updated', (data, userId) => {
         if (!userDatas[userId]) {
           console.warn('User id not in session:', userId)
           return
@@ -290,7 +286,7 @@ class SessionSync {
       // Undostack Changes.
       // Synchronize undo stacks between users.
 
-      appData.undoRedoManager.on('changeUndone', () => {
+      undoRedoManager.on('changeUndone', () => {
         session.pub('UndoRedoManager_changeUndone', {})
       })
 
@@ -299,7 +295,7 @@ class SessionSync {
         undoRedoManager.undo()
       })
 
-      appData.undoRedoManager.on('changeRedone', () => {
+      undoRedoManager.on('changeRedone', () => {
         session.pub('UndoRedoManager_changeRedone', {})
       })
 
