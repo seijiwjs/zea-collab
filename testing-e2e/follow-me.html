@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>follow-me</title>
+
+    <script crossorigin src="/node_modules/@zeainc/zea-engine/dist/index.umd.js"></script>
+    <script crossorigin src="/node_modules/@zeainc/zea-ux/dist/index.umd.js"></script>
+
+    <script src="https://websocket-staging.zea.live/socket.io/socket.io.js"></script>
+
+    <script src="../dist/index.umd.js"></script>
+    <style>
+      html,
+      body,
+      #canvas {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+
+    <script type="module">
+      
+      const { GLRenderer, Scene, Xfo, Quat, Vec3, CameraManipulator, Material, GeomItem, Color, Cone } = zeaEngine
+      const { Session, SessionSync, convertValuesToJSON, convertValuesFromJSON } = window.zeaCollab
+
+      const canvasElement = document.getElementById('canvas')
+
+      const scene = new Scene()
+      scene.setupGrid(12.0, 12)
+
+      const renderer = new GLRenderer(canvasElement, { hideSplash: true, webglOptions: { antialias: false } })
+      renderer.setScene(scene)
+
+      // renderer.getViewport().getManipulator().setDefaultManipulationMode(CameraManipulator.MANIPULATION_MODES.walk)
+
+      const appData = {
+        scene,
+        renderer
+      }
+
+
+      const getRandomString = () =>
+        Math.random()
+          .toString(36)
+          .replace(/[^a-z]+/g, '')
+          .substr(0, 5)
+
+      const addUser = (user) => {
+        console.log('Add: ', user)
+      }
+
+      const removeUser = (user) => {
+        console.log('Remove: ', user)
+      }
+
+      const makeUser = (picture)=>{
+        return {
+          family_name: getRandomString(),
+          given_name: getRandomString(),
+          id: getRandomString(),
+          picture
+        }
+      }
+
+      const userData = makeUser()
+      console.log('I am:', userData)
+
+      const socketUrl = 'https://websocket-staging.zea.live'
+      const session = new Session(userData, socketUrl)
+      session.joinRoom('any-random-string')
+      const sessionSync = new SessionSync(session, appData, userData)
+
+      session.sub('user-joined', (user) => {
+        addUser(user)
+      })
+
+      session.sub('user-left', (user) => {
+        removeUser(user)
+      })
+
+      // Now make some fake users join.
+      {
+        const userData1 = makeUser('./data/avatar1.jpg')
+        session.users[userData1.id] = userData1
+        session._emit('user-joined', userData1, userData1.id)
+
+        let angle = 0
+        const viewXfo = new Xfo(new Vec3(Math.cos(angle) * 5, Math.sin(angle) * 5, 1))
+        const target = new Vec3(3, 3, 2)
+        viewXfo.ori.setFromDirectionAndUpvector(target.subtract(viewXfo.tr).normalize().negate(), new Vec3(0, 0, 1))
+        session._emit('poseChanged', convertValuesToJSON({
+          interfaceType: 'CameraAndPointer',
+          viewXfo: viewXfo,
+          focalDistance: target.distanceTo(viewXfo.tr)
+        }), userData1.id)
+        
+        setTimeout(() => {
+          session._emit('followMe', convertValuesToJSON({
+            minDistance: 2,
+            maxDistance: 4,
+            duration: 1000
+          }), userData1.id)
+          
+          renderer.getViewport().getManipulator().setDefaultManipulationMode(CameraManipulator.MANIPULATION_MODES.look)
+        // cameraManipulator.setDefaultManipulationMode(CameraManipulator.MANIPULATION_MODES.look);
+
+          setTimeout(() => {
+            setInterval(() => {
+              angle += 0.005
+              viewXfo.tr.set(Math.cos(angle) * 5, Math.sin(angle) * 5, 1)
+              session._emit('poseChanged', convertValuesToJSON({
+                interfaceType: 'CameraAndPointer',
+                viewXfo: viewXfo,
+                focalDistance: target.distanceTo(viewXfo.tr)
+              }), userData1.id)
+            }, 20)
+          }, 1000)
+        }, 1000)
+      }
+      
+    </script>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas></body>
+</html>
