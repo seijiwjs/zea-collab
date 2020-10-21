@@ -207,7 +207,7 @@ class Avatar {
     shape.computeVertexNormals()
     const material = new Material('user' + this.__userData.id + 'Material', 'SimpleSurfaceShader')
     material.visibleInGeomDataBuffer = false
-    material.getParameter('BaseColor').setValue(new Color(0.5, 0.5, 0.5, 1.0))
+    material.getParameter('BaseColor').setValue(new Color(0.2, 0.2, 0.2, 1.0))
     const geomItem = new GeomItem('camera', shape, material)
     const geomXfo = new Xfo()
     geomItem.setGeomOffsetXfo(geomXfo)
