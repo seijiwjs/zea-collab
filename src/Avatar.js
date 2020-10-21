@@ -16,8 +16,6 @@ import {
   VideoStreamImage2D,
 } from '@zeainc/zea-engine'
 
-const up = new Vec3(0, 0, 1)
-
 /**
  * Represents the state on steroids of a user in the session.
  */
@@ -32,6 +30,7 @@ class Avatar {
    * @param {boolean} currentUserAvatar - The currentUserAvatar value.
    */
   constructor(appData, userData, currentUserAvatar = false) {
+
     this.__appData = appData
     this.__userData = userData
     this.__currentUserAvatar = currentUserAvatar
@@ -276,7 +275,7 @@ class Avatar {
       this.__treeItem.getChild(1).getParameter('LocalXfo').setValue(this.pointerXfo)
     } else if (data.movePointer) {
       this.pointerXfo.tr = data.movePointer.start
-      this.pointerXfo.ori.setFromDirectionAndUpvector(data.movePointer.dir, up)
+      this.pointerXfo.ori.setFromDirectionAndUpvector(data.movePointer.dir, new Vec3(0, 0, 1))
       this.pointerXfo.sc.z = data.movePointer.length
       this.__treeItem.getChild(1).getParameter('LocalXfo').setValue(this.pointerXfo)
     } else if (data.hilightPointer) {
