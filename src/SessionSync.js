@@ -1,3 +1,5 @@
+
+import { CameraManipulator, Vec2 } from '@zeainc/zea-engine'
 import { UndoRedoManager, SelectionManager } from '@zeainc/zea-ux'
 
 import Session from './Session.js'
@@ -164,6 +166,39 @@ class SessionSync {
         const data = convertValuesFromJSON(jsonData, appData.scene)
         const avatar = userDatas[userId].avatar
         avatar.updatePose(data)
+        
+        if (userId == this.followId) {
+          // const delta = userDatas[userId].viewXfo.tr.subtract(data.viewXfo.tr)
+          
+          const viewport = this.appData.renderer.getViewport()
+          const camera = viewport.getCamera()
+          const ourViewXfo = camera.getParameter('GlobalXfo').getValue().clone()
+          
+          const movementDelta = data.viewXfo.tr.subtract(userDatas[userId].viewXfo.tr)
+          ourViewXfo.tr.addInPlace(movementDelta)
+          
+          const target = data.viewXfo.tr.clone()
+          target.z -= this.followZOffset
+          const vecToGuide = target.subtract(ourViewXfo.tr)
+          const currDist = vecToGuide.normalizeInPlace()
+          // Now maintain our distance.
+          if (currDist < this.followDist.x || currDist > this.followDist.y) {
+            if (currDist < this.followDist.x) {
+              const stepBack = vecToGuide.scale((currDist - this.followDist.x) * 0.05)
+              ourViewXfo.tr.addInPlace(stepBack)
+            } else if (currDist > this.followDist.y) {
+              const stepBack = vecToGuide.scale((currDist - this.followDist.y) * 0.05)
+              ourViewXfo.tr.addInPlace(stepBack)
+            }
+          }
+
+          camera.getParameter('GlobalXfo').setValue(ourViewXfo)
+
+          userDatas[userId].viewXfo = data.viewXfo
+        } else {
+          // Cache the view Xfo in case we need to follow this user.
+          userDatas[userId].viewXfo = data.viewXfo
+        }
       })
 
       sendCurrentPose()
@@ -271,8 +306,37 @@ class SessionSync {
       const cameraManipulator = viewport.getManipulator()
       cameraManipulator.aimFocus(viewport.getCamera(),  data.target, data.distance, data.duration)
     })
+
+    
+    this.session.sub('followMe', (jsonData, userId) => {
+      const data = convertValuesFromJSON(jsonData, this.appData.scene)
+      this.followId = userId
+      this.followDist = new Vec2(data.minDistance, data.maxDistance)
+      this.followZOffset = -0.75
+
+      const followUserXfo = userDatas[this.followId].viewXfo
+      if (followUserXfo) {
+        const duration = jsonData.duration ? jsonData.duration : 1000
+        const target = followUserXfo.tr.clone()
+        target.z += this.followZOffset
+        
+        const viewport = this.appData.renderer.getViewport()
+        const cameraManipulator = viewport.getManipulator()
+        const distance = (this.followDist.x + this.followDist.y) * 0.5
+        cameraManipulator.aimFocus(viewport.getCamera(), target, distance, duration)
+      }
+    })
+
+    this.session.sub('stopFollowingMe', (jsonData, userId) => {
+      this.followId = -1
+    })
   }
 
+  /**
+   * Starts synchronizing state changes between given state machines.
+   *
+   * @param {StateMachine} stateMachine - The state machine for each connected client is registered here.
+   */
   syncStateMachines(stateMachine) {
     // ///////////////////////////////////////////
     // State Machine Changes.
@@ -290,12 +354,40 @@ class SessionSync {
   }
   
 
-  directAttention(target, duration, distance) {
+  /**
+   * Instructs all session users to look and face a given target, while maybe approaching the target.
+   *
+   * @param {Number} distance - The distance each member should adjust their positions relative to the target.
+   * @param {Number} duration - The time to establish focus.
+   */
+  directAttention(target, distance, duration) {
     this.session.pub('directAttention', convertValuesToJSON({
       target,
       distance,
       duration
     }))
+  }
+
+  /**
+   * Instructs all session users to follow this user as a guide.
+   *
+   * @param {Number} minDistance - The minimum distance each member should get to the guide.
+   * @param {Number} maxDistance - The maximum distance each member should get to the guide.
+   * @param {Number} duration - The time to establish focus.
+   */
+  followMe(minDistance, maxDistance, duration){
+    this.session.pub('followMe', convertValuesToJSON({
+      minDistance,
+      maxDistance,
+      duration
+    }))
+  }
+
+  /**
+   * Instructs all session users to stop follow this user as a guide.
+   */
+  stopFollowingMe(){
+    this.session.pub('stopFollowingMe', {})
   }
 }
 
