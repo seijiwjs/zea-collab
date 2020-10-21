@@ -261,6 +261,16 @@ class SessionSync {
         undoRedoManager.redo()
       })
     }
+
+    
+    // ///////////////////////////////////////////
+    // Guided Tours
+    this.session.sub('directAttention', (jsonData, userId) => {
+      const data = convertValuesFromJSON(jsonData, this.appData.scene)
+      const viewport = this.appData.renderer.getViewport()
+      const cameraManipulator = viewport.getManipulator()
+      cameraManipulator.aimFocus(viewport.getCamera(),  data.target, data.distance, data.duration)
+    })
   }
 
   syncStateMachines(stateMachine) {
@@ -277,6 +287,15 @@ class SessionSync {
     this.session.sub('StateMachine_stateChanged', (data, userId) => {
       stateMachine.activateState(data.stateName)
     })
+  }
+  
+
+  directAttention(target, duration, distance) {
+    this.session.pub('directAttention', convertValuesToJSON({
+      target,
+      distance,
+      duration
+    }))
   }
 }
 
