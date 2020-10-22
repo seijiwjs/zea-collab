@@ -1,11 +1,9 @@
-
-import { CameraManipulator, Vec2 } from '@zeainc/zea-engine'
+import { Vec2 } from '@zeainc/zea-engine'
 import { UndoRedoManager, SelectionManager } from '@zeainc/zea-ux'
 
 import Session from './Session.js'
 import Avatar from './Avatar.js'
 import { convertValuesToJSON, convertValuesFromJSON } from './convertJSON.js'
-
 
 /**
  * Helper class with default session sync behaviour
@@ -166,17 +164,17 @@ class SessionSync {
         const data = convertValuesFromJSON(jsonData, appData.scene)
         const avatar = userDatas[userId].avatar
         avatar.updatePose(data)
-        
+
         if (userId == this.followId) {
           // const delta = userDatas[userId].viewXfo.tr.subtract(data.viewXfo.tr)
-          
+
           const viewport = this.appData.renderer.getViewport()
           const camera = viewport.getCamera()
           const ourViewXfo = camera.getParameter('GlobalXfo').getValue().clone()
-          
+
           const movementDelta = data.viewXfo.tr.subtract(userDatas[userId].viewXfo.tr)
           ourViewXfo.tr.addInPlace(movementDelta)
-          
+
           const target = data.viewXfo.tr.clone()
           target.z -= this.followZOffset
           const vecToGuide = target.subtract(ourViewXfo.tr)
@@ -206,7 +204,7 @@ class SessionSync {
 
     // ///////////////////////////////////////////
     // Scene Changes
-    const undoRedoManager = UndoRedoManager.getInstance();
+    const undoRedoManager = UndoRedoManager.getInstance()
     if (undoRedoManager) {
       const root = appData.scene.getRoot()
       undoRedoManager.on('changeAdded', (event) => {
@@ -297,17 +295,15 @@ class SessionSync {
       })
     }
 
-    
     // ///////////////////////////////////////////
     // Guided Tours
     this.session.sub('directAttention', (jsonData, userId) => {
       const data = convertValuesFromJSON(jsonData, this.appData.scene)
       const viewport = this.appData.renderer.getViewport()
       const cameraManipulator = viewport.getManipulator()
-      cameraManipulator.aimFocus(viewport.getCamera(),  data.target, data.distance, data.duration)
+      cameraManipulator.aimFocus(viewport.getCamera(), data.target, data.distance, data.duration)
     })
 
-    
     this.session.sub('followMe', (jsonData, userId) => {
       const data = convertValuesFromJSON(jsonData, this.appData.scene)
       this.followId = userId
@@ -319,7 +315,7 @@ class SessionSync {
         const duration = jsonData.duration ? jsonData.duration : 1000
         const target = followUserXfo.tr.clone()
         target.z += this.followZOffset
-        
+
         const viewport = this.appData.renderer.getViewport()
         const cameraManipulator = viewport.getManipulator()
         const distance = (this.followDist.x + this.followDist.y) * 0.5
@@ -352,7 +348,6 @@ class SessionSync {
       stateMachine.activateState(data.stateName)
     })
   }
-  
 
   /**
    * Instructs all session users to look and face a given target, while maybe approaching the target.
@@ -361,11 +356,14 @@ class SessionSync {
    * @param {Number} duration - The time to establish focus.
    */
   directAttention(target, distance, duration) {
-    this.session.pub('directAttention', convertValuesToJSON({
-      target,
-      distance,
-      duration
-    }))
+    this.session.pub(
+      'directAttention',
+      convertValuesToJSON({
+        target,
+        distance,
+        duration,
+      })
+    )
   }
 
   /**
@@ -375,18 +373,21 @@ class SessionSync {
    * @param {Number} maxDistance - The maximum distance each member should get to the guide.
    * @param {Number} duration - The time to establish focus.
    */
-  followMe(minDistance, maxDistance, duration){
-    this.session.pub('followMe', convertValuesToJSON({
-      minDistance,
-      maxDistance,
-      duration
-    }))
+  followMe(minDistance, maxDistance, duration) {
+    this.session.pub(
+      'followMe',
+      convertValuesToJSON({
+        minDistance,
+        maxDistance,
+        duration,
+      })
+    )
   }
 
   /**
    * Instructs all session users to stop follow this user as a guide.
    */
-  stopFollowingMe(){
+  stopFollowingMe() {
     this.session.pub('stopFollowingMe', {})
   }
 }

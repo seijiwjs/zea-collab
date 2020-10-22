@@ -30,7 +30,6 @@ class Avatar {
    * @param {boolean} currentUserAvatar - The currentUserAvatar value.
    */
   constructor(appData, userData, currentUserAvatar = false) {
-
     this.__appData = appData
     this.__userData = userData
     this.__currentUserAvatar = currentUserAvatar
