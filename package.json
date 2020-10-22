@@ -21,7 +21,7 @@
     "docs:serve": "docsify serve docs/",
     "prepare": "yarn run build",
     "start": "es-dev-server",
-    "start:watch": "es-dev-server --watch",
+    "start:watch": "es-dev-server --app-index testing-e2e/index.html --open --watch",
     "release": "standard-version"
   },
   "repository": {
