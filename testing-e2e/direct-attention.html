@@ -20,11 +20,9 @@
         width: 100%;
         height: 100%;
       }
-
     </style>
 
     <script type="module">
-      
       const { GLRenderer, Scene, Xfo, Quat, Vec3, CameraManipulator, Material, GeomItem, Color, Cone } = zeaEngine
       const { Session, SessionSync, convertValuesToJSON, convertValuesFromJSON } = window.zeaCollab
 
@@ -40,9 +38,8 @@
 
       const appData = {
         scene,
-        renderer
+        renderer,
       }
-
 
       const getRandomString = () =>
         Math.random()
@@ -58,12 +55,12 @@
         console.log('Remove: ', user)
       }
 
-      const makeUser = (picture)=>{
+      const makeUser = (picture) => {
         return {
           family_name: getRandomString(),
           given_name: getRandomString(),
           id: getRandomString(),
-          picture
+          picture,
         }
       }
 
@@ -87,7 +84,7 @@
       standardMaterial.getParameter('BaseColor').setValue(new Color(89 / 255, 182 / 255, 92 / 255))
 
       const geomItem = new GeomItem('Cone', new Cone(0.5, 0.3, 40), standardMaterial)
-      geomItem.getParameter('GlobalXfo').setValue(new Xfo(new Vec3(-5,0,0)))
+      geomItem.getParameter('GlobalXfo').setValue(new Xfo(new Vec3(-5, 0, 0)))
       scene.getRoot().addChild(geomItem)
 
       // Now make some fake users join.
@@ -96,77 +93,101 @@
         session.users[userData1.id] = userData1
         session._emit('user-joined', userData1, userData1.id)
 
-        const viewXfo = new Xfo(new Vec3(-5,-5, 2))
+        const viewXfo = new Xfo(new Vec3(-5, -5, 2))
         const target = geomItem.getParameter('GlobalXfo').getValue().tr.clone()
         viewXfo.ori.setFromDirectionAndUpvector(target.subtract(viewXfo.tr).normalize().negate(), new Vec3(0, 0, 1))
-        session._emit('poseChanged', convertValuesToJSON({
-          interfaceType: 'CameraAndPointer',
-          viewXfo: viewXfo,
-          focalDistance: target.distanceTo(viewXfo.tr)
-        }), userData1.id)
-        
-        setTimeout(() => {
-          session._emit('directAttention', convertValuesToJSON({
-            target,
-            distance: 4,
-            duration: 1000
-          }), userData1.id)
+        session._emit(
+          'poseChanged',
+          convertValuesToJSON({
+            interfaceType: 'CameraAndPointer',
+            viewXfo: viewXfo,
+            focalDistance: target.distanceTo(viewXfo.tr),
+          }),
+          userData1.id
+        )
 
-              
-          renderer.getViewport().getCamera().once('movementFinished', () => {
-            window.postMessage('done-directAttention1')
-          })
-          
-          setTimeout(() => {
-            session._emit('directAttention', convertValuesToJSON({
-              target: viewXfo.tr.subtract(new Vec3(0,0,1)),
-              distance: -1,
-              duration: 1000
-            }), userData1.id)
-            
-            renderer.getViewport().getCamera().once('movementFinished', () => {
-              window.postMessage('done-directAttention2')
+        setTimeout(() => {
+          session._emit(
+            'directAttention',
+            convertValuesToJSON({
+              target,
+              distance: 4,
+              duration: 1000,
+            }),
+            userData1.id
+          )
+
+          renderer
+            .getViewport()
+            .getCamera()
+            .once('movementFinished', () => {
+              window.postMessage('done-directAttention1')
             })
 
+          setTimeout(() => {
+            session._emit(
+              'directAttention',
+              convertValuesToJSON({
+                target: viewXfo.tr.subtract(new Vec3(0, 0, 1)),
+                distance: -1,
+                duration: 1000,
+              }),
+              userData1.id
+            )
+
+            renderer
+              .getViewport()
+              .getCamera()
+              .once('movementFinished', () => {
+                window.postMessage('done-directAttention2')
+              })
           }, 2000)
         }, 1000)
       }
       {
-
         const userData2 = makeUser('./data/avatar2.jpg')
         session.users[userData2.id] = userData2
         session._emit('user-joined', userData2, userData2.id)
-        
-        const viewXfo = new Xfo(new Vec3(0,-3,2))
-        const target = new Vec3(0,0,0)
+
+        const viewXfo = new Xfo(new Vec3(0, -3, 2))
+        const target = new Vec3(0, 0, 0)
         viewXfo.ori.setFromDirectionAndUpvector(target.subtract(viewXfo.tr).normalize().negate(), new Vec3(0, 0, 1))
-        session._emit('poseChanged', convertValuesToJSON({
-          interfaceType: 'CameraAndPointer',
-          viewXfo: viewXfo,
-          focalDistance: target.distanceTo(viewXfo.tr)
-        }), userData2.id)
+        session._emit(
+          'poseChanged',
+          convertValuesToJSON({
+            interfaceType: 'CameraAndPointer',
+            viewXfo: viewXfo,
+            focalDistance: target.distanceTo(viewXfo.tr),
+          }),
+          userData2.id
+        )
 
         setTimeout(() => {
-            session._emit('directAttention', convertValuesToJSON({
-              target: viewXfo.tr.subtract(new Vec3(0,0,1)),
+          session._emit(
+            'directAttention',
+            convertValuesToJSON({
+              target: viewXfo.tr.subtract(new Vec3(0, 0, 1)),
               distance: -1,
-              duration: 1000
-            }), userData2.id)
-            
-            renderer.getViewport().getCamera().once('movementFinished', () => {
+              duration: 1000,
+            }),
+            userData2.id
+          )
+
+          renderer
+            .getViewport()
+            .getCamera()
+            .once('movementFinished', () => {
               window.postMessage('done-directAttention3')
             })
-
-          }, 5000)
+        }, 5000)
       }
 
       // Note: Just testing. No 'real' users are listening to this message, and our faux avatars won't respond.
       const target = geomItem.getParameter('GlobalXfo').getValue().tr.clone()
       sessionSync.directAttention(target, -1, 2000)
-
-      
     </script>
   </head>
   <body>
-    <canvas id="canvas"></canvas></body>
+    <canvas id="canvas"></canvas>
+  </body>
 </html>
