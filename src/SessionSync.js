@@ -181,15 +181,16 @@ class SessionSync {
           const currDist = vecToGuide.normalizeInPlace()
           // Now maintain our distance.
           if (currDist < this.followDist.x || currDist > this.followDist.y) {
+            let newDist
             if (currDist < this.followDist.x) {
-              const stepBack = vecToGuide.scale((currDist - this.followDist.x) * 0.05)
-              ourViewXfo.tr.addInPlace(stepBack)
+              newDist = (currDist - this.followDist.x) * 0.05
             } else if (currDist > this.followDist.y) {
-              const stepBack = vecToGuide.scale((currDist - this.followDist.y) * 0.05)
-              ourViewXfo.tr.addInPlace(stepBack)
+              newDist = (currDist - this.followDist.y) * 0.05
             }
+            const stepBack = vecToGuide.scale(newDist)
+            ourViewXfo.tr.addInPlace(stepBack)
+            camera.getParameter('focalDistance').setValue(newDist)
           }
-
           camera.getParameter('GlobalXfo').setValue(ourViewXfo)
 
           userDatas[userId].viewXfo = data.viewXfo
