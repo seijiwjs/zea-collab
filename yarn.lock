@@ -1272,10 +1272,15 @@
   resolved "https://registry.yarnpkg.com/@zeainc/zea-engine/-/zea-engine-2.0.0.tgz#a25a9bf72aae92279afd17b25a596f92fbab5bc4"
   integrity sha512-NpaNvQEiY+ASNo2wpR0BU5fIrXW61dNE5+hizzG5cJhH9V0DJIkiqCtMm0/wLlGBEc59nZ3WRca0wxPK1qAvpg==
 
-"@zeainc/zea-ux@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@zeainc/zea-ux/-/zea-ux-2.0.0.tgz#31c04fb624e31bd93f2bf578a34aae2e29b95a14"
-  integrity sha512-w+reY2O9p+CLquKOvnOlT5Sx0+RAu7m5jTqAjfVv9/qugwc6RI6L+GYMeyLPkzsjojHL5VDq5RNlgUd+nFHdIg==
+"@zeainc/zea-engine@^2.0.0":
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@zeainc/zea-engine/-/zea-engine-2.2.1.tgz#86e13980b8247c571012dcd3272e15a650b20993"
+  integrity sha512-7YfxzclRbdBvchn1MapeS11y63a8mdM+0i73eB4eBdjFX49MP646GrkyKNUyli0SiJopm8POYYFvWqaSdq7ICA==
+
+"@zeainc/zea-ux@^2.0.0":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@zeainc/zea-ux/-/zea-ux-2.0.1.tgz#7e002986dc5f08ae26e91bd90344219fd814cce8"
+  integrity sha512-0HgErgmtbXpCN7kyhRVqRedosbIMunNFJBbclwaLHHiwtaBRLbLf5AM+TbQ4nNaqhdNuQGYhQ9DlkdQzk0RiWw==
   dependencies:
     "@zeainc/zea-engine" "2.0.0"
     dom-to-image "^2.6.0"
