@@ -29,11 +29,12 @@ class Avatar {
    * @param {object} userData - The userData value.
    * @param {boolean} currentUserAvatar - The currentUserAvatar value.
    */
-  constructor(appData, userData, currentUserAvatar = false) {
-
+  constructor(appData, userData, currentUserAvatar = false, avatarScale = 1.0, scaleAvatarWithFocalDistance = true) {
     this.__appData = appData
     this.__userData = userData
     this.__currentUserAvatar = currentUserAvatar
+    this.avatarScale = avatarScale
+    this.scaleAvatarWithFocalDistance = scaleAvatarWithFocalDistance
 
     this.__treeItem = new TreeItem(this.__userData.id)
     this.__appData.renderer.addTreeItem(this.__treeItem)
@@ -49,26 +50,10 @@ class Avatar {
       this.__cameraBound = false
 
       let avatarImage
-      let geom = new Disc(0.5, 64)
+      const geom = new Disc(0.5, 64)
       if (this.__userData.picture && this.__userData.picture != '') {
         avatarImage = new LDRImage('user' + this.__userData.id + 'AvatarImage')
         avatarImage.setImageURL(this.__userData.picture)
-      } else {
-        const firstName = this.__userData.name || this.__userData.given_name || ''
-        const lastName = this.__userData.lastName || this.__userData.family_name || ''
-        avatarImage = new Label('Name')
-        avatarImage.getParameter('BackgroundColor').setValue(this.__avatarColor)
-        avatarImage.getParameter('FontSize').setValue(42)
-        avatarImage.getParameter('BorderRadius').setValue(0)
-        avatarImage.getParameter('BorderWidth').setValue(0)
-        avatarImage.getParameter('Margin').setValue(12)
-        avatarImage.getParameter('StrokeBackgroundOutline').setValue(false)
-        avatarImage.getParameter('Text').setValue(`${firstName.charAt(0)}${lastName.charAt(0)}`)
-
-        avatarImage.on('labelRendered', (event) => {
-          this.__avatarImageXfo.sc.set(0.15, 0.15, 1)
-          this.__avatarImageGeomItem.getParameter('LocalXfo').setValue(this.__avatarImageXfo)
-        })
       }
 
       const avatarImageMaterial = new Material('user' + this.__userData.id + 'AvatarImageMaterial', 'FlatSurfaceShader')
@@ -82,6 +67,53 @@ class Avatar {
       this.__avatarImageXfo.sc.set(0.2, 0.2, 1)
       this.__avatarImageXfo.ori.setFromAxisAndAngle(new Vec3(0, 1, 0), Math.PI)
       this.__avatarImageGeomItem.getParameter('LocalXfo').setValue(this.__avatarImageXfo)
+
+      {
+        ///////////////////////////////////////////////
+        // Nameplate
+
+        const firstName = this.__userData.name || this.__userData.given_name || ''
+        const lastName = this.__userData.lastName || this.__userData.family_name || ''
+        const avatarNameplate = new Label('Name')
+        const isLightColor = this.__avatarColor.luminance() > 0.4
+        console.log('this.__avatarColor.luminance():', this.__avatarColor.luminance())
+        if (isLightColor) {
+          avatarNameplate.getParameter('FontColor').setValue(new Color(0, 0, 0))
+        } else {
+          avatarNameplate.getParameter('FontColor').setValue(new Color(1, 1, 1))
+        }
+        avatarNameplate.getParameter('BackgroundColor').setValue(this.__avatarColor)
+        avatarNameplate.getParameter('FontSize').setValue(42)
+        avatarNameplate.getParameter('BorderRadius').setValue(0)
+        avatarNameplate.getParameter('BorderWidth').setValue(0)
+        avatarNameplate.getParameter('Margin').setValue(12)
+        avatarNameplate.getParameter('StrokeBackgroundOutline').setValue(false)
+        avatarNameplate.getParameter('Text').setValue(`${firstName} ${lastName}`)
+        avatarNameplate.on('labelRendered', (event) => {
+          const avatarNameplateXfo = new Xfo()
+          avatarNameplateXfo.tr.set(0, 0, -0.07)
+          const height = event.height / event.width
+          avatarNameplateXfo.sc.set(-1.5, height * 1.5, 1)
+          avatarNameplateGeomItem.getParameter('LocalXfo').setValue(avatarNameplateXfo)
+        })
+
+        const avatarNameplateMaterial = new Material(
+          'user' + this.__userData.id + 'AvatarImageMaterial',
+          'FlatSurfaceShader'
+        )
+        // avatarImageMaterial.getParameter('BaseColor').setValue(this.__avatarColor)
+        avatarNameplateMaterial.getParameter('BaseColor').setImage(avatarNameplate)
+        avatarNameplateMaterial.visibleInGeomDataBuffer = false
+        const avatarNameplateGeomItem = new GeomItem('avatarNameplate', this.__plane, avatarNameplateMaterial)
+
+        // const avatarNameplateXfo = new Xfo()
+        // avatarNameplateXfo.tr.set(0, -1, 0)
+        // // avatarNameplateXfo.sc.set(0.2, 0.2, 1)
+        // // avatarNameplateXfo.ori.setFromAxisAndAngle(new Vec3(0, 1, 0), Math.PI)
+        // avatarNameplateGeomItem.getParameter('LocalXfo').setValue(avatarNameplateXfo)
+
+        this.__avatarImageGeomItem.addChild(avatarNameplateGeomItem, false)
+      }
 
       ///////////////////////////////////////////////
 
@@ -210,6 +242,7 @@ class Avatar {
     material.getParameter('BaseColor').setValue(new Color(0.2, 0.2, 0.2, 1.0))
     const geomItem = new GeomItem('camera', shape, material)
     const geomXfo = new Xfo()
+    geomXfo.sc.set(this.avatarScale, this.avatarScale, this.avatarScale)
     geomItem.setGeomOffsetXfo(geomXfo)
 
     const line = new Lines()
@@ -265,7 +298,7 @@ class Avatar {
     if (this.__currentUserAvatar) return
 
     if (data.viewXfo) {
-      if (data.focalDistance) {
+      if (this.scaleAvatarWithFocalDistance && data.focalDistance) {
         // After 10 meters, the avatar scales to avoid getting too small.
         const sc = data.focalDistance / 5
         if (sc > 1) data.viewXfo.sc.set(sc, sc, sc)
