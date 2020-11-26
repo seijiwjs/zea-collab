@@ -24,7 +24,7 @@ class SessionSync {
     this.session = session
     this.appData = appData
 
-    const userDatas = {}
+    this.userDatas = {}
 
     const sendCurrentPose = () => {
       // Emit an event to configure remote avatars to the current camera transform.
@@ -40,8 +40,8 @@ class SessionSync {
     }
 
     session.sub(Session.actions.USER_JOINED, (userData) => {
-      if (!(userData.id in userDatas)) {
-        userDatas[userData.id] = {
+      if (!(userData.id in this.userDatas)) {
+        this.userDatas[userData.id] = {
           undoRedoManager: new UndoRedoManager(),
           avatar: new Avatar(appData, userData, false, options.avatarScale, options.scaleAvatarWithFocalDistance),
           selectionManager: new SelectionManager(appData, {
@@ -58,32 +58,32 @@ class SessionSync {
       }
     })
     session.sub(Session.actions.USER_LEFT, (userData) => {
-      if (!userDatas[userData.id]) {
+      if (!this.userDatas[userData.id]) {
         console.warn('User id not in session:', userData.id)
         return
       }
-      userDatas[userData.id].avatar.destroy()
-      delete userDatas[userData.id]
+      this.userDatas[userData.id].avatar.destroy()
+      delete this.userDatas[userData.id]
     })
 
     // ///////////////////////////////////////////
     // Video Streams
     session.sub(Session.actions.USER_VIDEO_STARTED, (data, userId) => {
-      if (!userDatas[userId]) {
+      if (!this.userDatas[userId]) {
         console.warn('User id not in session:', userId)
         return
       }
       const video = session.getVideoStream(userId)
-      if (video) userDatas[userId].avatar.attachRTCStream(video)
+      if (video) this.userDatas[userId].avatar.attachRTCStream(video)
     })
 
     session.sub(Session.actions.USER_VIDEO_STOPPED, (data, userId) => {
-      if (!userDatas[userId]) {
+      if (!this.userDatas[userId]) {
         console.warn('User id not in session:', userId)
         return
       }
       console.log('USER_VIDEO_STOPPED:', userId, ' us:', currentUser.id)
-      if (userDatas[userId].avatar) userDatas[userId].avatar.detachRTCStream(session.getVideoStream(userId))
+      if (this.userDatas[userId].avatar) this.userDatas[userId].avatar.detachRTCStream(session.getVideoStream(userId))
     })
 
     // ///////////////////////////////////////////
@@ -157,22 +157,22 @@ class SessionSync {
       })
 
       session.sub('poseChanged', (jsonData, userId) => {
-        if (!userDatas[userId]) {
+        if (!this.userDatas[userId]) {
           console.warn('User id not in session:', userId)
           return
         }
         const data = convertValuesFromJSON(jsonData, appData.scene)
-        const avatar = userDatas[userId].avatar
+        const avatar = this.userDatas[userId].avatar
         avatar.updatePose(data)
 
         if (userId == this.followId) {
-          // const delta = userDatas[userId].viewXfo.tr.subtract(data.viewXfo.tr)
+          // const delta = this.userDatas[userId].viewXfo.tr.subtract(data.viewXfo.tr)
 
           const viewport = this.appData.renderer.getViewport()
           const camera = viewport.getCamera()
           const ourViewXfo = camera.getParameter('GlobalXfo').getValue().clone()
 
-          const movementDelta = data.viewXfo.tr.subtract(userDatas[userId].viewXfo.tr)
+          const movementDelta = data.viewXfo.tr.subtract(this.userDatas[userId].viewXfo.tr)
           ourViewXfo.tr.addInPlace(movementDelta)
 
           const target = data.viewXfo.tr.clone()
@@ -193,10 +193,10 @@ class SessionSync {
           }
           camera.getParameter('GlobalXfo').setValue(ourViewXfo)
 
-          userDatas[userId].viewXfo = data.viewXfo
+          this.userDatas[userId].viewXfo = data.viewXfo
         } else {
           // Cache the view Xfo in case we need to follow this user.
-          userDatas[userId].viewXfo = data.viewXfo
+          this.userDatas[userId].viewXfo = data.viewXfo
         }
       })
 
@@ -246,16 +246,16 @@ class SessionSync {
 
       session.sub('change-added', (data, userId) => {
         // console.log("Remote Command added:", data.changeClass, userId)
-        if (!userDatas[userId]) {
+        if (!this.userDatas[userId]) {
           console.warn('User id not in session:', userId)
           return
         }
-        const undoRedoManager = userDatas[userId].undoRedoManager
+        const undoRedoManager = this.userDatas[userId].undoRedoManager
         const change = undoRedoManager.constructChange(data.changeClass)
 
         const context = {
           appData: {
-            selectionManager: userDatas[userId].selectionManager,
+            selectionManager: this.userDatas[userId].selectionManager,
             scene: appData.scene,
           },
         }
@@ -264,11 +264,11 @@ class SessionSync {
       })
 
       session.sub('change-updated', (data, userId) => {
-        if (!userDatas[userId]) {
+        if (!this.userDatas[userId]) {
           console.warn('User id not in session:', userId)
           return
         }
-        const undoRedoManager = userDatas[userId].undoRedoManager
+        const undoRedoManager = this.userDatas[userId].undoRedoManager
         const changeData = convertValuesFromJSON(data, appData.scene)
         undoRedoManager.getCurrentChange().update(changeData)
       })
@@ -282,7 +282,7 @@ class SessionSync {
       })
 
       session.sub('UndoRedoManager_changeUndone', (data, userId) => {
-        const undoRedoManager = userDatas[userId].undoRedoManager
+        const undoRedoManager = this.userDatas[userId].undoRedoManager
         undoRedoManager.undo()
       })
 
@@ -291,7 +291,7 @@ class SessionSync {
       })
 
       session.sub('UndoRedoManager_changeRedone', (data, userId) => {
-        const undoRedoManager = userDatas[userId].undoRedoManager
+        const undoRedoManager = this.userDatas[userId].undoRedoManager
         undoRedoManager.redo()
       })
     }
@@ -317,7 +317,7 @@ class SessionSync {
       this.followDist = new Vec2(data.minDistance, data.maxDistance)
       this.followZOffset = -0.75
 
-      const followUserXfo = userDatas[this.followId].viewXfo
+      const followUserXfo = this.userDatas[this.followId].viewXfo
       if (followUserXfo) {
         const duration = jsonData.duration ? jsonData.duration : 1000
         const target = followUserXfo.tr.clone()
