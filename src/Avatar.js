@@ -306,6 +306,11 @@ class Avatar {
       this.__treeItem.getChild(0).getParameter('LocalXfo').setValue(data.viewXfo)
       this.pointerXfo.sc.z = 0
       this.__treeItem.getChild(1).getParameter('LocalXfo').setValue(this.pointerXfo)
+
+      this.viewXfo = data.viewXfo
+      if (data.focalDistance) {
+        this.focalDistance = data.focalDistance
+      }
     } else if (data.movePointer) {
       this.pointerXfo.tr = data.movePointer.start
       this.pointerXfo.ori.setFromDirectionAndUpvector(data.movePointer.dir, new Vec3(0, 0, 1))
@@ -441,7 +446,10 @@ class Avatar {
       }
     }
 
-    if (data.viewXfo) this.__treeItem.getChild(0).getParameter('GlobalXfo').setValue(data.viewXfo)
+    if (data.viewXfo) {
+      this.__treeItem.getChild(0).getParameter('GlobalXfo').setValue(data.viewXfo)
+      this.viewXfo = data.viewXfo
+    }
 
     if (data.controllers) {
       for (let i = 0; i < data.controllers.length; i++) {
