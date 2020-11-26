@@ -43,7 +43,7 @@ class SessionSync {
       if (!(userData.id in userDatas)) {
         userDatas[userData.id] = {
           undoRedoManager: new UndoRedoManager(),
-          avatar: new Avatar(appData, userData),
+          avatar: new Avatar(appData, userData, false, options.avatarScale, options.scaleAvatarWithFocalDistance),
           selectionManager: new SelectionManager(appData, {
             ...options,
             enableXfoHandles: false,
@@ -302,7 +302,13 @@ class SessionSync {
       const data = convertValuesFromJSON(jsonData, this.appData.scene)
       const viewport = this.appData.renderer.getViewport()
       const cameraManipulator = viewport.getManipulator()
-      cameraManipulator.aimFocus(viewport.getCamera(), data.target, data.distance, data.duration)
+      cameraManipulator.orientPointOfView(
+        viewport.getCamera(),
+        data.position,
+        data.target,
+        data.distance,
+        data.duration
+      )
     })
 
     this.session.sub('followMe', (jsonData, userId) => {
@@ -355,40 +361,16 @@ class SessionSync {
    * @param {Number} distance - The distance each member should adjust their positions relative to the target.
    * @param {Number} duration - The time to establish focus.
    */
-  directAttention(target, distance, duration) {
+  directAttention(position, target, distance, duration) {
     this.session.pub(
       'directAttention',
       convertValuesToJSON({
+        position,
         target,
         distance,
         duration,
       })
     )
-  }
-
-  /**
-   * Instructs all session users to follow this user as a guide.
-   *
-   * @param {Number} minDistance - The minimum distance each member should get to the guide.
-   * @param {Number} maxDistance - The maximum distance each member should get to the guide.
-   * @param {Number} duration - The time to establish focus.
-   */
-  followMe(minDistance, maxDistance, duration) {
-    this.session.pub(
-      'followMe',
-      convertValuesToJSON({
-        minDistance,
-        maxDistance,
-        duration,
-      })
-    )
-  }
-
-  /**
-   * Instructs all session users to stop follow this user as a guide.
-   */
-  stopFollowingMe() {
-    this.session.pub('stopFollowingMe', {})
   }
 }
 
