@@ -1274,10 +1274,13 @@
     meow "^7.0.1"
     rimraf "^3.0.2"
 
-"@zeainc/zea-engine@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@zeainc/zea-engine/-/zea-engine-2.0.0.tgz#a25a9bf72aae92279afd17b25a596f92fbab5bc4"
-  integrity sha512-NpaNvQEiY+ASNo2wpR0BU5fIrXW61dNE5+hizzG5cJhH9V0DJIkiqCtMm0/wLlGBEc59nZ3WRca0wxPK1qAvpg==
+"@zeainc/zea-engine@^2.0.0":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@zeainc/zea-engine/-/zea-engine-2.2.2.tgz#c123fd90c5572ba31c6d881923cc23ff16663422"
+  integrity sha512-C3JXE18xVzTQ7jDArV8qDA+Z1ax4iFxL2A5Qc4yXWGVH0CgWesHKFl6iWNi+5reaVRfAWiuvK0rvw14ntO7l1A==
+  dependencies:
+    debug "^4.1.1"
+    semver "^7.3.2"
 
 "@zeainc/zea-engine@^2.2.0":
   version "2.2.0"
@@ -1285,11 +1288,11 @@
   integrity sha512-eNGmY6PXwvllIBm586m2TxgUUpDpWdMKtgQorxRJEURbDfYMX5x4NDaHdzw1JopSIbgLM3oqQ3yVVr4tHPYOUQ==
 
 "@zeainc/zea-ux@2.1.0":
-  version "2.1.0-mobile.0"
-  resolved "https://registry.yarnpkg.com/@zeainc/zea-ux/-/zea-ux-2.1.0-mobile.0.tgz#2e2594236cc85414901ee1dad412f540d756fc92"
-  integrity sha512-r29tL0HvMbkcCi00UJmWMRNB9koF/1lEb2gUXbopmlxsiRDf6lQjB/sy8CYqwndume2yGQ8zu7bTJc+xNXQaXQ==
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@zeainc/zea-ux/-/zea-ux-2.1.0.tgz#15989696dbdfbc50802572d64cccf6ce6cc5d0aa"
+  integrity sha512-SbPwRpXHP8Y/2IVqyGsMpLlllufuJn2PWlBpFeeErPleN7yzyFIY/zP8SnC4VPWIiJEVPEhr5Y968QBX9RfMMw==
   dependencies:
-    "@zeainc/zea-engine" "2.0.0"
+    "@zeainc/zea-engine" "^2.0.0"
     dom-to-image "^2.6.0"
 
 JSONStream@^1.0.4:
