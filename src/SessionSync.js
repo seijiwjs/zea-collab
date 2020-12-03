@@ -1,52 +1,9 @@
-import { Registry, BaseItem } from '@zeainc/zea-engine'
+import { Vec2 } from '@zeainc/zea-engine'
 import { UndoRedoManager, SelectionManager } from '@zeainc/zea-ux'
 
 import Session from './Session.js'
 import Avatar from './Avatar.js'
-
-const convertValuesToJSON = (value) => {
-  if (value == undefined) {
-    return undefined
-  } else if (value instanceof BaseItem) {
-    return '::' + value.getPath()
-  } else if (value.toJSON) {
-    const result = value.toJSON()
-    result.typeName = Registry.getBlueprintName(value.constructor)
-    return result
-  } else if (Array.isArray(value)) {
-    const arr = []
-    for (const element of value) arr.push(convertValuesToJSON(element))
-    return arr
-  } else if (typeof value === 'object') {
-    const dict = {}
-    for (const key in value) dict[key] = convertValuesToJSON(value[key])
-    return dict
-  } else {
-    return value
-  }
-}
-
-const convertValuesFromJSON = (value, scene) => {
-  if (value == undefined) {
-    return undefined
-  } else if (typeof value === 'string' && value.startsWith('::')) {
-    return scene.getRoot().resolvePath(value, 1)
-  } else if (value.typeName) {
-    const newval = Registry.getBlueprint(value.typeName).create()
-    newval.fromJSON(value)
-    return newval
-  } else if (Array.isArray(value)) {
-    const arr = []
-    for (const element of value) arr.push(convertValuesFromJSON(element, scene))
-    return arr
-  } else if (typeof value === 'object') {
-    const dict = {}
-    for (const key in value) dict[key] = convertValuesFromJSON(value[key], scene)
-    return dict
-  } else {
-    return value
-  }
-}
+import { convertValuesToJSON, convertValuesFromJSON } from './convertJSON.js'
 
 /**
  * Helper class with default session sync behaviour
@@ -67,7 +24,7 @@ class SessionSync {
     this.session = session
     this.appData = appData
 
-    const userDatas = {}
+    this.userDatas = {}
 
     const sendCurrentPose = () => {
       // Emit an event to configure remote avatars to the current camera transform.
@@ -83,10 +40,10 @@ class SessionSync {
     }
 
     session.sub(Session.actions.USER_JOINED, (userData) => {
-      if (!(userData.id in userDatas)) {
-        userDatas[userData.id] = {
+      if (!(userData.id in this.userDatas)) {
+        this.userDatas[userData.id] = {
           undoRedoManager: new UndoRedoManager(),
-          avatar: new Avatar(appData, userData),
+          avatar: new Avatar(appData, userData, false, options.avatarScale, options.scaleAvatarWithFocalDistance),
           selectionManager: new SelectionManager(appData, {
             ...options,
             enableXfoHandles: false,
@@ -101,32 +58,32 @@ class SessionSync {
       }
     })
     session.sub(Session.actions.USER_LEFT, (userData) => {
-      if (!userDatas[userData.id]) {
+      if (!this.userDatas[userData.id]) {
         console.warn('User id not in session:', userData.id)
         return
       }
-      userDatas[userData.id].avatar.destroy()
-      delete userDatas[userData.id]
+      this.userDatas[userData.id].avatar.destroy()
+      delete this.userDatas[userData.id]
     })
 
     // ///////////////////////////////////////////
     // Video Streams
     session.sub(Session.actions.USER_VIDEO_STARTED, (data, userId) => {
-      if (!userDatas[userId]) {
+      if (!this.userDatas[userId]) {
         console.warn('User id not in session:', userId)
         return
       }
       const video = session.getVideoStream(userId)
-      if (video) userDatas[userId].avatar.attachRTCStream(video)
+      if (video) this.userDatas[userId].avatar.attachRTCStream(video)
     })
 
     session.sub(Session.actions.USER_VIDEO_STOPPED, (data, userId) => {
-      if (!userDatas[userId]) {
+      if (!this.userDatas[userId]) {
         console.warn('User id not in session:', userId)
         return
       }
       console.log('USER_VIDEO_STOPPED:', userId, ' us:', currentUser.id)
-      if (userDatas[userId].avatar) userDatas[userId].avatar.detachRTCStream(session.getVideoStream(userId))
+      if (this.userDatas[userId].avatar) this.userDatas[userId].avatar.detachRTCStream(session.getVideoStream(userId))
     })
 
     // ///////////////////////////////////////////
@@ -200,13 +157,47 @@ class SessionSync {
       })
 
       session.sub('poseChanged', (jsonData, userId) => {
-        if (!userDatas[userId]) {
+        if (!this.userDatas[userId]) {
           console.warn('User id not in session:', userId)
           return
         }
         const data = convertValuesFromJSON(jsonData, appData.scene)
-        const avatar = userDatas[userId].avatar
+        const avatar = this.userDatas[userId].avatar
         avatar.updatePose(data)
+
+        if (userId == this.followId) {
+          // const delta = this.userDatas[userId].viewXfo.tr.subtract(data.viewXfo.tr)
+
+          const viewport = this.appData.renderer.getViewport()
+          const camera = viewport.getCamera()
+          const ourViewXfo = camera.getParameter('GlobalXfo').getValue().clone()
+
+          const movementDelta = data.viewXfo.tr.subtract(this.userDatas[userId].viewXfo.tr)
+          ourViewXfo.tr.addInPlace(movementDelta)
+
+          const target = data.viewXfo.tr.clone()
+          target.z -= this.followZOffset
+          const vecToGuide = target.subtract(ourViewXfo.tr)
+          const currDist = vecToGuide.normalizeInPlace()
+          // Now maintain our distance.
+          if (currDist < this.followDist.x || currDist > this.followDist.y) {
+            let newDist
+            if (currDist < this.followDist.x) {
+              newDist = (currDist - this.followDist.x) * 0.05
+            } else if (currDist > this.followDist.y) {
+              newDist = (currDist - this.followDist.y) * 0.05
+            }
+            const stepBack = vecToGuide.scale(newDist)
+            ourViewXfo.tr.addInPlace(stepBack)
+            camera.getParameter('focalDistance').setValue(newDist)
+          }
+          camera.getParameter('GlobalXfo').setValue(ourViewXfo)
+
+          this.userDatas[userId].viewXfo = data.viewXfo
+        } else {
+          // Cache the view Xfo in case we need to follow this user.
+          this.userDatas[userId].viewXfo = data.viewXfo
+        }
       })
 
       sendCurrentPose()
@@ -214,10 +205,10 @@ class SessionSync {
 
     // ///////////////////////////////////////////
     // Scene Changes
-    // const otherUndoStack = new UndoRedoManager();
-    if (appData.undoRedoManager) {
+    const undoRedoManager = UndoRedoManager.getInstance()
+    if (undoRedoManager) {
       const root = appData.scene.getRoot()
-      appData.undoRedoManager.on('changeAdded', (event) => {
+      undoRedoManager.on('changeAdded', (event) => {
         const { change } = event
         const context = {
           appData,
@@ -225,11 +216,11 @@ class SessionSync {
           resolvePath: (path, cb) => {
             // Note: Why not return a Promise here?
             // Promise evaluation is always async, so
-            // all promisses will be resolved after the current call stack
+            // all promises will be resolved after the current call stack
             // has terminated. In our case, we want all paths
             // to be resolved before the end of the function, which
             // we can handle easily with callback functions.
-            if (!path) throw 'Path not spcecified'
+            if (!path) throw 'Path not specified'
             const item = root.resolvePath(path)
             if (item) {
               cb(item)
@@ -242,33 +233,29 @@ class SessionSync {
           changeData: change.toJSON(context),
           changeClass: UndoRedoManager.getChangeClassName(change),
         }
-        session.pub(Session.actions.COMMAND_ADDED, data)
-
-        // const otherChange = otherUndoStack.constructChange(data.changeClass);
-        // otherChange.fromJSON(data.changeData, { appData })
-        // otherUndoStack.addChange(otherChange);
+        session.pub('change-added', data)
       })
 
-      appData.undoRedoManager.on('changeUpdated', (data) => {
+      undoRedoManager.on('changeUpdated', (data) => {
         const jsonData = convertValuesToJSON(data)
-        session.pub(Session.actions.COMMAND_UPDATED, jsonData)
+        session.pub('change-updated', jsonData)
 
         // const changeData2 = convertValuesFromJSON(jsonData, appData.scene);
         // otherUndoStack.getCurrentChange().update(changeData2);
       })
 
-      session.sub(Session.actions.COMMAND_ADDED, (data, userId) => {
+      session.sub('change-added', (data, userId) => {
         // console.log("Remote Command added:", data.changeClass, userId)
-        if (!userDatas[userId]) {
+        if (!this.userDatas[userId]) {
           console.warn('User id not in session:', userId)
           return
         }
-        const undoRedoManager = userDatas[userId].undoRedoManager
+        const undoRedoManager = this.userDatas[userId].undoRedoManager
         const change = undoRedoManager.constructChange(data.changeClass)
 
         const context = {
           appData: {
-            selectionManager: userDatas[userId].selectionManager,
+            selectionManager: this.userDatas[userId].selectionManager,
             scene: appData.scene,
           },
         }
@@ -276,12 +263,12 @@ class SessionSync {
         undoRedoManager.addChange(change)
       })
 
-      session.sub(Session.actions.COMMAND_UPDATED, (data, userId) => {
-        if (!userDatas[userId]) {
+      session.sub('change-updated', (data, userId) => {
+        if (!this.userDatas[userId]) {
           console.warn('User id not in session:', userId)
           return
         }
-        const undoRedoManager = userDatas[userId].undoRedoManager
+        const undoRedoManager = this.userDatas[userId].undoRedoManager
         const changeData = convertValuesFromJSON(data, appData.scene)
         undoRedoManager.getCurrentChange().update(changeData)
       })
@@ -290,26 +277,68 @@ class SessionSync {
       // Undostack Changes.
       // Synchronize undo stacks between users.
 
-      appData.undoRedoManager.on('changeUndone', () => {
+      undoRedoManager.on('changeUndone', () => {
         session.pub('UndoRedoManager_changeUndone', {})
       })
 
       session.sub('UndoRedoManager_changeUndone', (data, userId) => {
-        const undoRedoManager = userDatas[userId].undoRedoManager
+        const undoRedoManager = this.userDatas[userId].undoRedoManager
         undoRedoManager.undo()
       })
 
-      appData.undoRedoManager.on('changeRedone', () => {
+      undoRedoManager.on('changeRedone', () => {
         session.pub('UndoRedoManager_changeRedone', {})
       })
 
       session.sub('UndoRedoManager_changeRedone', (data, userId) => {
-        const undoRedoManager = userDatas[userId].undoRedoManager
+        const undoRedoManager = this.userDatas[userId].undoRedoManager
         undoRedoManager.redo()
       })
     }
+
+    // ///////////////////////////////////////////
+    // Guided Tours
+    this.session.sub('directAttention', (jsonData, userId) => {
+      const data = convertValuesFromJSON(jsonData, this.appData.scene)
+      const viewport = this.appData.renderer.getViewport()
+      const cameraManipulator = viewport.getManipulator()
+      cameraManipulator.orientPointOfView(
+        viewport.getCamera(),
+        data.position,
+        data.target,
+        data.distance,
+        data.duration
+      )
+    })
+
+    this.session.sub('followMe', (jsonData, userId) => {
+      const data = convertValuesFromJSON(jsonData, this.appData.scene)
+      this.followId = userId
+      this.followDist = new Vec2(data.minDistance, data.maxDistance)
+      this.followZOffset = -0.75
+
+      const followUserXfo = this.userDatas[this.followId].viewXfo
+      if (followUserXfo) {
+        const duration = jsonData.duration ? jsonData.duration : 1000
+        const target = followUserXfo.tr.clone()
+        target.z += this.followZOffset
+        const viewport = this.appData.renderer.getViewport()
+        const cameraManipulator = viewport.getManipulator()
+        const distance = (this.followDist.x + this.followDist.y) * 0.5
+        cameraManipulator.aimFocus(viewport.getCamera(), target, distance, duration)
+      }
+    })
+
+    this.session.sub('stopFollowingMe', (jsonData, userId) => {
+      this.followId = -1
+    })
   }
 
+  /**
+   * Starts synchronizing state changes between given state machines.
+   *
+   * @param {StateMachine} stateMachine - The state machine for each connected client is registered here.
+   */
   syncStateMachines(stateMachine) {
     // ///////////////////////////////////////////
     // State Machine Changes.
@@ -324,6 +353,24 @@ class SessionSync {
     this.session.sub('StateMachine_stateChanged', (data, userId) => {
       stateMachine.activateState(data.stateName)
     })
+  }
+
+  /**
+   * Instructs all session users to look and face a given target, while maybe approaching the target.
+   *
+   * @param {Number} distance - The distance each member should adjust their positions relative to the target.
+   * @param {Number} duration - The time to establish focus.
+   */
+  directAttention(position, target, distance, duration) {
+    this.session.pub(
+      'directAttention',
+      convertValuesToJSON({
+        position,
+        target,
+        distance,
+        duration,
+      })
+    )
   }
 }
 

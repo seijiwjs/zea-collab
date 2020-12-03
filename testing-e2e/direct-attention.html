@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>direct-attention</title>
+
+    <!-- <script crossorigin src="https://unpkg.com/@zeainc/zea-engine@2"></script>
+    <script crossorigin src="https://unpkg.com/@zeainc/zea-ux@2/dist/index.umd.js"></script> -->
+    <script crossorigin src="/node_modules/@zeainc/zea-engine/dist/index.umd.js"></script>
+    <script crossorigin src="/node_modules/@zeainc/zea-ux/dist/index.umd.js"></script>
+
+    <script src="https://websocket-staging.zea.live/socket.io/socket.io.js"></script>
+
+    <script src="../dist/index.umd.js"></script>
+    <style>
+      html,
+      body,
+      #canvas {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+
+    <script type="module">
+      const {
+        GLRenderer,
+        Scene,
+        Xfo,
+        Quat,
+        Vec3,
+        CameraManipulator,
+        Material,
+        GeomItem,
+        Color,
+        Cone,
+        Cuboid,
+      } = zeaEngine
+      const { Session, SessionSync, convertValuesToJSON, convertValuesFromJSON } = window.zeaCollab
+
+      const canvasElement = document.getElementById('canvas')
+
+      const scene = new Scene()
+      scene.setupGrid(10.0, 10)
+
+      const renderer = new GLRenderer(canvasElement, { hideSplash: true, webglOptions: { antialias: false } })
+      renderer.setScene(scene)
+
+      // renderer.getViewport().getManipulator().setDefaultManipulationMode(CameraManipulator.MANIPULATION_MODES.walk)
+
+      const appData = {
+        scene,
+        renderer,
+      }
+
+      const getRandomString = () =>
+        Math.random()
+          .toString(36)
+          .replace(/[^a-z]+/g, '')
+          .substr(0, 5)
+
+      const addUser = (user) => {
+        console.log('Add: ', user)
+      }
+
+      const removeUser = (user) => {
+        console.log('Remove: ', user)
+      }
+
+      const makeUser = (picture, id) => {
+        return {
+          family_name: getRandomString(),
+          given_name: getRandomString(),
+          id,
+          picture,
+        }
+      }
+
+      const userData = makeUser('', '123')
+      console.log('I am:', userData)
+
+      const socketUrl = 'https://websocket-staging.zea.live'
+      const session = new Session(userData, socketUrl)
+      session.joinRoom('any-random-string')
+      const sessionSync = new SessionSync(session, appData, userData)
+
+      session.sub('user-joined', (user) => {
+        addUser(user)
+      })
+
+      session.sub('user-left', (user) => {
+        removeUser(user)
+      })
+
+      const standardMaterial = new Material('surfaces', 'SimpleSurfaceShader')
+      standardMaterial.getParameter('BaseColor').setValue(new Color(89 / 255, 182 / 255, 92 / 255))
+
+      const geomItem = new GeomItem('Cone', new Cone(0.5, 0.3, 40), standardMaterial)
+      geomItem.getParameter('GlobalXfo').setValue(new Xfo(new Vec3(-5, 0, 0)))
+      scene.getRoot().addChild(geomItem)
+
+      const geomItem2 = new GeomItem('Cube', new Cuboid(0.5, 0.3, 0.4), standardMaterial)
+      geomItem2.getParameter('GlobalXfo').setValue(new Xfo(new Vec3(0, 0, 0)))
+      scene.getRoot().addChild(geomItem2)
+
+      // Now make some fake users join.
+      {
+        const userData1 = makeUser('./data/avatar1.jpg', 'userData1')
+        session.users[userData1.id] = userData1
+        session._emit('user-joined', userData1, userData1.id)
+
+        const viewXfo = new Xfo(new Vec3(-5, -5, 2))
+        const target = geomItem.getParameter('GlobalXfo').getValue().tr.clone()
+        viewXfo.ori.setFromDirectionAndUpvector(target.subtract(viewXfo.tr).normalize().negate(), new Vec3(0, 0, 1))
+        session._emit(
+          'poseChanged',
+          convertValuesToJSON({
+            interfaceType: 'CameraAndPointer',
+            viewXfo: viewXfo,
+            focalDistance: target.distanceTo(viewXfo.tr),
+          }),
+          userData1.id
+        )
+
+        setTimeout(() => {
+          session._emit(
+            'directAttention',
+            convertValuesToJSON({
+              position: viewXfo.tr,
+              target,
+              distance: 1,
+              duration: 1000,
+            }),
+            userData1.id
+          )
+
+          renderer
+            .getViewport()
+            .getCamera()
+            .once('movementFinished', () => {
+              window.postMessage('done-directAttention1')
+            })
+
+          setTimeout(() => {
+            const target = geomItem2.getParameter('GlobalXfo').getValue().tr.clone()
+            session._emit(
+              'directAttention',
+              convertValuesToJSON({
+                position: viewXfo.tr,
+                target,
+                distance: 1,
+                duration: 1000,
+              }),
+              userData1.id
+            )
+
+            renderer
+              .getViewport()
+              .getCamera()
+              .once('movementFinished', () => {
+                window.postMessage('done-directAttention2')
+              })
+          }, 1000)
+        }, 1000)
+      }
+      {
+        const userData2 = makeUser('./data/avatar2.jpg', 'userData2')
+        session.users[userData2.id] = userData2
+        session._emit('user-joined', userData2, userData2.id)
+
+        const viewXfo = new Xfo(new Vec3(5, -3, 2))
+        const target = new Vec3(0, 0, 0)
+        viewXfo.ori.setFromDirectionAndUpvector(target.subtract(viewXfo.tr).normalize().negate(), new Vec3(0, 0, 1))
+        session._emit(
+          'poseChanged',
+          convertValuesToJSON({
+            interfaceType: 'CameraAndPointer',
+            viewXfo: viewXfo,
+            focalDistance: target.distanceTo(viewXfo.tr),
+          }),
+          userData2.id
+        )
+
+        setTimeout(() => {
+          session._emit(
+            'directAttention',
+            convertValuesToJSON({
+              position: viewXfo.tr,
+              target,
+              distance: 1,
+              duration: 1000,
+            }),
+            userData2.id
+          )
+
+          renderer
+            .getViewport()
+            .getCamera()
+            .once('movementFinished', () => {
+              window.postMessage('done-directAttention3')
+            })
+        }, 3000)
+      }
+
+      // Note: Just testing. No 'real' users are listening to this message, and our faux avatars won't respond.
+      const camera = renderer.getViewport().getCamera()
+      const xfo = camera.getParameter('GlobalXfo').getValue()
+      const target = geomItem.getParameter('GlobalXfo').getValue().tr
+      sessionSync.directAttention(xfo.tr, target, 1, 2000)
+    </script>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+  </body>
+</html>
