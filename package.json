@@ -1,6 +1,6 @@
 {
   "name": "@zeainc/zea-collab",
-  "version": "4.1.1",
+  "version": "5.0.0",
   "description": "The Zea Collab library provides Client and Server side tools for connecting and synchronizing users.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -36,8 +36,8 @@
   "author": "Zea Inc.",
   "license": "MIT",
   "dependencies": {
-    "@zeainc/zea-engine": "^3.0.0",
-    "@zeainc/zea-ux": "2.1.0",
+    "@zeainc/zea-engine": "^3.0.1",
+    "@zeainc/zea-ux": "3.0.1",
     "debug": "^4.1.1",
     "socket.io-client": "^2.3.0",
     "socketio-wildcard": "^2.0.0"
