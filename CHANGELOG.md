@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [5.0.0](https://github.com/ZeaInc/zea-collab/compare/v3.4.0...v5.0.0) (2020-12-17)
+## [5.0.0] (2020-12-17)
 
 
 ### ⚠ BREAKING CHANGES
@@ -35,7 +35,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 * **npm:** Add UMD support ([#29](https://github.com/ZeaInc/zea-collab/issues/29)) ([9124081](https://github.com/ZeaInc/zea-collab/commit/9124081afe6a69f80e497a1ac65047f23fa1f4b6)), closes [#30](https://github.com/ZeaInc/zea-collab/issues/30)
 
-## [4.1.0](https://github.com/ZeaInc/zea-collab/compare/v4.0.0...v4.1.0) (2020-09-30)
+## [4.1.0] (2020-09-30)
 
 
 ### Features
@@ -43,7 +43,7 @@ All notable changes to this project will be documented in this file. See [standa
 * Add collision protection ([6e39aac](https://github.com/ZeaInc/zea-collab/commit/6e39aacd8a7e8cdb81b138f0d8588a76193640c3)), closes [#39](https://github.com/ZeaInc/zea-collab/issues/39)
 * SessionSync options defaults to object ([7833206](https://github.com/ZeaInc/zea-collab/commit/78332064a148459d20f516d4805f9c19ff116535))
 
-## [4.0.0](https://github.com/ZeaInc/zea-collab/compare/v3.4.0...v4.0.0) (2020-09-17)
+## [4.0.0] (2020-09-17)
 
 
 ### ⚠ BREAKING CHANGES
@@ -54,7 +54,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 * **npm:** Add UMD support ([#29](https://github.com/ZeaInc/zea-collab/issues/29)) ([9124081](https://github.com/ZeaInc/zea-collab/commit/9124081afe6a69f80e497a1ac65047f23fa1f4b6)), closes [#30](https://github.com/ZeaInc/zea-collab/issues/30)
 
-## [3.4.0](https://github.com/ZeaInc/zea-collab/compare/v3.2.0...v3.4.0) (2020-08-26)
+## [3.4.0] (2020-08-26)
 
 
 ### Features
@@ -70,5 +70,5 @@ All notable changes to this project will be documented in this file. See [standa
 * Docs search now have their own namespace ([66990c8](https://github.com/ZeaInc/zea-collab/commit/66990c8f4f32f75cf6421b201c12a218570ee73a))
 * Fixed bug causing avatars to not appear correctly for newly joined users. ([6fc34e7](https://github.com/ZeaInc/zea-collab/commit/6fc34e76317b23fc2901e5a79a1c439e9807f327))
 * Fixed minor deprecation warning. ([9484e34](https://github.com/ZeaInc/zea-collab/commit/9484e34ddfd677d1519559e9bb351a05fe04abf0))
-* fixed regresions in imports after zea-engine 1.2.0 ([b9870b4](https://github.com/ZeaInc/zea-collab/commit/b9870b4fd8e79aaf43c791719f0e197118c056a5))
+* fixed regressions in imports after zea-engine 1.2.0 ([b9870b4](https://github.com/ZeaInc/zea-collab/commit/b9870b4fd8e79aaf43c791719f0e197118c056a5))
 * Search functionality is now defaulting instead of specifying the entire paths ([22cdeaf](https://github.com/ZeaInc/zea-collab/commit/22cdeaf3373295c5534edfc3709ebe2eebf14a08))
