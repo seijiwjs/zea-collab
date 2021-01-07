@@ -14,6 +14,7 @@ import {
   LDRImage,
   Label,
   VideoStreamImage2D,
+  VLAAsset,
 } from '@zeainc/zea-engine'
 
 /**
@@ -90,11 +91,10 @@ class Avatar {
         avatarNameplate.getParameter('StrokeBackgroundOutline').setValue(false)
         avatarNameplate.getParameter('Text').setValue(`${firstName} ${lastName}`)
         avatarNameplate.on('labelRendered', (event) => {
-          const avatarNameplateXfo = new Xfo()
-          avatarNameplateXfo.tr.set(0, 0, -0.07)
+          const avatarNameplateXfo = this.avatarNameplateGeomItem.getParameter('LocalXfo').getValue()
           const height = event.height / event.width
           avatarNameplateXfo.sc.set(-1.5, height * 1.5, 1)
-          avatarNameplateGeomItem.getParameter('LocalXfo').setValue(avatarNameplateXfo)
+          this.avatarNameplateGeomItem.getParameter('LocalXfo').setValue(avatarNameplateXfo)
         })
 
         const avatarNameplateMaterial = new Material(
@@ -104,15 +104,15 @@ class Avatar {
         // avatarImageMaterial.getParameter('BaseColor').setValue(this.__avatarColor)
         avatarNameplateMaterial.getParameter('BaseColor').setImage(avatarNameplate)
         avatarNameplateMaterial.visibleInGeomDataBuffer = false
-        const avatarNameplateGeomItem = new GeomItem('avatarNameplate', this.__plane, avatarNameplateMaterial)
+        this.avatarNameplateGeomItem = new GeomItem('avatarNameplate', this.__plane, avatarNameplateMaterial)
 
         // const avatarNameplateXfo = new Xfo()
         // avatarNameplateXfo.tr.set(0, -1, 0)
         // // avatarNameplateXfo.sc.set(0.2, 0.2, 1)
         // // avatarNameplateXfo.ori.setFromAxisAndAngle(new Vec3(0, 1, 0), Math.PI)
-        // avatarNameplateGeomItem.getParameter('LocalXfo').setValue(avatarNameplateXfo)
+        // this.avatarNameplateGeomItem.getParameter('LocalXfo').setValue(avatarNameplateXfo)
 
-        this.__avatarImageGeomItem.addChild(avatarNameplateGeomItem, false)
+        this.__avatarImageGeomItem.addChild(this.avatarNameplateGeomItem, false)
       }
 
       ///////////////////////////////////////////////
@@ -276,6 +276,12 @@ class Avatar {
       geomItem.addChild(this.__avatarImageGeomItem, false)
     }
 
+    if (this.avatarNameplateGeomItem) {
+      const avatarNameplateXfo = this.avatarNameplateGeomItem.getParameter('LocalXfo').getValue()
+      avatarNameplateXfo.tr.set(0, 0, -0.07)
+      this.avatarNameplateGeomItem.getParameter('LocalXfo').setValue(avatarNameplateXfo)
+    }
+
     if (this.__audioItem) {
       geomItem.addChild(this.__audioItem, false)
     }
@@ -347,6 +353,12 @@ class Avatar {
       hmdHolder.addChild(this.__avatarImageGeomItem, false)
     }
 
+    if (this.avatarNameplateGeomItem) {
+      const avatarNameplateXfo = this.avatarNameplateGeomItem.getParameter('LocalXfo').getValue()
+      avatarNameplateXfo.tr.set(0, 0, -0.4)
+      this.avatarNameplateGeomItem.getParameter('LocalXfo').setValue(avatarNameplateXfo)
+    }
+
     this.__treeItem.addChild(hmdHolder)
 
     if (this.__camera) hmdHolder.addChild(this.__camera, false)
@@ -359,51 +371,56 @@ class Avatar {
     } else {
       const resourceLoader = this.__appData.scene.getResourceLoader()
 
-      let assetPath
+      let hmdAssetId
       switch (data.hmd) {
         case 'Vive':
-          assetPath = 'ZeaEngine/Vive.vla'
+          hmdAssetId = 'ZeaEngine/Vive.vla'
           break
         case 'Oculus':
-          assetPath = 'ZeaEngine/Oculus.vla'
+          hmdAssetId = 'ZeaEngine/Oculus.vla'
           break
         default:
-          assetPath = 'ZeaEngine/Vive.vla'
+          hmdAssetId = 'ZeaEngine/Vive.vla'
           break
       }
 
       if (!this.__vrAsset) {
-        const hmdAssetId = resourceLoader.resolveFilePathToId(assetPath)
-        if (hmdAssetId) {
-          this.__vrAsset = this.__appData.scene.loadCommonAssetResource(hmdAssetId)
-          this.__vrAsset.on('geomsLoaded', () => {
-            const materialLibrary = this.__vrAsset.getMaterialLibrary()
-            const materialNames = materialLibrary.getMaterialNames()
-            for (const name of materialNames) {
-              const material = materialLibrary.getMaterial(name, false)
-              if (material) {
-                material.visibleInGeomDataBuffer = false
-                material.setShaderName('SimpleSurfaceShader')
-              }
-            }
-
-            if (!this.__currentUserAvatar) {
-              const hmdGeomItem = this.__vrAsset.getChildByName('HMD').clone()
-              const xfo = hmdGeomItem.getLocalXfo()
-              xfo.tr.set(0, -0.03, -0.03)
-              xfo.ori.setFromAxisAndAngle(new Vec3(0, 1, 0), Math.PI)
-              xfo.sc.set(0.001) // VRAsset units are in mm. convert meters
-              hmdGeomItem.getParameter('LocalXfo').setValue(xfo)
-
-              this.__hmdGeomItem = hmdGeomItem
-
-              if (this.__cameraBound) {
-                this.__hmdGeomItem.setVisible(false)
-              }
-              hmdHolder.addChild(this.__hmdGeomItem, false)
-            }
-          })
+        if (!resourceLoader.getCommonResource(hmdAssetId)) {
+          // Cache the asset so if an avatar needs to display,
+          // it can use the same asset.
+          const asset = new VLAAsset(hmdAssetId)
+          asset.getParameter('FilePath').setValue(hmdAssetId)
+          resourceLoader.setCommonResource(hmdAssetId, asset)
         }
+        this.__vrAsset = resourceLoader.getCommonResource(hmdAssetId)
+        this.__vrAsset.on('geomsLoaded', () => {
+          const materialLibrary = this.__vrAsset.getMaterialLibrary()
+          const materialNames = materialLibrary.getMaterialNames()
+          for (const name of materialNames) {
+            const material = materialLibrary.getMaterial(name, false)
+            if (material) {
+              material.visibleInGeomDataBuffer = false
+              material.setShaderName('SimpleSurfaceShader')
+            }
+          }
+
+          if (!this.__currentUserAvatar) {
+            const hmdGeomItem = this.__vrAsset.getChildByName('HMD').clone()
+            hmdGeomItem.getParameter('Visible').setValue(true)
+            const xfo = hmdGeomItem.getLocalXfo()
+            xfo.tr.set(0, -0.03, -0.03)
+            xfo.ori.setFromAxisAndAngle(new Vec3(0, 1, 0), Math.PI)
+            xfo.sc.set(0.001) // VRAsset units are in mm. convert meters
+            hmdGeomItem.getParameter('LocalXfo').setValue(xfo)
+
+            this.__hmdGeomItem = hmdGeomItem
+
+            if (this.__cameraBound) {
+              this.__hmdGeomItem.setVisible(false)
+            }
+            hmdHolder.addChild(this.__hmdGeomItem, false)
+          }
+        })
       }
     }
 
