@@ -380,15 +380,19 @@ class Session {
       compactedUserData.picture = null
     }
 
-    this.socket.emit(
-      messageType,
-      {
-        userData: compactedUserData,
-        userId: this.userData.id,
-        payload,
-      },
-      ack
-    )
+    if (this.socket) {
+      this.socket.emit(
+        messageType,
+        {
+          userData: compactedUserData,
+          userId: this.userData.id,
+          payload,
+        },
+        ack
+      )
+    } else {
+      console.warn('Session not joined yet')
+    }
   }
 
   _emit(messageType, payload, userId) {
