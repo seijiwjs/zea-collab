@@ -77,7 +77,6 @@ class Avatar {
         const lastName = this.__userData.lastName || this.__userData.family_name || ''
         const avatarNameplate = new Label('Name')
         const isLightColor = this.__avatarColor.luminance() > 0.4
-        console.log('this.__avatarColor.luminance():', this.__avatarColor.luminance())
         if (isLightColor) {
           avatarNameplate.getParameter('FontColor').setValue(new Color(0, 0, 0))
         } else {
