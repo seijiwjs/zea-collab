@@ -143,10 +143,12 @@ class SessionSync {
         if (event.focalDistance) {
           data.focalDistance = event.focalDistance
         } else if (isVRView) {
+          data.hmd = event.hmd
           data.controllers = []
           for (const controller of event.controllers) {
             data.controllers.push({
-              xfo: controller.getTreeItem().getGlobalXfo(),
+              handedness: controller.getHandedness(),
+              xfo: controller.getTreeItem().getParameter('GlobalXfo').getValue(),
             })
           }
         }

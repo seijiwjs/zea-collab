@@ -55,6 +55,35 @@ class Avatar {
       if (this.__userData.picture && this.__userData.picture != '') {
         avatarImage = new LDRImage('user' + this.__userData.id + 'AvatarImage')
         avatarImage.setImageURL(this.__userData.picture)
+      } else {
+        const firstName = this.__userData.firstName || this.__userData.given_name || ''
+        const lastName = this.__userData.lastName || this.__userData.family_name || ''
+        let firstLetter = ''
+        let secondLetter = ''
+        if (firstName) {
+          firstLetter = firstName.charAt(0)
+        }
+        if (lastName) {
+          secondLetter = lastName.charAt(0)
+        } else if (firstLetter) {
+          // if no last name but it does have a firstName,
+          // use the firstName's second letter
+          secondLetter = firstName.charAt(1)
+        }
+        avatarImage = new Label('Name')
+        const isLightColor = this.__avatarColor.luminance() > 0.4
+        if (isLightColor) {
+          avatarImage.getParameter('FontColor').setValue(new Color(0, 0, 0))
+        } else {
+          avatarImage.getParameter('FontColor').setValue(new Color(1, 1, 1))
+        }
+        avatarImage.getParameter('BackgroundColor').setValue(this.__avatarColor)
+        avatarImage.getParameter('FontSize').setValue(42)
+        avatarImage.getParameter('BorderRadius').setValue(0)
+        avatarImage.getParameter('BorderWidth').setValue(0)
+        avatarImage.getParameter('Margin').setValue(12)
+        avatarImage.getParameter('StrokeBackgroundOutline').setValue(false)
+        avatarImage.getParameter('Text').setValue(String(firstLetter + secondLetter).toUpperCase())
       }
 
       const avatarImageMaterial = new Material('user' + this.__userData.id + 'AvatarImageMaterial', 'FlatSurfaceShader')
@@ -73,7 +102,7 @@ class Avatar {
         ///////////////////////////////////////////////
         // Nameplate
 
-        const firstName = this.__userData.name || this.__userData.given_name || ''
+        const firstName = this.__userData.firstName || this.__userData.given_name || ''
         const lastName = this.__userData.lastName || this.__userData.family_name || ''
         const avatarNameplate = new Label('Name')
         const isLightColor = this.__avatarColor.luminance() > 0.4
@@ -392,7 +421,7 @@ class Avatar {
           resourceLoader.setCommonResource(hmdAssetId, asset)
         }
         this.__vrAsset = resourceLoader.getCommonResource(hmdAssetId)
-        this.__vrAsset.on('geomsLoaded', () => {
+        const bindHMD = () => {
           const materialLibrary = this.__vrAsset.getMaterialLibrary()
           const materialNames = materialLibrary.getMaterialNames()
           for (const name of materialNames) {
@@ -404,7 +433,7 @@ class Avatar {
           }
 
           if (!this.__currentUserAvatar) {
-            const hmdGeomItem = this.__vrAsset.getChildByName('HMD').clone()
+            const hmdGeomItem = this.__vrAsset.getChildByName('HMD').clone({ assetItem: this.__vrAsset })
             hmdGeomItem.getParameter('Visible').setValue(true)
             const xfo = hmdGeomItem.getLocalXfo()
             xfo.tr.set(0, -0.03, -0.03)
@@ -419,7 +448,12 @@ class Avatar {
             }
             hmdHolder.addChild(this.__hmdGeomItem, false)
           }
-        })
+        }
+
+        if (this.__vrAsset.isLoaded()) bindHMD()
+        else {
+          this.__vrAsset.on('loaded', bindHMD)
+        }
       }
     }
 
@@ -442,10 +476,28 @@ class Avatar {
 
         const setupControllerGeom = () => {
           let srcControllerTree
-          if (i == 0) srcControllerTree = this.__vrAsset.getChildByName('LeftController')
-          else if (i == 1) srcControllerTree = this.__vrAsset.getChildByName('RightController')
-          if (!srcControllerTree) srcControllerTree = this.__vrAsset.getChildByName('Controller')
-          const controllerTree = srcControllerTree.clone()
+          const controller = data.controllers[i]
+          if (data.interfaceType == 'Vive') {
+            srcControllerTree = assetItem.getChildByName('Controller')
+          } else {
+            switch (controller.handedness) {
+              case 'left':
+                srcControllerTree = assetItem.getChildByName('LeftController')
+                break
+              case 'right':
+                srcControllerTree = assetItem.getChildByName('RightController')
+                break
+              case 'none':
+              case 'left-right':
+              case 'left-right-none':
+                srcControllerTree = assetItem.getChildByName('Controller')
+                break
+              default:
+                break
+            }
+          }
+
+          const controllerTree = srcControllerTree.clone({ assetItem: this.__vrAsset })
           const xfo = new Xfo(
             new Vec3(0, -0.035, -0.085),
             new Quat({
@@ -456,9 +508,8 @@ class Avatar {
           controllerTree.getParameter('LocalXfo').setValue(xfo)
           treeItem.addChild(controllerTree, false)
         }
-        this.__vrAsset.on('geomsLoaded', () => {
-          setupControllerGeom()
-        })
+        if (this.__vrAsset.isLoaded()) setupControllerGeom()
+        else this.__vrAsset.once('loaded', setupControllerGeom)
       }
     }
 
