@@ -478,19 +478,19 @@ class Avatar {
           let srcControllerTree
           const controller = data.controllers[i]
           if (data.interfaceType == 'Vive') {
-            srcControllerTree = assetItem.getChildByName('Controller')
+            srcControllerTree = this.__vrAsset.getChildByName('Controller')
           } else {
             switch (controller.handedness) {
               case 'left':
-                srcControllerTree = assetItem.getChildByName('LeftController')
+                srcControllerTree = this.__vrAsset.getChildByName('LeftController')
                 break
               case 'right':
-                srcControllerTree = assetItem.getChildByName('RightController')
+                srcControllerTree = this.__vrAsset.getChildByName('RightController')
                 break
               case 'none':
               case 'left-right':
               case 'left-right-none':
-                srcControllerTree = assetItem.getChildByName('Controller')
+                srcControllerTree = this.__vrAsset.getChildByName('Controller')
                 break
               default:
                 break
