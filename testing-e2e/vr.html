@@ -83,6 +83,17 @@
 
       // renderer.getViewport().getManipulator().setDefaultManipulationMode(CameraManipulator.MANIPULATION_MODES.walk)
 
+      const standardMaterial = new Material('surfaces', 'SimpleSurfaceShader')
+      standardMaterial.getParameter('BaseColor').setValue(new Color(89 / 255, 182 / 255, 92 / 255))
+
+      const geomItem = new GeomItem('Cone', new Cone(0.5, 0.3, 40), standardMaterial)
+      geomItem.getParameter('GlobalXfo').setValue(new Xfo(new Vec3(-5, 0, 0)))
+      scene.getRoot().addChild(geomItem)
+
+      const geomItem2 = new GeomItem('Cube', new Cuboid(0.5, 0.3, 0.4), standardMaterial)
+      geomItem2.getParameter('GlobalXfo').setValue(new Xfo(new Vec3(0, 0, 0)))
+      scene.getRoot().addChild(geomItem2)
+
       const appData = {
         scene,
         renderer,
@@ -127,9 +138,15 @@
       })
 
       // Now make a fake VR user join.
-      const makeVRUser = (id, hmd, viewXfo) => {
-        const userData1 = makeUser('./data/avatar1.jpg', id)
+      const makeVRUser = (id, picture, hmd, viewXfo) => {
+        const userData1 = makeUser(picture, id)
         session.users[userData1.id] = userData1
+
+        const controllerXfo0 = viewXfo.clone()
+        controllerXfo0.tr.addInPlace(viewXfo.ori.rotateVec3(new Vec3(-0.3, -0.3, 0)))
+        const controllerXfo1 = viewXfo.clone()
+        controllerXfo1.tr.addInPlace(viewXfo.ori.rotateVec3(new Vec3(0.3, -0.3, 0)))
+
         session._emit('user-joined', userData1, userData1.id)
         session._emit(
           'poseChanged',
@@ -137,6 +154,16 @@
             interfaceType: 'VR',
             hmd,
             viewXfo,
+            controllers: [
+              {
+                handedness: 'left',
+                xfo: controllerXfo0,
+              },
+              {
+                handedness: 'right',
+                xfo: controllerXfo1,
+              },
+            ],
           }),
           userData1.id
         )
@@ -147,14 +174,14 @@
         new Vec3(0, 0.5, 0.1).subtract(userData1ViewXfo.tr).normalize().negate(),
         new Vec3(0, 0, 1)
       )
-      makeVRUser('userData1', 'Vive', userData1ViewXfo)
+      makeVRUser('userData1', './data/avatar1.jpg', 'Vive', userData1ViewXfo)
 
       const userData2ViewXfo = new Xfo(new Vec3(-1, -1, 1))
       userData2ViewXfo.ori.setFromDirectionAndUpvector(
         new Vec3(0, 0.5, 0.1).subtract(userData2ViewXfo.tr).normalize().negate(),
         new Vec3(0, 0, 1)
       )
-      makeVRUser('userData2', 'Oculus', userData2ViewXfo)
+      makeVRUser('userData2', null, 'Oculus', userData2ViewXfo)
 
       renderer.getXRViewport().then((xrvp) => {
         var h = document.createElement('H1') // Create a <h1> element

@@ -40,7 +40,7 @@ class Avatar {
     this.__treeItem = new TreeItem(this.__userData.id)
     this.__appData.renderer.addTreeItem(this.__treeItem)
 
-    this.__avatarColor = new Color(userData.color || '#0000ff')
+    this.__avatarColor = new Color(userData.color || '#aaaaaa')
     this.__hilightPointerColor = this.__avatarColor
 
     this.__plane = new Plane(1, 1)
@@ -129,16 +129,10 @@ class Avatar {
           'user' + this.__userData.id + 'AvatarImageMaterial',
           'FlatSurfaceShader'
         )
-        // avatarImageMaterial.getParameter('BaseColor').setValue(this.__avatarColor)
+        // avatarNameplateMaterial.getParameter('BaseColor').setValue(this.__avatarColor)
         avatarNameplateMaterial.getParameter('BaseColor').setImage(avatarNameplate)
         avatarNameplateMaterial.visibleInGeomDataBuffer = false
         this.avatarNameplateGeomItem = new GeomItem('avatarNameplate', this.__plane, avatarNameplateMaterial)
-
-        // const avatarNameplateXfo = new Xfo()
-        // avatarNameplateXfo.tr.set(0, -1, 0)
-        // // avatarNameplateXfo.sc.set(0.2, 0.2, 1)
-        // // avatarNameplateXfo.ori.setFromAxisAndAngle(new Vec3(0, 1, 0), Math.PI)
-        // this.avatarNameplateGeomItem.getParameter('LocalXfo').setValue(avatarNameplateXfo)
 
         this.__avatarImageGeomItem.addChild(this.avatarNameplateGeomItem, false)
       }
@@ -435,7 +429,7 @@ class Avatar {
           if (!this.__currentUserAvatar) {
             const hmdGeomItem = this.__vrAsset.getChildByName('HMD').clone({ assetItem: this.__vrAsset })
             hmdGeomItem.getParameter('Visible').setValue(true)
-            const xfo = hmdGeomItem.getLocalXfo()
+            const xfo = hmdGeomItem.getParameter('LocalXfo').getValue()
             xfo.tr.set(0, -0.03, -0.03)
             xfo.ori.setFromAxisAndAngle(new Vec3(0, 1, 0), Math.PI)
             xfo.sc.set(0.001) // VRAsset units are in mm. convert meters
@@ -476,11 +470,11 @@ class Avatar {
 
         const setupControllerGeom = () => {
           let srcControllerTree
-          const controller = data.controllers[i]
-          if (data.interfaceType == 'Vive') {
+          const controllerData = data.controllers[i]
+          if (data.hmd == 'Vive') {
             srcControllerTree = this.__vrAsset.getChildByName('Controller')
           } else {
-            switch (controller.handedness) {
+            switch (controllerData.handedness) {
               case 'left':
                 srcControllerTree = this.__vrAsset.getChildByName('LeftController')
                 break
@@ -496,17 +490,20 @@ class Avatar {
                 break
             }
           }
-
-          const controllerTree = srcControllerTree.clone({ assetItem: this.__vrAsset })
-          const xfo = new Xfo(
-            new Vec3(0, -0.035, -0.085),
-            new Quat({
-              setFromAxisAndAngle: [new Vec3(0, 1, 0), Math.PI],
-            }),
-            new Vec3(0.001, 0.001, 0.001) // VRAsset units are in mm. convert meters
-          )
-          controllerTree.getParameter('LocalXfo').setValue(xfo)
-          treeItem.addChild(controllerTree, false)
+          if (srcControllerTree) {
+            const controllerTree = srcControllerTree.clone({ assetItem: this.__vrAsset })
+            const xfo = new Xfo(
+              new Vec3(0, -0.035, -0.085),
+              new Quat({
+                setFromAxisAndAngle: [new Vec3(0, 1, 0), Math.PI],
+              }),
+              new Vec3(0.001, 0.001, 0.001) // VRAsset units are in mm. convert meters
+            )
+            controllerTree.getParameter('LocalXfo').setValue(xfo)
+            treeItem.addChild(controllerTree, false)
+          } else {
+            console.warn('Unable to display controller for :', controllerData)
+          }
         }
         if (this.__vrAsset.isLoaded()) setupControllerGeom()
         else this.__vrAsset.once('loaded', setupControllerGeom)
