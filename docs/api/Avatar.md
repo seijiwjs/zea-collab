@@ -18,9 +18,7 @@ Represents the state on steroids of a user in the session.
 <a name="new_Avatar_new"></a>
 
 ### new Avatar
-Initializes all the components of the Avatar like, user image, labels, tranformations, color, etc.
-<br>
-Contains a TreeItem property to which all the children items can be attached to. i.e. Camera.
+Initializes all the components of the Avatar like, user image, labels, tranformations, color, etc.<br>Contains a TreeItem property to which all the children items can be attached to. i.e. Camera.
 
 
 | Param | Type | Default | Description |
@@ -68,9 +66,7 @@ Traverses Camera's sibling items and show them, but hides Camera item.
 <a name="Avatar+updatePose"></a>
 
 ### updatePose
-Method that executes the representation methods for the specified `interfaceType` in the data object.
-<br>
-Valid `interfaceType` values: `CameraAndPointer`, `Vive` and `VR`
+Method that executes the representation methods for the specified `interfaceType` in the data object.<br>Valid `interfaceType` values: `CameraAndPointer`, `Vive` and `VR`
 
 
 

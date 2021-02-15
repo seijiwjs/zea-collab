@@ -1,17 +1,11 @@
-- Getting Started
-  * [Setting up your workspace](getting-started/install.md)
-<!-- * [Test Your Browser](getting-started/test-your-browser.md) -->
 
 - Tutorials
   * [Setting up 3D Collaboration](tutorials/setup-3d-collaboration.md)
   * [Collision protected by default](tutorials/collision-protected.md)
+  * [Connecting to user identity](tutorials/connecting-to-user-identity.md)
 
-<!-- - How-To
-* [Enable collaboration](how-to/enable-collab.md) -->
 - Technical Overview
-  - [Introduction](technical-overview/introduction.md)
-  - [Release Notes](technical-overview/zea-collab-1.0.1.md)
-  - [Frequently Asked Questions](FAQ)
+  * [Release Notes](CHANGELOG.md)
 
 - API References
 [//]: <> (API)

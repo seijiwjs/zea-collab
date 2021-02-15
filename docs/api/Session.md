@@ -11,9 +11,7 @@ Also has the actions to stream media.</p>
 <a name="Session"></a>
 
 ### Session
-Session is used to store information about users and the communication method(Sockets).
-<br>
-Also has the actions to stream media.
+Session is used to store information about users and the communication method(Sockets).<br>Also has the actions to stream media.
 
 
 
@@ -39,16 +37,7 @@ Also has the actions to stream media.
 <a name="new_Session_new"></a>
 
 ### new Session
-Instantiates a new session object that contains user's data and the socketUrl that is going to connect to.
-<br>
-In the userData object you can pass any information you want, but you must provide an `id`.
-In case you would like to use the [`zea-user-chip`](https://github.com/ZeaInc/zea-web-components/tree/staging/src/components/zea-user-chip) component,
-some specific data will be required, although they are not mandatory, it would be nice to have:
-
-* **firstName** or **given_name**
-* **lastName** or **family_name**
-* **avatar** or **picture** - The URL to the image
-* **color** - The RGBA hexadecimal string. i.e. #FFFFFF. (Random color in case you don't specify it)
+Instantiates a new session object that contains user's data and the socketUrl that is going to connect to.<br>In the userData object you can pass any information you want, but you must provide an `id`.In case you would like to use the [`zea-user-chip`](https://github.com/ZeaInc/zea-web-components/tree/staging/src/components/zea-user-chip) component,some specific data will be required, although they are not mandatory, it would be nice to have:* **firstName** or **given_name*** **lastName** or **family_name*** **avatar** or **picture** - The URL to the image* **color** - The RGBA hexadecimal string. i.e. #FFFFFF. (Random color in case you don't specify it)
 
 
 | Param | Type | Description |
@@ -115,10 +104,7 @@ Returns the [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/
 <a name="Session+setVideoStream"></a>
 
 ### setVideoStream
-Creates the [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement) and adds it to the body.
-The video will start playing as soon as the duration and dimensions of the media have been determined
-<br>
-In case the user already has a stream nothing would happend.
+Creates the [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement) and adds it to the body.The video will start playing as soon as the duration and dimensions of the media have been determined<br>In case the user already has a stream nothing would happend.
 
 
 
@@ -141,11 +127,7 @@ Checks if this Session's roomId is the same as the passed in the parameters.
 <a name="Session+joinRoom"></a>
 
 ### joinRoom
-Joins the user to a room and subscribes to all [private actions](#private_actions).
-Also subscribes the user to a wildcard event that can recieve any custom action (Excluding private actions).
-This is very useful when you wanna emit/publish custom events that are not in the pre-stablished custom [actions](#actions).
-<br>
-Emits/publishes the `JOIN_ROOM` event. **See:** [action](#action)
+Joins the user to a room and subscribes to all [private actions](#private_actions).Also subscribes the user to a wildcard event that can recieve any custom action (Excluding private actions).This is very useful when you wanna emit/publish custom events that are not in the pre-stablished custom [actions](#actions).<br>Emits/publishes the `JOIN_ROOM` event. **See:** [action](#action)
 
 
 
@@ -157,9 +139,7 @@ Emits/publishes the `JOIN_ROOM` event. **See:** [action](#action)
 <a name="Session+leaveRoom"></a>
 
 ### leaveRoom
-Disconnects the user from his current room, emitting/publishing the `LEFT_ROOM` event. **See:** [action](#action)
-<br>
-If the socket exists then `USER_LEFT` will be also emitted, check [joinRoom](#joinRoom) method.
+Disconnects the user from his current room, emitting/publishing the `LEFT_ROOM` event. **See:** [action](#action)<br>If the socket exists then `USER_LEFT` will be also emitted, check [joinRoom](#joinRoom) method.
 
 
 <a name="Session+getUsers"></a>
@@ -195,8 +175,7 @@ Emits/Publishes an event action to the socket.
 <a name="Session+sub"></a>
 
 ### sub
-Registers a new handler for a given event.
-**Note:** The session can handle multiple callbacks for a single event.
+Registers a new handler for a given event.**Note:** The session can handle multiple callbacks for a single event.
 
 
 
