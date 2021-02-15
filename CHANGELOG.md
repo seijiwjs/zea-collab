@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.4](https://github.com/ZeaInc/zea-collab/compare/v5.0.3-xr.1...v5.0.4) (2021-02-15)
+
 ### [5.0.3](https://github.com/ZeaInc/zea-collab/compare/v5.0.3-xr.1...v5.0.3) (2021-02-15)
 
 ## [5.0.0] (2020-12-17)
