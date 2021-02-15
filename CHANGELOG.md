@@ -2,9 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [5.0.4](https://github.com/ZeaInc/zea-collab/compare/v5.0.3-xr.1...v5.0.4) (2021-02-15)
+### [5.0.4](https://github.com/ZeaInc/zea-collab/compare/v5.0.3...v5.0.4) (2021-02-15)
 
-### [5.0.3](https://github.com/ZeaInc/zea-collab/compare/v5.0.3-xr.1...v5.0.3) (2021-02-15)
+* Avatar now displays a nameplate with initials if no image is provided.
+
+### Bug Fixes
+
+* Regression displaying VR controllers on Avatars.
+
+### [5.0.2] (2021-01-11)
+
+### Features
+
+* 3D Avatar now displays initials if profile image is not available.
+
+### Bug Fixes
+* Regression prevented VR controllers being displayed on Avatars.
+* Regression prevented Avatar from loading VR HMD asset.
+
+### [5.0.1] (2021-01-07)
+
+### Bug Fixes
+
+* Avatar now correctly loads the HMD VLAAsset and adjusts the nameplate distance
+* Session generates a warning if users try to emit events prior to joining a room.
 
 ## [5.0.0] (2020-12-17)
 
@@ -15,16 +36,13 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* Add collision protection ([6e39aac](https://github.com/ZeaInc/zea-collab/commit/6e39aacd8a7e8cdb81b138f0d8588a76193640c3)), closes [#39](https://github.com/ZeaInc/zea-collab/issues/39)
 * add libraries registry compatibility ([#45](https://github.com/ZeaInc/zea-collab/issues/45)) ([971f7b3](https://github.com/ZeaInc/zea-collab/commit/971f7b3d4a3b6992d5fd7b93cfe40cee39f593f1)), closes [#46](https://github.com/ZeaInc/zea-collab/issues/46)
-* added namplate to the back of the Avatar. ([fc38e1d](https://github.com/ZeaInc/zea-collab/commit/fc38e1d27be29ed4f0ee7bac50fed04a2234770b))
+* Added nameplate to the back of the Avatar. ([fc38e1d](https://github.com/ZeaInc/zea-collab/commit/fc38e1d27be29ed4f0ee7bac50fed04a2234770b))
 * Avatar now caches the viewXfo and the focalDistance ([4eeb616](https://github.com/ZeaInc/zea-collab/commit/4eeb6168fe4beeb372b6aacf5ca1f123428dccdf))
 * Consider non-browser envs as localhost ([390e748](https://github.com/ZeaInc/zea-collab/commit/390e748b1c43c72a5b0d3080972e206784a300c7))
 * implemented 'directAttention' feature to force all users to look at something. ([b8a55f4](https://github.com/ZeaInc/zea-collab/commit/b8a55f44f0731f42a96c4e80e6e8ee0cfcfc0b6a))
-* implemented 'directAttention' feature to force all users to look at something. ([0bb4def](https://github.com/ZeaInc/zea-collab/commit/0bb4def12c2b30981c2dcc48274053fc0d6a4b76))
 * implemented a 'follow-me' mode where all session users follow a specific guide user. ([b9580f1](https://github.com/ZeaInc/zea-collab/commit/b9580f16ebc815a0d7c495d320c14a92a741a6fb))
-* implemented a 'follow-me' mode where all session users follow a specific guide user. ([3bb1aa5](https://github.com/ZeaInc/zea-collab/commit/3bb1aa5a45182b72634b04bd658fc20ed1ab58a8))
-* SessionSync now exposes all the userData as a property to apps can access all teh avatars. ([5db765a](https://github.com/ZeaInc/zea-collab/commit/5db765a6285b9d71f54717dd729490d148957a1f))
+* SessionSync now exposes all the userData as a property to apps can access all the avatars. ([5db765a](https://github.com/ZeaInc/zea-collab/commit/5db765a6285b9d71f54717dd729490d148957a1f))
 * SessionSync options defaults to object ([7833206](https://github.com/ZeaInc/zea-collab/commit/78332064a148459d20f516d4805f9c19ff116535))
 
 
