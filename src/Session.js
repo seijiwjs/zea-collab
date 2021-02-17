@@ -7,7 +7,7 @@ import { zeaDebug } from './helpers/zeaDebug'
  * User specific room actions.
  * @enum
  */
-const private_actions = {
+const PRIVATE_ACTIONS = {
   JOIN_ROOM: 'join-room',
   PING_ROOM: 'ping-room',
   LEAVE_ROOM: 'leave-room',
@@ -128,7 +128,8 @@ class Session {
   }
 
   /**
-   * Checks if this Session's roomId is the same as the passed in the parameters.
+   * Checks if this Session's roomId is the same as
+   * the one received in the parameters.
    *
    * @param {boolean} roomId
    */
@@ -137,7 +138,7 @@ class Session {
   }
 
   /**
-   * Joins the user to a room and subscribes to all [private actions](#private_actions).
+   * Joins the user to a room and subscribes to all [private actions](#PRIVATE_ACTIONS).
    * Also subscribes the user to a wildcard event that can recieve any custom action (Excluding private actions).
    * This is very useful when you wanna emit/publish custom events that are not in the pre-stablished custom [actions](#actions).
    * <br>
@@ -153,8 +154,10 @@ class Session {
       throw new Error('Missing roomId')
     }
 
+    // Only the browser is collision protected by default,
+    // since there's no `window.location.host` in Node.js.
     const defaultOptions = {
-      isCollisionProtected: true,
+      isCollisionProtected: this.envIsBrowser,
     }
 
     const actualOptions = {
@@ -179,10 +182,13 @@ class Session {
     const patch = wildcardMiddleware(io.Manager)
     patch(this.socket)
 
-    // Emit all messages, except the private ones.
+    // Re-emit all messages except the private ones,
+    // because if the private ones are re-emitted, they'd create a loop.
     this.socket.on('*', (packet) => {
       const [messageType, message] = packet.data
-      if (messageType in private_actions) return
+      if (messageType in private_actions) {
+        return
+      }
       this._emit(messageType, message.payload, message.userId)
     })
 
@@ -192,10 +198,10 @@ class Session {
       })
     }
 
-    this.pub(private_actions.JOIN_ROOM)
+    this.pub(PRIVATE_ACTIONS.JOIN_ROOM)
 
-    this.socket.on(private_actions.JOIN_ROOM, (message) => {
-      zeaDebug(`${private_actions.JOIN_ROOM}:\n%O`, message)
+    this.socket.on(PRIVATE_ACTIONS.JOIN_ROOM, (message) => {
+      zeaDebug(`${PRIVATE_ACTIONS.JOIN_ROOM}:\n%O`, message)
 
       // Note: reciprocate the ping so that all users are added.
       // This means that when USER_JOINED is emitted, the session
@@ -203,14 +209,14 @@ class Session {
       // This addresses a race condition where remote avatars could not be configures
       // for users as soon as they were joined, because the user was not yet joined on
       // the other machines.
-      this.pub(private_actions.PING_ROOM)
+      this.pub(PRIVATE_ACTIONS.PING_ROOM)
 
       const incomingUserData = message.userData
       this._addUserIfNew(incomingUserData)
     })
 
-    this.socket.on(private_actions.LEAVE_ROOM, (message) => {
-      zeaDebug(`${private_actions.LEAVE_ROOM}:\n%O`, message)
+    this.socket.on(PRIVATE_ACTIONS.LEAVE_ROOM, (message) => {
+      zeaDebug(`${PRIVATE_ACTIONS.LEAVE_ROOM}:\n%O`, message)
 
       const outgoingUserData = message.userData
       const outgoingUserId = outgoingUserData.id
@@ -222,8 +228,8 @@ class Session {
       zeaDebug('Outgoing user was not found in room.')
     })
 
-    this.socket.on(private_actions.PING_ROOM, (message) => {
-      zeaDebug(`${private_actions.PING_ROOM}:\n%O`, message)
+    this.socket.on(PRIVATE_ACTIONS.PING_ROOM, (message) => {
+      zeaDebug(`${PRIVATE_ACTIONS.PING_ROOM}:\n%O`, message)
 
       const incomingUserData = message.userData
       this._addUserIfNew(incomingUserData)
@@ -263,7 +269,7 @@ class Session {
       this.peer.destroy()
     })
 
-    this.socket.on(private_actions.JOIN_ROOM, message => {
+    this.socket.on(PRIVATE_ACTIONS.JOIN_ROOM, message => {
       const { userData: newUserData } = message.payload
       this._prepareMediaStream()
         .then(() => {
@@ -332,7 +338,7 @@ class Session {
     this.users = {}
     // Notify room peers and close socket.
     if (this.socket) {
-      this.pub(private_actions.LEAVE_ROOM, undefined, () => {
+      this.pub(PRIVATE_ACTIONS.LEAVE_ROOM, undefined, () => {
         this.socket.close()
       })
     }
