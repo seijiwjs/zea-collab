@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.1.0](https://github.com/ZeaInc/zea-collab/compare/v5.0.4...v5.1.0) (2021-02-17)
+
+
+### Features
+
+* build package for Node.js only ([0057d7b](https://github.com/ZeaInc/zea-collab/commit/0057d7bdf79eb765abd5936d338d30bbe16dc8ba))
+
 ### [5.0.4](https://github.com/ZeaInc/zea-collab/compare/v5.0.3...v5.0.4) (2021-02-15)
 
 * Avatar now displays a nameplate with initials if no image is provided.
