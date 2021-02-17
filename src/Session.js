@@ -336,6 +336,7 @@ class Session {
     // Instruct Collab's clients to cleanup session user data.
     this._emit(Session.actions.LEFT_ROOM)
     this.users = {}
+    this.callbacks = {}
     // Notify room peers and close socket.
     if (this.socket) {
       this.pub(PRIVATE_ACTIONS.LEAVE_ROOM, undefined, () => {
