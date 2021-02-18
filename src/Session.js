@@ -186,7 +186,7 @@ class Session {
     // because if the private ones are re-emitted, they'd create a loop.
     this.socket.on('*', (packet) => {
       const [messageType, message] = packet.data
-      if (messageType in private_actions) {
+      if (messageType in PRIVATE_ACTIONS) {
         return
       }
       this._emit(messageType, message.payload, message.userId)
