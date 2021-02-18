@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.1.1](https://github.com/ZeaInc/zea-collab/compare/v5.1.0...v5.1.1) (2021-02-18)
+
+
+### Bug Fixes
+
+* clear callbacks when leaving a room ([5f01043](https://github.com/ZeaInc/zea-collab/commit/5f01043c4895165369f8d613e5a2b91b40c3b2ad))
+* PRIVATE_ACTIONS const ([f0a092b](https://github.com/ZeaInc/zea-collab/commit/f0a092bc95cfaf0a6b70cb192566c7076f954649))
+
 ## [5.1.0](https://github.com/ZeaInc/zea-collab/compare/v5.0.4...v5.1.0) (2021-02-17)
 
 
