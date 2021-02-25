@@ -35,6 +35,7 @@ class Session {
    * @param {string} socketUrl - Socket server you're connecting to.
    */
   constructor(userData, socketUrl) {
+    this.roomId = null
     this.userData = userData
     this.socketUrl = socketUrl
     this.users = {}
@@ -150,6 +151,10 @@ class Session {
    *    collide by simply using the same room id across different apps.
    */
   joinRoom(roomId, options = {}) {
+    if (this.roomId) {
+      throw new Error(`This session is already in the room "${this.roomId}". Call #leaveRoom before joining a new one.`)
+    }
+
     if (!roomId) {
       throw new Error('Missing roomId')
     }
@@ -172,8 +177,6 @@ class Session {
     /*
      * Socket actions.
      */
-    this.leaveRoom()
-
     this.socket = io(this.socketUrl, {
       'sync disconnect on unload': true,
       query: `userId=${this.userData.id}&roomId=${this.roomId}`,
@@ -335,6 +338,7 @@ class Session {
   leaveRoom() {
     // Instruct Collab's clients to cleanup session user data.
     this._emit(Session.actions.LEFT_ROOM)
+    this.roomId = null
     this.users = {}
     this.callbacks = {}
     // Notify room peers and close socket.
@@ -410,14 +414,13 @@ class Session {
     // In this case, the other users recieve a 'mouseMove' message
     // for a user they have not yet recieved the USER_JOINED message.
     if (userId && !this.users[userId]) {
-      zeaDebug(`Ignoring message for user not in session: ${messageType}. User id: ${userId}`)
+      zeaDebug(`Ignoring message "${messageType}" for user "${userId}". Not yet in my users list.`)
       return
     }
 
-    const callbacks = this.callbacks[messageType]
-    if (callbacks) {
-      callbacks.forEach((callback) => callback(payload, userId))
-    }
+    this.getCallbacks(messageType).forEach((callback) => {
+      callback(payload, userId)
+    })
   }
 
   /**
@@ -428,18 +431,26 @@ class Session {
    * @param {function} callback - Recieves by parameters the payload sent by the publisher
    */
   sub(messageType, callback) {
-    if (!messageType) throw new Error('Missing messageType')
-    if (!callback) throw new Error('Missing callback')
+    if (!messageType) throw new Error('Missing `messageType`.')
+    if (!callback) throw new Error('Missing `callback`.')
 
-    const callbacks = this.callbacks[messageType]
-    this.callbacks[messageType] = this.callbacks[messageType] || []
-    this.callbacks[messageType].push(callback)
+    this.callbacks[messageType] = this.getCallbacks(messageType).concat(callback)
 
     const unsub = () => {
-      this.callbacks[messageType].splice(this.callbacks[messageType].indexOf(callback), 1)
+      this.callbacks[messageType] = this.getCallbacks(messageType).filter((e) => e !== callback)
     }
 
     return unsub
+  }
+
+  /**
+   * Make sure to always return a usable
+   * array for the `messageType`.
+   */
+  getCallbacks(messageType) {
+    const callbacks = this.callbacks[messageType] || []
+
+    return callbacks
   }
 }
 
