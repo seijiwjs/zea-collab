@@ -33,11 +33,17 @@ class Session {
    *
    * @param {object} userData - Specifies user's information
    * @param {string} socketUrl - Socket server you're connecting to.
+   * @param {number} userTimeout - the number of seconds to wait before timing out a user. After a user times out, they are temporarily removed from the scene, but can rejoin by initiating any action.
    */
-  constructor(userData, socketUrl) {
+  constructor(userData, socketUrl, userTimeout = 120) {
     this.roomId = null
     this.userData = userData
     this.socketUrl = socketUrl
+
+    this.userTimeout = userTimeout
+    this.timeoutId = 0
+    this.timedOut = false
+
     this.users = {}
     this.userStreams = {}
     this.callbacks = {}
@@ -383,10 +389,29 @@ class Session {
    */
   pub(messageType, payload, ack) {
     if (!messageType) throw new Error('Missing messageType')
-
     const compactedUserData = { ...this.userData }
 
-    if (messageType != 'join-room' && messageType != 'userChanged' && messageType != 'ping-room') {
+    if (
+      messageType != PRIVATE_ACTIONS.JOIN_ROOM &&
+      messageType != 'userChanged' &&
+      messageType != PRIVATE_ACTIONS.PING_ROOM &&
+      messageType != PRIVATE_ACTIONS.LEAVE_ROOM
+    ) {
+      // If not messages are published from this user for a period of time
+      // we remove the user from the room temporarily. They can rejoin by
+      // just publishing a message (e.g. move the view)
+      if (this.timedOut) {
+        this.pub(PRIVATE_ACTIONS.JOIN_ROOM)
+        this.timedOut = false
+      }
+      if (this.timeoutId) clearTimeout(this.timeoutId)
+      this.timeoutId = setTimeout(() => {
+        this.timeoutId = null
+        this.timedOut = true
+        this._emit(Session.actions.LEFT_ROOM)
+        this.pub(PRIVATE_ACTIONS.LEAVE_ROOM, undefined, () => {})
+      }, this.userTimeout * 1000)
+
       compactedUserData.avatar = null
       compactedUserData.picture = null
     }
