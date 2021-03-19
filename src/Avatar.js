@@ -18,19 +18,19 @@ import {
 } from '@zeainc/zea-engine'
 
 /**
- * Represents the state on steroids of a user in the session.
+ * The Avatar is used to display a 3d representation of remote users in a 3d scene.
  */
 class Avatar {
   /**
-   * Initializes all the components of the Avatar like, user image, labels, tranformations, color, etc.
-   * <br>
-   * Contains a TreeItem property to which all the children items can be attached to. i.e. Camera.
+   * Initializes all the components of the Avatar like, user image, labels, transformations, color, etc.
    *
    * @param {object} appData - The appData value. Must contain the renderer
    * @param {object} userData - The userData value.
    * @param {boolean} currentUserAvatar - The currentUserAvatar value.
+   * @param {float} avatarScale - The size of the avatar in the view
+   * @param {float} scaleAvatarWithFocalDistance - To disable avatar scaling, pass as false.
    */
-  constructor(appData, userData, currentUserAvatar = false, avatarScale = 1.0, scaleAvatarWithFocalDistance = true) {
+  constructor(appData, userData, currentUserAvatar = false, avatarScale = 1.0, scaleAvatarWithFocalDistance = false) {
     this.__appData = appData
     this.__userData = userData
     this.__currentUserAvatar = currentUserAvatar
@@ -264,7 +264,6 @@ class Avatar {
     material.getParameter('BaseColor').setValue(new Color(0.2, 0.2, 0.2, 1.0))
     const geomItem = new GeomItem('camera', shape, material)
     const geomXfo = new Xfo()
-    geomXfo.sc.set(this.avatarScale, this.avatarScale, this.avatarScale)
     geomItem.setGeomOffsetXfo(geomXfo)
 
     const line = new Lines()
@@ -327,9 +326,9 @@ class Avatar {
 
     if (data.viewXfo) {
       if (this.scaleAvatarWithFocalDistance && data.focalDistance) {
-        // After 10 meters, the avatar scales to avoid getting too small.
-        const sc = data.focalDistance / 5
-        if (sc > 1) data.viewXfo.sc.set(sc, sc, sc)
+        // When closer than 5 meters, the avatar scales to avoid getting too small.
+        const sc = (data.focalDistance / 5) * this.avatarScale
+        data.viewXfo.sc.set(sc, sc, sc)
       }
       this.__treeItem.getChild(0).getParameter('LocalXfo').setValue(data.viewXfo)
       this.pointerXfo.sc.z = 0

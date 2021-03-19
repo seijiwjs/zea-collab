@@ -17,6 +17,9 @@ class SessionSync {
    * @param {Session} session - The session value.
    * @param {object} appData - The appData value.
    * @param {object} currentUser - The currentUser value.
+   * @param {object} options - The options object can contain additional arguments.
+   *  avatarScale
+   *  scaleAvatarWithFocalDistance - To disable avatar scaling, pass as false.
    */
   constructor(session, appData, currentUser, options = {}) {
     // const currentUserAvatar = new Avatar(appData, currentUser, true);
@@ -41,6 +44,9 @@ class SessionSync {
 
     session.sub(Session.actions.USER_JOINED, (userData) => {
       if (!(userData.id in this.userDatas)) {
+        const avatarScaleRange = !options.scaleAvatarWithFocalDistance
+          ? [options.avatarScale, options.avatarScale]
+          : options.avatarScaleRange
         this.userDatas[userData.id] = {
           undoRedoManager: new UndoRedoManager(),
           avatar: new Avatar(appData, userData, false, options.avatarScale, options.scaleAvatarWithFocalDistance),
