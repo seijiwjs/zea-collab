@@ -7,7 +7,7 @@ Helper class with default session sync behaviour
 **See**: [Session](api/Session.md)  
 
 * [SessionSync](#SessionSync)
-    * [new SessionSync(session, appData, currentUser)](#new-SessionSync)
+    * [new SessionSync(session, appData, currentUser, options)](#new-SessionSync)
     * [syncStateMachines(stateMachine)](#syncStateMachines)
     * [directAttention(distance, duration)](#directAttention)
 
@@ -22,6 +22,7 @@ All default behaviours for session sub actions are defined here.You can use thi
 | session | <code>[Session](api/Session.md)</code> | The session value. |
 | appData | <code>object</code> | The appData value. |
 | currentUser | <code>object</code> | The currentUser value. |
+| options | <code>object</code> | The options object can contain additional arguments.  avatarScale  scaleAvatarWithFocalDistance - To disable avatar scaling, pass as false. |
 
 <a name="SessionSync+syncStateMachines"></a>
 

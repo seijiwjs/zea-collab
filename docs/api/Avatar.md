@@ -1,12 +1,12 @@
 <a name="Avatar"></a>
 
 ### Avatar
-Represents the state on steroids of a user in the session.
+The Avatar is used to display a 3d representation of remote users in a 3d scene.
 
 
 
 * [Avatar](#Avatar)
-    * [new Avatar(appData, userData, currentUserAvatar)](#new-Avatar)
+    * [new Avatar(appData, userData, currentUserAvatar, avatarScale, scaleAvatarWithFocalDistance)](#new-Avatar)
     * [attachRTCStream(video)](#attachRTCStream)
     * [detachRTCStream()](#detachRTCStream)
     * [getCamera() ⇒ <code>Camera</code>](#getCamera)
@@ -18,7 +18,7 @@ Represents the state on steroids of a user in the session.
 <a name="new_Avatar_new"></a>
 
 ### new Avatar
-Initializes all the components of the Avatar like, user image, labels, tranformations, color, etc.<br>Contains a TreeItem property to which all the children items can be attached to. i.e. Camera.
+Initializes all the components of the Avatar like, user image, labels, transformations, color, etc.
 
 
 | Param | Type | Default | Description |
@@ -26,6 +26,8 @@ Initializes all the components of the Avatar like, user image, labels, tranforma
 | appData | <code>object</code> |  | The appData value. Must contain the renderer |
 | userData | <code>object</code> |  | The userData value. |
 | currentUserAvatar | <code>boolean</code> | <code>false</code> | The currentUserAvatar value. |
+| avatarScale | <code>float</code> | <code>1</code> | The size of the avatar in the view |
+| scaleAvatarWithFocalDistance | <code>float</code> | <code>false</code> | To disable avatar scaling, pass as false. |
 
 <a name="Avatar+attachRTCStream"></a>
 

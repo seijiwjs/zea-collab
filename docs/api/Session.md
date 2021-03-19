@@ -16,7 +16,7 @@ Session is used to store information about users and the communication method(So
 
 
 * [Session](#Session)
-    * [new Session(userData, socketUrl)](#new-Session)
+    * [new Session(userData, socketUrl, userTimeout)](#new-Session)
     * _instance_
         * [stopCamera(publish)](#stopCamera)
         * [startCamera(publish)](#startCamera)
@@ -31,6 +31,7 @@ Session is used to store information about users and the communication method(So
         * [getUser(id) ⇒ <code>object</code> \| <code>undefined</code>](#getUser)
         * [pub(messageType, payload, ack)](#pub)
         * [sub(messageType, callback)](#sub)
+        * [getCallbacks()](#getCallbacks)
     * _static_
         * [actions](#actions)
 
@@ -40,10 +41,11 @@ Session is used to store information about users and the communication method(So
 Instantiates a new session object that contains user's data and the socketUrl that is going to connect to.<br>In the userData object you can pass any information you want, but you must provide an `id`.In case you would like to use the [`zea-user-chip`](https://github.com/ZeaInc/zea-web-components/tree/staging/src/components/zea-user-chip) component,some specific data will be required, although they are not mandatory, it would be nice to have:* **firstName** or **given_name*** **lastName** or **family_name*** **avatar** or **picture** - The URL to the image* **color** - The RGBA hexadecimal string. i.e. #FFFFFF. (Random color in case you don't specify it)
 
 
-| Param | Type | Description |
-| --- | --- | --- |
-| userData | <code>object</code> | Specifies user's information |
-| socketUrl | <code>string</code> | Socket server you're connecting to. |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| userData | <code>object</code> |  | Specifies user's information |
+| socketUrl | <code>string</code> |  | Socket server you're connecting to. |
+| userTimeout | <code>number</code> | <code>120</code> | the number of seconds to wait before timing out a user. After a user times out, they are temporarily removed from the scene, but can rejoin by initiating any action. |
 
 <a name="Session+stopCamera"></a>
 
@@ -116,7 +118,7 @@ Creates the [HTMLVideoElement](https://developer.mozilla.org/en-US/docs/Web/API/
 <a name="Session+isJoiningTheSameRoom"></a>
 
 ### isJoiningTheSameRoom
-Checks if this Session's roomId is the same as the passed in the parameters.
+Checks if this Session's roomId is the same asthe one received in the parameters.
 
 
 
@@ -127,7 +129,7 @@ Checks if this Session's roomId is the same as the passed in the parameters.
 <a name="Session+joinRoom"></a>
 
 ### joinRoom
-Joins the user to a room and subscribes to all [private actions](#private_actions).Also subscribes the user to a wildcard event that can recieve any custom action (Excluding private actions).This is very useful when you wanna emit/publish custom events that are not in the pre-stablished custom [actions](#actions).<br>Emits/publishes the `JOIN_ROOM` event. **See:** [action](#action)
+Joins the user to a room and subscribes to all [private actions](#PRIVATE_ACTIONS).Also subscribes the user to a wildcard event that can recieve any custom action (Excluding private actions).This is very useful when you wanna emit/publish custom events that are not in the pre-stablished custom [actions](#actions).<br>Emits/publishes the `JOIN_ROOM` event. **See:** [action](#action)
 
 
 
@@ -184,6 +186,12 @@ Registers a new handler for a given event.**Note:** The session can handle mult
 | messageType | <code>string</code> | Represents the event action subscribed to. |
 | callback | <code>function</code> | Recieves by parameters the payload sent by the publisher |
 
+<a name="Session+getCallbacks"></a>
+
+### getCallbacks
+Make sure to always return a usablearray for the `messageType`.
+
+
 <a name="Session.actions"></a>
 
 ### actions
@@ -206,9 +214,9 @@ Represents Custom Default Events used by `Session` class.
 | COMMAND_UPDATED | <code>command-updated</code> | 
 | FILE_WITH_PROGRESS | <code>file-with-progress</code> | 
 
-<a name="private_actions"></a>
+<a name="PRIVATE_ACTIONS"></a>
 
-### private
+### PRIVATE
 User specific room actions.
 
 
