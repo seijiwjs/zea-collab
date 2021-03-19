@@ -97,37 +97,46 @@ class SessionSync {
     if (appData.renderer) {
       const viewport = appData.renderer.getViewport()
 
-      this.mouseDownId = viewport.on('mouseDown', (event) => {
-        const data = {
-          interfaceType: 'CameraAndPointer',
-          hilightPointer: {},
+      this.pointerDownId = viewport.on('pointerDown', (event) => {
+        if (event.button == null || event.button == 0) {
+          const data = {
+            interfaceType: 'CameraAndPointer',
+            highlightPointer: true,
+          }
+          session.pub('poseChanged', data)
         }
-        session.pub('poseChanged', data)
       })
-      this.mouseUpId = viewport.on('mouseUp', (event) => {
-        const data = {
-          interfaceType: 'CameraAndPointer',
-          unhilightPointer: {},
+      this.pointerUpId = viewport.on('pointerUp', (event) => {
+        if (event instanceof TouchEvent) {
+          session.pub('poseChanged', {
+            interfaceType: 'CameraAndPointer',
+            hidePointer: true,
+          })
+        } else {
+          console.log("'pointerUp'")
+          session.pub('poseChanged', {
+            interfaceType: 'CameraAndPointer',
+            unhighlightPointer: true,
+          })
         }
-        session.pub('poseChanged', convertValuesToJSON(data))
       })
-      this.mouseMoveId = viewport.on('mouseMove', (event) => {
-        const intersectionData = event.viewport.getGeomDataAtPos(event.mousePos, event.mouseRay)
+      this.pointerMoveId = viewport.on('pointerMove', (event) => {
+        const intersectionData = event.viewport.getGeomDataAtPos(event.pointerPos, event.pointerRay)
         const rayLength = intersectionData ? intersectionData.dist : 5.0
         const data = {
           interfaceType: 'CameraAndPointer',
           movePointer: {
-            start: event.mouseRay.start,
-            dir: event.mouseRay.dir,
+            start: event.pointerRay.start,
+            dir: event.pointerRay.dir,
             length: rayLength,
           },
         }
         session.pub('poseChanged', convertValuesToJSON(data))
       })
-      viewport.on('mouseLeave', (event) => {
+      viewport.on('pointerLeave', (event) => {
         const data = {
           interfaceType: 'CameraAndPointer',
-          hidePointer: {},
+          hidePointer: true,
         }
         session.pub('poseChanged', data)
       })

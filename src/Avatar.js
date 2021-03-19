@@ -41,7 +41,7 @@ class Avatar {
     this.__appData.renderer.addTreeItem(this.__treeItem)
 
     this.__avatarColor = new Color(userData.color || '#aaaaaa')
-    this.__hilightPointerColor = this.__avatarColor
+    this.__highlightPointerColor = new Color(1, 0, 0)
 
     this.__plane = new Plane(1, 1)
     this.__uiGeomIndex = -1
@@ -342,14 +342,18 @@ class Avatar {
       this.pointerXfo.tr = data.movePointer.start
       this.pointerXfo.ori.setFromDirectionAndUpvector(data.movePointer.dir, new Vec3(0, 0, 1))
       this.pointerXfo.sc.z = data.movePointer.length
-      this.__treeItem.getChild(1).getParameter('LocalXfo').setValue(this.pointerXfo)
-    } else if (data.hilightPointer) {
-      this.__pointermat.getParameter('BaseColor').setValue(this.__hilightPointerColor)
-    } else if (data.unhilightPointer) {
+      this.__pointerItem.getParameter('LocalXfo').setValue(this.pointerXfo)
+      this.__pointerItem.getParameter('Visible').setValue(true)
+      this.__pointermat.getParameter('BaseColor').setValue(this.__avatarColor)
+    } else if (data.highlightPointer) {
+      this.__pointerItem.getParameter('Visible').setValue(true)
+      this.__pointermat.getParameter('BaseColor').setValue(this.__highlightPointerColor)
+    } else if (data.unhighlightPointer) {
+      this.__pointerItem.getParameter('Visible').setValue(true)
       this.__pointermat.getParameter('BaseColor').setValue(this.__avatarColor)
     } else if (data.hidePointer) {
       this.pointerXfo.sc.z = 0
-      this.__treeItem.getChild(1).getParameter('LocalXfo').setValue(this.pointerXfo)
+      this.__pointerItem.getParameter('Visible').setValue(false)
     }
   }
 
