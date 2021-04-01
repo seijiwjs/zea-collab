@@ -1,5 +1,9 @@
 # Zea Collab
 
+[![NPM Package][npm]][npm-url]
+[![Build Size][build-size]][build-size-url]
+[![NPM Downloads][npm-downloads]][npmtrends-url]
+
 The Zea Collab library provides Client and Server side tools for connecting and synchronizing users.
 
 ## Adding Zea Collab to your project
@@ -33,3 +37,9 @@ For production environment:
 yarn run dist
 ```
 
+[npm]: https://badge.fury.io/js/%40zeainc%2Fzea-collab.svg
+[npm-url]: https://www.npmjs.com/package/@zeainc/zea-collab
+[build-size]: https://badgen.net/bundlephobia/minzip/@zeainc/zea-collab
+[build-size-url]: https://bundlephobia.com/result?p=@zeainc/zea-collab
+[npm-downloads]: https://img.shields.io/npm/dw/@zeainc/zea-collab
+[npmtrends-url]: https://www.npmtrends.com/@zeainc/zea-collab
