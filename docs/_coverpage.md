@@ -5,7 +5,7 @@
 
 # Zea Collab
 
-> Collaboration Plug-in for Zea Engine
+> Collaboration Plug-in for [Zea Engine](https://docs.zea.live/zea-engine/#/)
 
 
 <ul style="display:inline-block">
@@ -14,7 +14,7 @@
 
 ![power](_media/icon-power.svg)
 
-Power
+Fast
 
 </li>
 
@@ -22,14 +22,14 @@ Power
 
 ![versatility](_media/icon-versatility.svg)
 
-Versatility
+Easy
 
 </li>
 <li style="display:inline-block; padding:20px;">
 
 ![reach](_media/icon-reach.svg)
 
-Reach
+Open
 
 </li>
 </ul>
